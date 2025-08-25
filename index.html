@@ -41,25 +41,25 @@
             background-size: .65em auto;
             background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23F3F3F3%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E');
         }
-        .checklist-label {
-            cursor: pointer;
-        }
         #schedule-grid {
             display: grid;
             gap: 1rem;
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
         }
         /* Custom scrollbar for webkit browsers */
-        aside::-webkit-scrollbar {
+        aside::-webkit-scrollbar, main::-webkit-scrollbar {
             width: 8px;
         }
-        aside::-webkit-scrollbar-track {
+        aside::-webkit-scrollbar-track, main::-webkit-scrollbar-track {
             background: #2B2B2B;
         }
-        aside::-webkit-scrollbar-thumb {
+        aside::-webkit-scrollbar-thumb, main::-webkit-scrollbar-thumb {
             background-color: #4A4A4A;
             border-radius: 10px;
             border: 2px solid #2B2B2B;
+        }
+        #sidebar-overlay.hidden {
+            display: none;
         }
     </style>
 </head>
@@ -73,27 +73,29 @@
             <h1 class="text-2xl md:text-3xl font-bold">Cronograma de Estágio</h1>
         </header>
 
+        <!-- Week Selector - Visible on all screen sizes -->
+        <div class="p-4 bg-[#2B2B2B] border-b border-gray-700 lg:hidden">
+            <label for="week-selector-mobile" class="block text-sm font-medium text-center mb-2">Selecione a Semana</label>
+            <select id="week-selector-mobile" class="w-full p-3 bg-[#2D2D2D] border border-gray-600 rounded-md shadow-sm focus:ring-[#2899F5] focus:border-[#2899F5]"></select>
+            <p id="schedule-subtitle-mobile" class="text-sm text-gray-400 mt-2 text-center"></p>
+        </div>
+
         <div class="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-8 p-4 sm:p-6 lg:p-8 overflow-hidden">
-            <!-- Sidebar para mobile (overlay) e desktop (fixa) -->
-            <aside id="sidebar" class="hidden fixed inset-y-0 left-0 z-30 w-full max-w-xs bg-[#1B1B1B] p-6 lg:relative lg:col-span-3 lg:flex lg:w-auto lg:max-w-none lg:bg-transparent lg:p-0 lg:z-auto flex-col gap-8 overflow-y-auto">
-                <button id="sidebar-close" class="lg:hidden absolute top-4 right-4 p-2 rounded-md hover:bg-gray-700">
-                     <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
-                <div class="p-6 bg-[#2B2B2B] rounded-lg shadow-lg flex flex-col gap-2">
-                    <label for="week-selector" class="block text-sm font-medium text-center mb-2">Selecione a Semana</label>
-                    <select id="week-selector" class="w-full p-3 bg-[#2D2D2D] border border-gray-600 rounded-md shadow-sm focus:ring-[#2899F5] focus:border-[#2899F5]"></select>
-                    <p id="schedule-subtitle" class="text-sm text-gray-400 mt-2 text-center"></p>
+            <!-- Sidebar for desktop -->
+            <aside id="sidebar-desktop" class="hidden lg:flex lg:col-span-3 flex-col gap-8 overflow-y-auto">
+                 <div class="p-6 bg-[#2B2B2B] rounded-lg shadow-lg flex flex-col gap-2">
+                    <label for="week-selector-desktop" class="block text-sm font-medium text-center mb-2">Selecione a Semana</label>
+                    <select id="week-selector-desktop" class="w-full p-3 bg-[#2D2D2D] border border-gray-600 rounded-md shadow-sm focus:ring-[#2899F5] focus:border-[#2899F5]"></select>
+                    <p id="schedule-subtitle-desktop" class="text-sm text-gray-400 mt-2 text-center"></p>
                 </div>
                 <div class="bg-[#2B2B2B] p-6 rounded-lg shadow-lg text-center">
                     <h3 class="text-lg font-semibold mb-4">Selecione o Aluno</h3>
-                    <img id="student-image" src="https://i.imgur.com/5AW2oEL.png" alt="Foto do Grupo" class="w-full h-auto mx-auto rounded-lg object-cover border-4 border-gray-600 mb-4">
-                    <select id="student-selector" class="w-full p-3 bg-[#2D2D2D] border border-gray-600 rounded-md shadow-sm focus:ring-[#2899F5] focus:border-[#2899F5]"></select>
+                    <img id="student-image-desktop" src="https://i.imgur.com/5AW2oEL.png" alt="Foto do Grupo" class="w-full h-auto mx-auto rounded-lg object-cover border-4 border-gray-600 mb-4">
+                    <select id="student-selector-desktop" class="w-full p-3 bg-[#2D2D2D] border border-gray-600 rounded-md shadow-sm focus:ring-[#2899F5] focus:border-[#2899F5]"></select>
                 </div>
                  <div class="bg-[#2B2B2B] p-6 rounded-lg shadow-lg text-center">
                     <h3 class="text-lg font-semibold mb-4">Opções</h3>
-                    <button id="clearWeekButton" class="w-full mt-4 p-2 bg-red-600 hover:bg-red-700 rounded-md font-semibold transition-colors text-white text-sm">Limpar marcações da semana</button>
+                    <button id="clearWeekButton-desktop" class="w-full mt-4 p-2 bg-red-600 hover:bg-red-700 rounded-md font-semibold transition-colors text-white text-sm">Limpar marcações da semana</button>
                 </div>
             </aside>
 
@@ -101,6 +103,26 @@
                  <div id="schedule-grid" class="gap-4"></div>
             </main>
         </div>
+    </div>
+
+    <!-- Mobile Floating Menu -->
+    <div id="sidebar-overlay" class="hidden fixed inset-0 bg-black bg-opacity-70 z-40 flex items-center justify-center p-4">
+        <aside id="sidebar-mobile" class="relative w-full max-w-sm bg-[#2B2B2B] rounded-2xl shadow-2xl flex flex-col gap-8 p-6 overflow-y-auto max-h-[90vh]">
+            <button id="sidebar-close" class="absolute top-4 right-4 p-2 rounded-full hover:bg-gray-700">
+                 <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+            <div class="bg-[#2B2B2B] rounded-lg text-center">
+                <h3 class="text-lg font-semibold mb-4">Selecione o Aluno</h3>
+                <img id="student-image-mobile" src="https://i.imgur.com/5AW2oEL.png" alt="Foto do Grupo" class="w-full h-auto mx-auto rounded-lg object-cover border-4 border-gray-600 mb-4">
+                <select id="student-selector-mobile" class="w-full p-3 bg-[#2D2D2D] border border-gray-600 rounded-md shadow-sm focus:ring-[#2899F5] focus:border-[#2899F5]"></select>
+            </div>
+             <div class="bg-[#2B2B2B] rounded-lg text-center">
+                <h3 class="text-lg font-semibold mb-4">Opções</h3>
+                <button id="clearWeekButton-mobile" class="w-full mt-4 p-2 bg-red-600 hover:bg-red-700 rounded-md font-semibold transition-colors text-white text-sm">Limpar marcações da semana</button>
+            </div>
+        </aside>
     </div>
 
     <script>
@@ -336,24 +358,36 @@
             ];
 
             const scheduleGrid = document.getElementById('schedule-grid');
-            const weekSelector = document.getElementById('week-selector');
-            const studentSelector = document.getElementById('student-selector');
-            const studentImage = document.getElementById('student-image');
-            const scheduleSubtitle = document.getElementById('schedule-subtitle');
-            const clearWeekButton = document.getElementById('clearWeekButton');
+            
+            const weekSelectorMobile = document.getElementById('week-selector-mobile');
+            const scheduleSubtitleMobile = document.getElementById('schedule-subtitle-mobile');
+            const studentSelectorMobile = document.getElementById('student-selector-mobile');
+            const studentImageMobile = document.getElementById('student-image-mobile');
+            const clearWeekButtonMobile = document.getElementById('clearWeekButton-mobile');
+
+            const weekSelectorDesktop = document.getElementById('week-selector-desktop');
+            const scheduleSubtitleDesktop = document.getElementById('schedule-subtitle-desktop');
+            const studentSelectorDesktop = document.getElementById('student-selector-desktop');
+            const studentImageDesktop = document.getElementById('student-image-desktop');
+            const clearWeekButtonDesktop = document.getElementById('clearWeekButton-desktop');
+            
             const daysOfWeek = ['SEGUNDA', 'TERÇA', 'QUARTA', 'QUINTA', 'SEXTA', 'SÁBADO', 'DOMINGO'];
             
-            // --- Mobile Sidebar Elements ---
-            const sidebar = document.getElementById('sidebar');
+            const sidebarOverlay = document.getElementById('sidebar-overlay');
             const sidebarToggle = document.getElementById('sidebar-toggle');
             const sidebarClose = document.getElementById('sidebar-close');
 
             function toggleSidebar() {
-                sidebar.classList.toggle('hidden');
+                sidebarOverlay.classList.toggle('hidden');
             }
 
             sidebarToggle.addEventListener('click', toggleSidebar);
             sidebarClose.addEventListener('click', toggleSidebar);
+            sidebarOverlay.addEventListener('click', (e) => {
+                if (e.target === sidebarOverlay) {
+                    toggleSidebar();
+                }
+            });
 
             function loadChecklistData() {
                 const data = localStorage.getItem(LOCAL_STORAGE_KEY);
@@ -364,41 +398,68 @@
                 localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(checklistData));
             }
 
-            function populateWeekSelector() {
+            function populateSelectors() {
                 weeks.forEach(week => {
-                    const option = document.createElement('option');
-                    option.value = week.id;
-                    option.textContent = `Semana ${week.id}: ${week.title}`;
-                    weekSelector.appendChild(option);
-                });
-                weekSelector.addEventListener('change', (e) => {
-                    currentWeek = parseInt(e.target.value);
-                    updateView();
-                    if (window.innerWidth < 1024) { // lg breakpoint in Tailwind
-                        toggleSidebar();
-                    }
-                });
-            }
+                    const option1 = document.createElement('option');
+                    option1.value = week.id;
+                    option1.textContent = `Semana ${week.id}: ${week.title}`;
+                    weekSelectorMobile.appendChild(option1);
 
-            function createStudentSelector() {
+                    const option2 = document.createElement('option');
+                    option2.value = week.id;
+                    option2.textContent = `Semana ${week.id}: ${week.title}`;
+                    weekSelectorDesktop.appendChild(option2);
+                });
+
                 students.forEach(student => {
-                    const option = document.createElement('option');
-                    option.value = student.id;
-                    option.textContent = student.name;
-                    studentSelector.appendChild(option);
-                });
+                    const option1 = document.createElement('option');
+                    option1.value = student.id;
+                    option1.textContent = student.name;
+                    studentSelectorMobile.appendChild(option1);
 
-                studentSelector.addEventListener('change', (e) => {
-                    currentStudent = e.target.value;
-                    const selectedStudent = students.find(s => s.id == currentStudent);
-                    studentImage.src = selectedStudent.imageUrl;
-                    studentImage.alt = `Foto de ${selectedStudent.name}`;
-                    renderSchedule(currentWeek, currentStudent);
-                    if (window.innerWidth < 1024) { // lg breakpoint in Tailwind
-                        toggleSidebar();
-                    }
+                    const option2 = document.createElement('option');
+                    option2.value = student.id;
+                    option2.textContent = student.name;
+                    studentSelectorDesktop.appendChild(option2);
                 });
             }
+
+            function syncSelectors(source, target) {
+                 target.value = source.value;
+            }
+
+            weekSelectorMobile.addEventListener('change', (e) => {
+                syncSelectors(weekSelectorMobile, weekSelectorDesktop);
+                currentWeek = parseInt(e.target.value);
+                updateView();
+            });
+            weekSelectorDesktop.addEventListener('change', (e) => {
+                syncSelectors(weekSelectorDesktop, weekSelectorMobile);
+                currentWeek = parseInt(e.target.value);
+                updateView();
+            });
+
+            studentSelectorMobile.addEventListener('change', (e) => {
+                syncSelectors(studentSelectorMobile, studentSelectorDesktop);
+                currentStudent = e.target.value;
+                const selectedStudent = students.find(s => s.id == currentStudent);
+                studentImageMobile.src = selectedStudent.imageUrl;
+                studentImageMobile.alt = `Foto de ${selectedStudent.name}`;
+                studentImageDesktop.src = selectedStudent.imageUrl;
+                studentImageDesktop.alt = `Foto de ${selectedStudent.name}`;
+                renderSchedule(currentWeek, currentStudent);
+                toggleSidebar();
+            });
+             studentSelectorDesktop.addEventListener('change', (e) => {
+                syncSelectors(studentSelectorDesktop, studentSelectorMobile);
+                currentStudent = e.target.value;
+                const selectedStudent = students.find(s => s.id == currentStudent);
+                studentImageMobile.src = selectedStudent.imageUrl;
+                studentImageMobile.alt = `Foto de ${selectedStudent.name}`;
+                studentImageDesktop.src = selectedStudent.imageUrl;
+                studentImageDesktop.alt = `Foto de ${selectedStudent.name}`;
+                renderSchedule(currentWeek, currentStudent);
+            });
             
             function handleChecklistChange(event) {
                 const checkbox = event.target;
@@ -443,7 +504,6 @@
 
                     if (activitiesForDay.length > 0) {
                         activitiesForDay.forEach((item, index) => {
-                            // Criar um ID único e consistente para cada atividade, removendo caracteres inválidos.
                             const sanitizedTime = item.time.replace(/[\s:-]/g, '');
                             const sanitizedActivity = item.activity.replace(/[^a-zA-Z0-9]/g, '').substring(0, 10);
                             const activityId = `week-${selectedWeek}-day-${day}-time-${sanitizedTime}-activity-${sanitizedActivity}`;
@@ -489,18 +549,19 @@
             
             function updateView() {
                 const selectedWeekData = weeks.find(w => w.id === currentWeek);
-                scheduleSubtitle.textContent = `${selectedWeekData.title} (${selectedWeekData.dates})`;
+                const subtitleText = `${selectedWeekData.title} (${selectedWeekData.dates})`;
+                scheduleSubtitleMobile.textContent = subtitleText;
+                scheduleSubtitleDesktop.textContent = subtitleText;
                 renderSchedule(currentWeek, currentStudent);
             }
             
             function initializeAppLogic() {
                 loadChecklistData();
-                populateWeekSelector();
-                createStudentSelector();
+                populateSelectors();
                 updateView();
             }
 
-            clearWeekButton.addEventListener('click', () => {
+            function clearWeekData() {
                 const prefix = `week-${currentWeek}-`;
                 let needsUpdate = false;
 
@@ -513,11 +574,13 @@
 
                 if (needsUpdate) {
                     saveChecklistData();
-                    renderSchedule(currentWeek, currentStudent); // Re-renderiza para refletir a limpeza
+                    renderSchedule(currentWeek, currentStudent);
                 }
-            });
+            }
 
-            // --- Inicia a aplicação ---
+            clearWeekButtonMobile.addEventListener('click', clearWeekData);
+            clearWeekButtonDesktop.addEventListener('click', clearWeekData);
+
             initializeAppLogic();
         });
     </script>
