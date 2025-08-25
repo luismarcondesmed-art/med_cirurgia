@@ -67,15 +67,15 @@
                 </div>
                  <div class="bg-[#2B2B2B] p-6 rounded-lg shadow-lg text-center">
                     <h3 class="text-lg font-semibold mb-4">Sincronização</h3>
-                    <p class="text-xs text-gray-400 mb-2">Seu ID de utilizador (palavra-chave):</p>
+                    <p class="text-xs text-gray-400 mb-2">Seu ID de Sessão (Partilhável):</p>
                     <div class="flex items-center justify-center bg-[#1B1B1B] p-2 rounded-md mb-4">
-                        <span id="userIdDisplay" class="font-mono text-lg text-green-400"></span>
-                        <button id="copyUserId" class="ml-2 p-1 hover:bg-gray-700 rounded">
+                        <span id="sessionIdDisplay" class="font-mono text-lg text-green-400 break-all"></span>
+                        <button id="copySessionId" class="ml-2 p-1 hover:bg-gray-700 rounded flex-shrink-0">
                             <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z"></path><path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z"></path></svg>
                         </button>
                     </div>
-                     <input type="text" id="loginKeyword" placeholder="Cole um ID para sincronizar" class="w-full p-2 bg-[#2D2D2D] border border-gray-600 rounded-md mb-2 text-center">
-                     <button id="loginButton" class="w-full p-2 bg-[#0078D4] hover:bg-[#2899F5] rounded-md font-semibold transition-colors">Login com ID</button>
+                     <input type="text" id="syncIdInput" placeholder="Cole um ID para sincronizar" class="w-full p-2 bg-[#2D2D2D] border border-gray-600 rounded-md mb-2 text-center">
+                     <button id="syncButton" class="w-full p-2 bg-[#0078D4] hover:bg-[#2899F5] rounded-md font-semibold transition-colors">Sincronizar com ID</button>
                 </div>
             </aside>
 
@@ -106,10 +106,11 @@
         const auth = getAuth(app);
         
         let currentUserId = null;
+        let currentSessionId = null;
         let currentWeek = 1;
         let currentStudent = 'all';
         let checklistData = {};
-        let unsubscribeUserPrefs;
+        let unsubscribeChecklist;
 
         const students = [
             { id: 'all', name: 'Todos os Ratos', imageUrl: 'https://i.imgur.com/5AW2oEL.png' },
@@ -134,7 +135,7 @@
         ];
         
         const scheduleData = [
-            // ... (O seu scheduleData continua aqui, inalterado)
+            // O seu scheduleData continua aqui, inalterado...
             { week: 1, studentId: [1,2,3,4,5], day: 'SEGUNDA', time: '07:00 - 07:30', activity: 'Recepção dos Alunos', professor: 'Prof. Stegagnin', location: '13º Andar' },
             { week: 1, studentId: [1,2,3,4,5], day: 'SEGUNDA', time: '07:30 - 09:00', activity: 'Visita Enfermaria', professor: 'Prof. Stegagnin', location: '13º Andar' },
             { week: 1, studentId: [1,2], day: 'SEGUNDA', time: '09:00 - 12:00', activity: 'Centro Cirúrgico', professor: 'Dr. Andre', location: 'Centro Cirúrgico' },
@@ -341,10 +342,10 @@
         const studentSelector = document.getElementById('student-selector');
         const studentImage = document.getElementById('student-image');
         const scheduleSubtitle = document.getElementById('schedule-subtitle');
-        const userIdDisplay = document.getElementById('userIdDisplay');
-        const copyUserIdButton = document.getElementById('copyUserId');
-        const loginKeywordInput = document.getElementById('loginKeyword');
-        const loginButton = document.getElementById('loginButton');
+        const sessionIdDisplay = document.getElementById('sessionIdDisplay');
+        const copySessionIdButton = document.getElementById('copySessionId');
+        const syncIdInput = document.getElementById('syncIdInput');
+        const syncButton = document.getElementById('syncButton');
         const daysOfWeek = ['SEGUNDA', 'TERÇA', 'QUARTA', 'QUINTA', 'SEXTA', 'SÁBADO', 'DOMINGO'];
         
         function populateWeekSelector() {
@@ -378,14 +379,14 @@
         }
         
         async function handleChecklistChange(event) {
-            if (!currentUserId) return;
+            if (!currentUserId || !currentSessionId) return;
             const checkbox = event.target;
             const activityId = checkbox.id;
             checklistData[activityId] = checkbox.checked;
             
-            const userDocRef = doc(db, `artifacts/${appId}/users/${currentUserId}/checklist`, 'data');
+            const sessionDocRef = doc(db, `artifacts/${appId}/public/data/checklists`, currentSessionId);
             try {
-                await setDoc(userDocRef, checklistData, { merge: true });
+                await setDoc(sessionDocRef, checklistData, { merge: true });
             } catch (error) {
                 console.error("Erro ao salvar o checklist: ", error);
             }
@@ -464,63 +465,75 @@
         }
         
         function updateView() {
+            if (!currentSessionId) return; // Não renderiza sem uma sessão
             const selectedWeekData = weeks.find(w => w.id === currentWeek);
             scheduleSubtitle.textContent = `${selectedWeekData.title} (${selectedWeekData.dates})`;
             renderSchedule(currentWeek, currentStudent);
         }
         
-        function setupRealtimeListener(userId) {
-            const userDocRef = doc(db, `artifacts/${appId}/users/${userId}/checklist`, 'data');
-            if (unsubscribeUserPrefs) {
-                unsubscribeUserPrefs();
+        function setupRealtimeListener(sessionId) {
+            if (!sessionId) return;
+            
+            currentSessionId = sessionId;
+            sessionIdDisplay.textContent = currentSessionId;
+
+            const sessionDocRef = doc(db, `artifacts/${appId}/public/data/checklists`, currentSessionId);
+            
+            if (unsubscribeChecklist) {
+                unsubscribeChecklist();
             }
-            unsubscribeUserPrefs = onSnapshot(userDocRef, (doc) => {
-                if (doc.exists()) {
-                    checklistData = doc.data();
-                } else {
-                    checklistData = {};
-                }
+
+            unsubscribeChecklist = onSnapshot(sessionDocRef, (doc) => {
+                checklistData = doc.exists() ? doc.data() : {};
                 updateView(); 
             }, (error) => {
                 console.error("Erro ao carregar dados do checklist: ", error);
             });
         }
 
-        async function initializeAuth() {
+        async function initializeAppLogic() {
+            populateWeekSelector();
+            createStudentSelector();
+
+            // Gerir o ID da Sessão a partir do URL
+            const urlParams = new URLSearchParams(window.location.search);
+            let sessionIdFromUrl = urlParams.get('session');
+
+            if (!sessionIdFromUrl) {
+                sessionIdFromUrl = crypto.randomUUID();
+                const newUrl = `${window.location.pathname}?session=${sessionIdFromUrl}`;
+                window.history.replaceState({ path: newUrl }, '', newUrl);
+            }
+            
+            // Autenticar e depois configurar o listener
+            try {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else if (!auth.currentUser) {
+                    await signInAnonymously(auth);
+                }
+            } catch (error) {
+                console.error("Erro na autenticação:", error);
+                if (!auth.currentUser) {
+                   await signInAnonymously(auth);
+                }
+            }
+
             onAuthStateChanged(auth, user => {
                 if (user) {
                     currentUserId = user.uid;
-                    userIdDisplay.textContent = currentUserId;
-                    setupRealtimeListener(currentUserId);
-                } else {
-                    // Se não houver token, faz login anônimo
-                     signInAnonymously(auth).catch(error => {
-                        console.error("Erro no login anônimo:", error);
-                    });
+                    // Usar o ID da sessão do URL para configurar o listener
+                    setupRealtimeListener(sessionIdFromUrl);
                 }
             });
-            
-            // Tenta usar o token inicial, se disponível
-            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                try {
-                    await signInWithCustomToken(auth, __initial_auth_token);
-                } catch (error) {
-                    console.error("Erro ao logar com token customizado:", error);
-                    await signInAnonymously(auth);
-                }
-            } else {
-                 // Se não houver usuário logado, faz login anônimo
-                if(!auth.currentUser){
-                    await signInAnonymously(auth);
-                }
-            }
         }
 
+
         // --- Event Listeners ---
-        copyUserIdButton.addEventListener('click', () => {
-            if (currentUserId) {
+        copySessionIdButton.addEventListener('click', () => {
+            if (currentSessionId) {
                 const textArea = document.createElement('textarea');
-                textArea.value = currentUserId;
+                textArea.value = currentSessionId;
                 document.body.appendChild(textArea);
                 textArea.select();
                 try {
@@ -532,20 +545,17 @@
             }
         });
 
-        loginButton.addEventListener('click', () => {
-             const keyword = loginKeywordInput.value.trim();
-             if (keyword) {
-                currentUserId = keyword;
-                userIdDisplay.textContent = currentUserId;
-                setupRealtimeListener(currentUserId);
-                loginKeywordInput.value = '';
+        syncButton.addEventListener('click', () => {
+             const newSessionId = syncIdInput.value.trim();
+             if (newSessionId) {
+                // Recarrega a página com o novo ID de sessão no URL
+                const newUrl = `${window.location.pathname}?session=${newSessionId}`;
+                window.location.href = newUrl;
              }
         });
 
         document.addEventListener('DOMContentLoaded', () => {
-            populateWeekSelector();
-            createStudentSelector();
-            initializeAuth();
+            initializeAppLogic();
         });
     </script>
 </body>
