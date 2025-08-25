@@ -14,7 +14,7 @@
             font-family: 'Inter', sans-serif;
         }
         .activity-card {
-            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out, opacity 0.3s;
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out, opacity 0.3s, background-color 0.3s;
         }
         .activity-card:hover {
             transform: translateY(-4px);
@@ -43,6 +43,24 @@
         }
         .checklist-label {
             cursor: pointer;
+        }
+        #loader {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+        }
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 4px solid #F3F3F3;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
     </style>
 </head>
@@ -79,8 +97,11 @@
                 </div>
             </aside>
 
-            <main class="lg:col-span-9 overflow-y-auto pr-4">
-                 <div id="schedule-grid" class="gap-4"></div>
+            <main id="main-content" class="lg:col-span-9 overflow-y-auto pr-4">
+                 <div id="loader">
+                    <div class="spinner"></div>
+                 </div>
+                 <div id="schedule-grid" class="gap-4 hidden"></div>
             </main>
         </div>
     </div>
@@ -337,6 +358,8 @@
             { week: 10, studentId: [4,5], day: 'DOMINGO', time: '07:30 - 10:30', activity: 'Enfermaria', professor: 'Médico da escala', location: '9º Andar' },
         ];
 
+        const mainContent = document.getElementById('main-content');
+        const loader = document.getElementById('loader');
         const scheduleGrid = document.getElementById('schedule-grid');
         const weekSelector = document.getElementById('week-selector');
         const studentSelector = document.getElementById('student-selector');
@@ -381,18 +404,36 @@
         async function handleChecklistChange(event) {
             if (!currentUserId || !currentSessionId) return;
             const checkbox = event.target;
+            const card = checkbox.closest('.activity-card');
             const activityId = checkbox.id;
-            checklistData[activityId] = checkbox.checked;
             
+            // Optimistic UI Update
+            checklistData[activityId] = checkbox.checked;
+            if (checkbox.checked) {
+                card.classList.add('checked');
+            } else {
+                card.classList.remove('checked');
+            }
+
             const sessionDocRef = doc(db, `artifacts/${appId}/public/data/checklists`, currentSessionId);
             try {
                 await setDoc(sessionDocRef, checklistData, { merge: true });
             } catch (error) {
                 console.error("Erro ao salvar o checklist: ", error);
+                // Revert UI on error
+                checklistData[activityId] = !checkbox.checked;
+                 if (checkbox.checked) {
+                    card.classList.remove('checked');
+                } else {
+                    card.classList.add('checked');
+                }
             }
         }
 
         function renderSchedule(selectedWeek, selectedStudentId) {
+            loader.style.display = 'none';
+            scheduleGrid.style.display = 'grid';
+
             const weekData = scheduleData.filter(item => item.week === selectedWeek);
             
             let daysToRender = [];
@@ -488,6 +529,8 @@
                 updateView(); 
             }, (error) => {
                 console.error("Erro ao carregar dados do checklist: ", error);
+                // Mesmo com erro, tenta renderizar a view para não ficar em branco
+                updateView();
             });
         }
 
@@ -495,17 +538,23 @@
             populateWeekSelector();
             createStudentSelector();
 
-            // Gerir o ID da Sessão a partir do URL
             const urlParams = new URLSearchParams(window.location.search);
             let sessionIdFromUrl = urlParams.get('session');
 
             if (!sessionIdFromUrl) {
                 sessionIdFromUrl = crypto.randomUUID();
                 const newUrl = `${window.location.pathname}?session=${sessionIdFromUrl}`;
+                // Usar replaceState para não quebrar o histórico de navegação
                 window.history.replaceState({ path: newUrl }, '', newUrl);
             }
             
-            // Autenticar e depois configurar o listener
+            onAuthStateChanged(auth, user => {
+                if (user) {
+                    currentUserId = user.uid;
+                    setupRealtimeListener(sessionIdFromUrl);
+                }
+            });
+
             try {
                 if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
                     await signInWithCustomToken(auth, __initial_auth_token);
@@ -518,28 +567,21 @@
                    await signInAnonymously(auth);
                 }
             }
-
-            onAuthStateChanged(auth, user => {
-                if (user) {
-                    currentUserId = user.uid;
-                    // Usar o ID da sessão do URL para configurar o listener
-                    setupRealtimeListener(sessionIdFromUrl);
-                }
-            });
         }
 
 
         // --- Event Listeners ---
         copySessionIdButton.addEventListener('click', () => {
             if (currentSessionId) {
+                const fullUrl = `${window.location.origin}${window.location.pathname}?session=${currentSessionId}`;
                 const textArea = document.createElement('textarea');
-                textArea.value = currentSessionId;
+                textArea.value = fullUrl;
                 document.body.appendChild(textArea);
                 textArea.select();
                 try {
                     document.execCommand('copy');
                 } catch (err) {
-                    console.error('Falha ao copiar ID:', err);
+                    console.error('Falha ao copiar URL:', err);
                 }
                 document.body.removeChild(textArea);
             }
@@ -547,10 +589,11 @@
 
         syncButton.addEventListener('click', () => {
              const newSessionId = syncIdInput.value.trim();
-             if (newSessionId) {
-                // Recarrega a página com o novo ID de sessão no URL
+             if (newSessionId && newSessionId !== currentSessionId) {
                 const newUrl = `${window.location.pathname}?session=${newSessionId}`;
-                window.location.href = newUrl;
+                window.history.pushState({ path: newUrl }, '', newUrl);
+                setupRealtimeListener(newSessionId);
+                syncIdInput.value = '';
              }
         });
 
