@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,24 +8,18 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         html {
-            scroll-behavior: smooth;
-        }
-        html.dark {
             color-scheme: dark;
         }
         body {
             font-family: 'Inter', sans-serif;
+            background-color: #1B1B1B;
+            color: #F3F3F3;
         }
         .activity-card {
-            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out, border-color 0.3s, background-color 0.3s, opacity 0.3s;
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out, opacity 0.3s;
         }
         .activity-card:hover {
             transform: translateY(-4px);
-        }
-        .light .activity-card:hover {
-            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-        }
-        .dark .activity-card:hover {
             box-shadow: 0 4px 20px rgba(0,0,0,0.2);
         }
         .activity-card.checked {
@@ -42,50 +36,41 @@
             background-repeat: no-repeat;
             background-position: right 1rem center;
             background-size: .65em auto;
-        }
-        .light select {
-             background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23323130%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E');
-        }
-        .dark select {
-             background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23F3F3F3%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E');
+            background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23F3F3F3%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E');
         }
         .checklist-label {
             cursor: pointer;
         }
     </style>
 </head>
-<body class="bg-[#FAFAFA] dark:bg-[#1B1B1B] text-[#323130] dark:text-[#F3F3F3]">
+<body class="bg-[#1B1B1B] text-[#F3F3F3]">
 
-    <div class="flex flex-col h-screen">
-        <header class="text-center p-4 relative border-b border-gray-200 dark:border-gray-700 bg-[#E1E1E1] dark:bg-[#2B2B2B] flex-shrink-0">
-            <h1 class="text-2xl md:text-3xl font-bold">Cronograma de Estágio</h1>
-            <button id="theme-toggle" class="absolute top-1/2 -translate-y-1/2 right-4 p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-300 dark:hover:bg-gray-700 transition-colors">
-                <svg id="theme-icon-sun" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
-                <svg id="theme-icon-moon" class="h-6 w-6 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
-            </button>
+    <div class="container mx-auto p-4 sm:p-6 lg:p-8">
+        <header class="text-center mb-8 relative">
+            <h1 class="text-3xl md:text-4xl font-bold">Cronograma de Estágio</h1>
         </header>
 
-        <div class="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-8 p-4 sm:p-6 lg:p-8 overflow-hidden">
-            <aside class="lg:col-span-3 flex flex-col gap-8 overflow-y-auto">
-                <div class="p-6 bg-[#E1E1E1] dark:bg-[#2B2B2B] rounded-lg shadow-sm flex flex-col gap-2">
-                    <label for="week-selector" class="block text-sm font-medium text-center mb-2">Selecione a Semana</label>
-                    <select id="week-selector" class="w-full p-3 bg-white dark:bg-[#2D2D2D] border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-[#0078D4] focus:border-[#0078D4]"></select>
-                    <p id="schedule-subtitle" class="text-sm text-gray-500 dark:text-gray-400 mt-2 text-center"></p>
-                </div>
-                <div class="bg-[#E1E1E1] dark:bg-[#2B2B2B] p-6 rounded-lg shadow-sm text-center">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <aside class="lg:col-span-3">
+                <div class="sticky top-8 bg-[#2B2B2B] p-6 rounded-lg shadow-lg text-center">
                     <h3 class="text-lg font-semibold mb-4">Selecione o Aluno</h3>
-                    <img id="student-image" src="https://i.imgur.com/5AW2oEL.png" alt="Foto do Grupo" class="w-full h-auto mx-auto rounded-lg object-cover border-4 border-gray-200 dark:border-gray-600 mb-4">
-                    <select id="student-selector" class="w-full p-3 bg-white dark:bg-[#2D2D2D] border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-[#0078D4] focus:border-[#0078D4]"></select>
+                    <img id="student-image" src="https://i.imgur.com/5AW2oEL.png" alt="Foto do Grupo" class="w-full h-auto mx-auto rounded-lg object-cover border-4 border-gray-600 mb-4">
+                    <select id="student-selector" class="w-full p-3 bg-[#2D2D2D] border border-gray-600 rounded-md shadow-sm focus:ring-[#2899F5] focus:border-[#2899F5]"></select>
                 </div>
             </aside>
 
-            <main class="lg:col-span-9 overflow-y-auto">
+            <main class="lg:col-span-9">
+                 <div class="mb-8 p-6 bg-[#2B2B2B] rounded-lg shadow-lg flex flex-col gap-2">
+                    <label for="week-selector" class="block text-sm font-medium text-center mb-2">Selecione a Semana</label>
+                    <select id="week-selector" class="w-full p-3 bg-[#2D2D2D] border border-gray-600 rounded-md shadow-sm focus:ring-[#2899F5] focus:border-[#2899F5]"></select>
+                    <p id="schedule-subtitle" class="text-sm text-gray-400 mt-2 text-center"></p>
+                </div>
                  <div id="schedule-grid" class="gap-4"></div>
             </main>
         </div>
     </div>
 
-    <script>
+    <script type="module">
         const students = [
             { id: 'all', name: 'Todos os Ratos', imageUrl: 'https://i.imgur.com/5AW2oEL.png' },
             { id: 1, name: 'Big', imageUrl: 'https://i.imgur.com/RaVjIKr.png' },
@@ -319,11 +304,6 @@
 
         let currentWeek = 1;
         let currentStudent = 'all';
-        let checklistData = {};
-
-        function getActivityId(item) {
-            return `week${item.week}-${item.day}-${item.time}-${item.activity.replace(/\s/g, '')}`;
-        }
 
         function populateWeekSelector() {
             weeks.forEach(week => {
@@ -348,9 +328,9 @@
 
             studentSelector.addEventListener('change', (e) => {
                 currentStudent = e.target.value;
-                localStorage.setItem('lastSelectedStudent', currentStudent);
                 const selectedStudent = students.find(s => s.id == currentStudent);
                 studentImage.src = selectedStudent.imageUrl;
+                studentImage.alt = `Foto de ${selectedStudent.name}`;
                 renderSchedule(currentWeek, currentStudent);
             });
         }
@@ -397,10 +377,8 @@
 
                 if (activitiesForDay.length > 0) {
                     activitiesForDay.forEach(item => {
-                        const activityId = getActivityId(item);
-                        const isChecked = checklistData[activityId] || false;
                         const card = document.createElement('div');
-                        card.className = `activity-card rounded-lg p-4 border-l-4 shadow-md bg-[#E1E1E1] dark:bg-[#2D2D2D] border-[#0078D4] dark:border-[#2899F5] ${isChecked ? 'checked' : ''}`;
+                        card.className = `activity-card rounded-lg p-4 border-l-4 shadow-md bg-[#E1E1E1] dark:bg-[#2D2D2D] border-[#0078D4] dark:border-[#2899F5]`;
 
                         let involvedStudents = 'Todos';
                         if (item.studentId.length < students.length - 1) { 
@@ -417,12 +395,6 @@
                                 <p><strong>Professor:</strong> ${item.professor}</p>
                                 <p><strong>Local:</strong> ${item.location}</p>
                                 <p class="mt-2 text-xs text-gray-400 dark:text-gray-500"><strong>Alunos:</strong> ${involvedStudents}</p>
-                            </div>
-                            <div class="mt-4 border-t border-gray-300 dark:border-gray-700 pt-3">
-                                <label class="flex items-center text-sm text-[#107C10] dark:text-[#2DAD34] checklist-label">
-                                    <input type="checkbox" data-activity-id="${activityId}" class="h-4 w-4 rounded bg-gray-200 dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-[#107C10] focus:ring-[#0078D4]" ${isChecked ? 'checked' : ''}>
-                                    <span class="ml-2">Carimbado?</span>
-                                </label>
                             </div>
                         `;
                         dayColumn.appendChild(card);
@@ -445,67 +417,9 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            const themeToggle = document.getElementById('theme-toggle');
-            const sunIcon = document.getElementById('theme-icon-sun');
-            const moonIcon = document.getElementById('theme-icon-moon');
-            const studentSelector = document.getElementById('student-selector');
-
-            const applyTheme = (theme) => {
-                if (theme === 'dark') {
-                    document.documentElement.classList.add('dark');
-                    sunIcon.classList.add('hidden');
-                    moonIcon.classList.remove('hidden');
-                } else {
-                    document.documentElement.classList.remove('dark');
-                    sunIcon.classList.remove('hidden');
-                    moonIcon.classList.add('hidden');
-                }
-            };
-            
-            const savedTheme = localStorage.getItem('theme') || 'light';
-            applyTheme(savedTheme);
-
-            themeToggle.addEventListener('click', () => {
-                const newTheme = document.documentElement.classList.contains('dark') ? 'light' : 'dark';
-                localStorage.setItem('theme', newTheme);
-                applyTheme(newTheme);
-            });
-
-            const savedStudent = localStorage.getItem('lastSelectedStudent');
-            const savedChecklist = localStorage.getItem('checklistData');
-
-            if (savedChecklist) {
-                checklistData = JSON.parse(savedChecklist);
-            }
-
             populateWeekSelector();
             createStudentSelector();
-
-            if (savedStudent) {
-                currentStudent = savedStudent;
-                studentSelector.value = savedStudent;
-                const selectedStudent = students.find(s => s.id == currentStudent);
-                if (selectedStudent) {
-                    studentImage.src = selectedStudent.imageUrl;
-                }
-            }
-            
             updateView();
-
-            scheduleGrid.addEventListener('change', (e) => {
-                if (e.target.type === 'checkbox') {
-                    const activityId = e.target.dataset.activityId;
-                    checklistData[activityId] = e.target.checked;
-                    localStorage.setItem('checklistData', JSON.stringify(checklistData));
-                    
-                    const card = e.target.closest('.activity-card');
-                    if (e.target.checked) {
-                        card.classList.add('checked');
-                    } else {
-                        card.classList.remove('checked');
-                    }
-                }
-            });
         });
     </script>
 </body>
