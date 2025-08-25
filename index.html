@@ -58,8 +58,24 @@
             border-radius: 10px;
             border: 2px solid #2B2B2B;
         }
-        #sidebar-overlay.hidden {
-            display: none;
+        /* Animation for mobile menu */
+        #sidebar-overlay {
+            transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+            visibility: hidden;
+            opacity: 0;
+        }
+        #sidebar-overlay.is-open {
+            visibility: visible;
+            opacity: 1;
+        }
+        #sidebar-mobile {
+            transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+            transform: scale(0.95);
+            opacity: 0;
+        }
+        #sidebar-overlay.is-open #sidebar-mobile {
+            transform: scale(1);
+            opacity: 1;
         }
     </style>
 </head>
@@ -73,16 +89,9 @@
             <h1 class="text-2xl md:text-3xl font-bold">Cronograma de Estágio</h1>
         </header>
 
-        <!-- Week Selector - Visible on all screen sizes -->
-        <div class="p-4 bg-[#2B2B2B] border-b border-gray-700 lg:hidden">
-            <label for="week-selector-mobile" class="block text-sm font-medium text-center mb-2">Selecione a Semana</label>
-            <select id="week-selector-mobile" class="w-full p-3 bg-[#2D2D2D] border border-gray-600 rounded-md shadow-sm focus:ring-[#2899F5] focus:border-[#2899F5]"></select>
-            <p id="schedule-subtitle-mobile" class="text-sm text-gray-400 mt-2 text-center"></p>
-        </div>
-
-        <div class="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-8 p-4 sm:p-6 lg:p-8 overflow-hidden">
+        <div class="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:p-8 overflow-hidden">
             <!-- Sidebar for desktop -->
-            <aside id="sidebar-desktop" class="hidden lg:flex lg:col-span-3 flex-col gap-8 overflow-y-auto">
+            <aside id="sidebar-desktop" class="hidden lg:flex lg:col-span-3 flex-col gap-8 overflow-y-auto p-4 sm:p-6 lg:p-0">
                  <div class="p-6 bg-[#2B2B2B] rounded-lg shadow-lg flex flex-col gap-2">
                     <label for="week-selector-desktop" class="block text-sm font-medium text-center mb-2">Selecione a Semana</label>
                     <select id="week-selector-desktop" class="w-full p-3 bg-[#2D2D2D] border border-gray-600 rounded-md shadow-sm focus:ring-[#2899F5] focus:border-[#2899F5]"></select>
@@ -99,14 +108,20 @@
                 </div>
             </aside>
 
-            <main id="main-content" class="col-span-12 lg:col-span-9 overflow-y-auto">
-                 <div id="schedule-grid" class="gap-4"></div>
+            <main id="main-content" class="col-span-12 lg:col-span-9 overflow-y-auto p-4 sm:p-6 lg:p-0">
+                <!-- Week Selector for Mobile - Scrolls with content -->
+                <div class="p-4 bg-[#2B2B2B] border border-gray-700 rounded-lg mb-6 lg:hidden">
+                    <label for="week-selector-mobile" class="block text-sm font-medium text-center mb-2">Selecione a Semana</label>
+                    <select id="week-selector-mobile" class="w-full p-3 bg-[#2D2D2D] border border-gray-600 rounded-md shadow-sm focus:ring-[#2899F5] focus:border-[#2899F5]"></select>
+                    <p id="schedule-subtitle-mobile" class="text-sm text-gray-400 mt-2 text-center"></p>
+                </div>
+                <div id="schedule-grid" class="gap-4"></div>
             </main>
         </div>
     </div>
 
     <!-- Mobile Floating Menu -->
-    <div id="sidebar-overlay" class="hidden fixed inset-0 bg-black bg-opacity-70 z-40 flex items-center justify-center p-4">
+    <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-70 z-40 flex items-center justify-center p-4">
         <aside id="sidebar-mobile" class="relative w-full max-w-sm bg-[#2B2B2B] rounded-2xl shadow-2xl flex flex-col gap-8 p-6 overflow-y-auto max-h-[90vh]">
             <button id="sidebar-close" class="absolute top-4 right-4 p-2 rounded-full hover:bg-gray-700">
                  <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
@@ -130,7 +145,8 @@
             let currentWeek = 1;
             let currentStudent = 'all';
             let checklistData = {};
-            const LOCAL_STORAGE_KEY = 'cronogramaChecklistData';
+            const LOCAL_STORAGE_KEY_CHECKLIST = 'cronogramaChecklistData';
+            const LOCAL_STORAGE_KEY_STUDENT = 'cronogramaLastStudent';
 
             const students = [
                 { id: 'all', name: 'Todos os Ratos', imageUrl: 'https://i.imgur.com/5AW2oEL.png' },
@@ -156,205 +172,205 @@
             
             const scheduleData = [
                 // O seu scheduleData continua aqui, inalterado...
-                { week: 1, studentId: [1,2,3,4,5], day: 'SEGUNDA', time: '07:00 - 07:30', activity: 'Recepção dos Alunos', professor: 'Prof. Stegagnin', location: '13º Andar' },
-                { week: 1, studentId: [1,2,3,4,5], day: 'SEGUNDA', time: '07:30 - 09:00', activity: 'Visita Enfermaria', professor: 'Prof. Stegagnin', location: '13º Andar' },
-                { week: 1, studentId: [1,2], day: 'SEGUNDA', time: '09:00 - 12:00', activity: 'Centro Cirúrgico', professor: 'Dr. Andre', location: 'Centro Cirúrgico' },
-                { week: 1, studentId: [1,2], day: 'SEGUNDA', time: '13:00 - 18:00', activity: 'Centro Cirúrgico', professor: 'Dra. Mariah', location: 'Centro Cirúrgico' },
-                { week: 1, studentId: [1,2,3,4,5], day: 'TERÇA', time: '07:30 - 09:00', activity: 'Aula Residentes CIPE', professor: 'Profª Izabel', location: '13º Andar' },
-                { week: 1, studentId: [1,2,3,4,5], day: 'TERÇA', time: '09:00 - 12:00', activity: 'Ambulatório CIPE', professor: 'Dra. Karmy, Dra. Vilani e Profª Izabel', location: 'SAM 1' },
-                { week: 1, studentId: [1,2,3,4,5], day: 'TERÇA', time: '13:30 - 16:00', activity: 'Aula POCUS', professor: 'Prof. André', location: 'Auditório 13º Andar' },
-                { week: 1, studentId: [3], day: 'QUARTA', time: '07:30 - 11:00', activity: 'Cirurgia Ambulatorial', professor: 'Dr. Andre e Dr. Miguel', location: 'Centro Cirúrgico' },
-                { week: 1, studentId: [1,2], day: 'QUARTA', time: '07:30 - 11:00', activity: 'Ambulatório', professor: 'Dr. Andre e Dr. Miguel', location: 'SAM 1' },
-                { week: 1, studentId: [4,5], day: 'QUARTA', time: '07:30 - 12:00', activity: 'Centro Cirúrgico', professor: 'Profª Camila', location: 'Centro Cirúrgico' },
-                { week: 1, studentId: [1,2,3], day: 'QUARTA', time: '13:30 - 18:00', activity: 'Ambulatório', professor: 'Dra. Isabela, Dra. Karina e Profª Camila', location: 'SAM 1' },
-                { week: 1, studentId: [4,5], day: 'QUARTA', time: '13:00 - 18:00', activity: 'Centro Cirúrgico', professor: 'Dra. Isabela, Dra. Karina e Profª Camila (OSD)', location: 'Centro Cirúrgico' },
-                { week: 1, studentId: [1,2,3,4,5], day: 'QUINTA', time: '07:30 - 08:30', activity: 'Aula CIPE com Residentes', professor: 'Prof. Marcelo', location: '13º Andar' },
-                { week: 1, studentId: [1,2,3,4,5], day: 'QUINTA', time: '08:30 - 10:00', activity: 'Seminário', professor: 'Prof. Marcelo', location: '13º Andar' },
-                { week: 1, studentId: [3,5], day: 'QUINTA', time: '10:00 - 12:30', activity: 'Centro Cirúrgico', professor: 'Dra. Maria Helena', location: 'Centro Cirúrgico' },
-                { week: 1, studentId: [1,2,3,4,5], day: 'QUINTA', time: '13:30 - 16:00', activity: 'Aula POCUS', professor: 'Prof. André', location: 'Auditório 13º Andar' },
-                { week: 1, studentId: [1,2,3,4,5], day: 'SEXTA', time: '07:30 - 09:00', activity: 'Reunião CIPE', professor: 'Dr. Marcelo', location: '13º Andar' },
-                { week: 1, studentId: [1,2,3,4,5], day: 'SEXTA', time: '09:00 - 12:00', activity: 'Ambulatório SAM 1', professor: 'Dra. Maria Helena e Dra. Mariah', location: 'Centro Cirúrgico' },
-                { week: 1, studentId: [1,5], day: 'SEXTA', time: '13:00 - 19:00', activity: 'Centro Cirúrgico', professor: 'Dr. Gustavo', location: 'Centro Cirúrgico' },
-                { week: 2, studentId: [1,2,3,4,5], day: 'SEGUNDA', time: '07:30 - 12:00', activity: 'Neurocirurgia e Reunião/Discussão de Casos Clínicos', professor: 'Prof. Sprengel', location: 'HC - 8º Andar' },
-                { week: 2, studentId: [1,2,3,4,5], day: 'SEGUNDA', time: '13:00 - 18:00', activity: 'Lab Microcirurgia', professor: 'Prof. Sérgio Sprengel', location: 'Hospital da Reabilitação' },
-                { week: 2, studentId: [1,2,3,4,5], day: 'TERÇA', time: '08:00 - 09:00', activity: 'Aula Vascular', professor: 'Prof. Mário Martins', location: 'SAM 8' },
-                { week: 2, studentId: [1,2,3,4,5], day: 'TERÇA', time: '09:00 - 12:00', activity: 'Cirurgia Cardiovascular', professor: 'Prof. Luís Kubrusly', location: '8º Andar' },
-                { week: 2, studentId: [1,2,3,4,5], day: 'TERÇA', time: '13:30 - 16:30', activity: 'Cirurgia Cardiovascular', professor: 'Prof. Luís Kubrusly', location: '8º Andar' },
-                { week: 2, studentId: [1,2,3,4,5], day: 'QUARTA', time: '08:00 - 10:00', activity: 'Ambulatório Vascular', professor: 'Prof. Mário Martins', location: 'SAM 8' },
-                { week: 2, studentId: [3,4], day: 'QUARTA', time: '13:00 - 18:00', activity: 'Cirurgia Vascular', professor: 'Dra. Bárbara Moreira', location: 'CC' },
-                { week: 2, studentId: [2,4], day: 'QUINTA', time: '07:00 - 08:00', activity: 'Visita Enfermaria', professor: 'Prof. Guarita', location: '12º Andar' },
-                { week: 2, studentId: [1,3,5], day: 'QUINTA', time: '08:00 - 11:00', activity: 'Ambulatório Vascular', professor: 'Dr. Valter e Prof. Jorge Timi', location: 'SAM 8' },
-                { week: 2, studentId: [2,4], day: 'QUINTA', time: '08:00 - 10:00', activity: 'Reunião Cardio - Cx Cardíaca', professor: 'Prof. Guarita', location: '11º Andar' },
-                { week: 2, studentId: [2,4], day: 'QUINTA', time: '10:00 - 12:00', activity: 'CC Cx Cardíaca', professor: 'Dr. Rodrigo Milan', location: 'CC' },
-                { week: 2, studentId: [1,2,3,4,5], day: 'SEXTA', time: '08:00 - 10:00', activity: 'Aula Cx Vasc', professor: 'Prof. Mário Martins', location: '8º Andar - Auditório 01' },
-                { week: 2, studentId: [2], day: 'SEXTA', time: '10:00 - 13:00', activity: 'Cx Vasc', professor: 'Dra. Bárbara Moreira', location: 'CC' },
-                { week: 2, studentId: [1,5], day: 'SEXTA', time: '13:00 - 19:00', activity: 'Cx Vasc', professor: 'Dr. Erick', location: 'CC' },
-                { week: 3, studentId: [1,2,3,4,5], day: 'SEGUNDA', time: '07:30 - 09:00', activity: 'Visita aos Pacientes Internados e Discussão Clínica', professor: 'Prof. Antonio Brenner e Dr. Guilherme Nicollelli', location: '7º andar – encontro no saguão' },
-                { week: 3, studentId: [3,4,5], day: 'SEGUNDA', time: '09:00 - 10:00', activity: 'Estudo', professor: 'Revisão dos casos internados, preparo de material de estudo', location: '' },
-                { week: 3, studentId: [1,2], day: 'SEGUNDA', time: '09:00 - 12:00', activity: 'CC Coloprocto', professor: 'Dr. Guilherme Nicollelli', location: 'Centro Cirúrgico' },
-                { week: 3, studentId: [1,2], day: 'SEGUNDA', time: '13:00 - 18:00', activity: 'CC Coloprocto', professor: 'Dr. Guilherme Nicollelli', location: 'Centro Cirúrgico' },
-                { week: 3, studentId: [1,2,3,4,5], day: 'TERÇA', time: '07:30 - 08:30', activity: 'Visita aos Pacientes Internados e Discussão Clínica', professor: 'Prof. Antonio Brenner', location: '7º andar – encontro no saguão' },
-                { week: 3, studentId: [1,2,5], day: 'TERÇA', time: '09:00 - 12:00', activity: 'Atividades Enfermaria e Estudo', professor: 'Prof. Antonio Brenner', location: '7º andar (início)' },
-                { week: 3, studentId: [3,4], day: 'TERÇA', time: '09:00 - 12:00', activity: 'CC Coloprocto', professor: 'Prof. Antonio Brenner', location: 'Centro Cirúrgico' },
-                { week: 3, studentId: [1,2,3,4,5], day: 'TERÇA', time: '13:00 - 17:00', activity: 'Ambulatório Coloproctologia Geral', professor: 'Prof. Antonio Brenner e Dr. Marssoni', location: 'SAM 8' },
-                { week: 3, studentId: [1,2,3,4,5], day: 'QUARTA', time: '07:30 - 10:00', activity: 'Reunião Geral do Serviço de Coloproctologia', professor: 'Profa. Maria Cristina, Prof. Antonio Brenner e médicos do serviço', location: 'Auditório 702' },
-                { week: 3, studentId: [1,2,3,4,5], day: 'QUARTA', time: '10:00 - 12:30', activity: 'Ambulatório DIII Coloprocto', professor: 'Dr. Antonio Brenner e Dr. Guilherme Nicollelli', location: 'SAM 5' },
-                { week: 3, studentId: [1,2,3,4,5], day: 'QUARTA', time: '13:00 - 17:00', activity: 'Ambulatório Coloproctologia Geral', professor: 'Prof. Antonio Brenner e Dr. Guilherme Perine', location: 'SAM 8' },
-                { week: 3, studentId: [1,2,3,4,5], day: 'QUINTA', time: '07:30 - 08:30', activity: 'Visita aos Pacientes Internados e Discussão Clínica', professor: 'Profa. Maria Cristina e Dr. Guilherme Perini', location: '7º andar' },
-                { week: 3, studentId: [1,4,5], day: 'QUINTA', time: '08:30 - 12:00', activity: 'CC Coloprocto', professor: 'Dr. Guilherme Perini, Profa. Maria Cristina', location: 'Centro Cirúrgico' },
-                { week: 3, studentId: [1,2,3,4,5], day: 'QUINTA', time: '13:00 - 17:00', activity: 'Colonoscopia', professor: 'Profa. Maria Cristina, Dr. Guilherme Nicollelli e Dr. Marssoni', location: '3º andar – Serviço de Endoscopia Digestiva' },
-                { week: 3, studentId: [1,4,5], day: 'SEXTA', time: '07:30 - 08:30', activity: 'Visita aos Pacientes Internados e Discussão Clínica', professor: 'Dr. Marssoni e Dr. Guilherme Perini', location: '7º andar' },
-                { week: 3, studentId: [2,3], day: 'SEXTA', time: '08:30 - 12:00', activity: 'CC Coloprocto', professor: 'Dr. Marssoni', location: 'Centro Cirúrgico' },
-                { week: 3, studentId: [3,4], day: 'SEXTA', time: '13:00 - 18:00', activity: 'Serviço de Endoscopia', professor: 'Dr. Guilherme Perine', location: 'Centro Cirúrgico' },
-                { week: 4, studentId: [1,2,3], day: 'SEGUNDA', time: '07:00 - 13:00', activity: 'CC CAIF', professor: 'Prof. Maria Cecília', location: 'Centro Cirúrgico e Obstétrico' },
-                { week: 4, studentId: [4,5], day: 'SEGUNDA', time: '07:00 - 13:00', activity: 'Trauma - HT', professor: 'Dr. Andre', location: 'Centro Cirúrgico Eletivo' },
-                { week: 4, studentId: [1,2], day: 'SEGUNDA', time: '14:00 - 18:00', activity: 'Cirurgia', professor: 'Dr. Yuri', location: 'Centro Cirúrgico' },
-                { week: 4, studentId: [3,4,5], day: 'SEGUNDA', time: '14:00 - 18:00', activity: 'CC HC', professor: 'Prof. Maria Cecília', location: 'Centro Cirúrgico' },
-                { week: 4, studentId: [3,4,5], day: 'TERÇA', time: '07:00 - 13:00', activity: 'CC CAIF', professor: 'Prof. Renato', location: 'Centro Cirúrgico' },
-                { week: 4, studentId: [1,2], day: 'TERÇA', time: '07:00 - 13:00', activity: 'Trauma - HT', professor: 'Dra. Dayane/Dr. Tape', location: 'Centro Cirúrgico Eletivo' },
-                { week: 4, studentId: [1,2,5], day: 'TERÇA', time: '14:00 - 16:00', activity: 'Ambulatório de Triagem', professor: 'Dr. Ovídio', location: 'SAM 3' },
-                { week: 4, studentId: [3,4], day: 'TERÇA', time: '14:00 - 18:00', activity: 'Cirurgia CC', professor: 'Prof. Renato', location: 'Centro Cirúrgico' },
-                { week: 4, studentId: [1,2], day: 'QUARTA', time: '07:00 - 13:00', activity: 'Trauma - HT', professor: 'Dr. Fernando', location: 'Centro Cirúrgico Eletivo' },
-                { week: 4, studentId: [3,4,5], day: 'QUARTA', time: '07:00 - 13:00', activity: 'Cirurgia', professor: 'Dr. Keiti', location: 'Centro Cirúrgico' },
-                { week: 4, studentId: [1,2,3,4,5], day: 'QUARTA', time: '14:00 - 18:00', activity: 'Cirurgia', professor: 'Prof. Maria Cecília', location: 'Centro Cirúrgico' },
-                { week: 4, studentId: [1,2,3,4,5], day: 'QUINTA', time: '07:00 - 08:00', activity: 'Reunião Clínica', professor: 'Prof. Renato e Alfredo', location: '8º Andar' },
-                { week: 4, studentId: [1,2,3,4,5], day: 'QUINTA', time: '08:00 - 11:30', activity: 'Ambulatório', professor: 'Prof. Renato e Alfredo', location: 'SAM 3' },
-                { week: 4, studentId: [1,2,3,4,5], day: 'QUINTA', time: '11:30 - 13:00', activity: 'Reunião Serviço', professor: 'Prof. Renato e Alfredo', location: 'Sala 1 Anexo B' },
-                { week: 4, studentId: [3,4], day: 'QUINTA', time: '14:00 - 18:00', activity: 'CC HT (Hosp. de Reabilitação)', professor: 'Dr. Harlisson', location: 'Centro Cirúrgico' },
-                { week: 4, studentId: [1,2,5], day: 'QUINTA', time: '15:00 - 19:00', activity: 'Cirurgia', professor: 'Dr. Keiti e Dr. Yuri', location: 'Centro Cirúrgico' },
-                { week: 4, studentId: [3,4], day: 'SEXTA', time: '07:00 - 13:00', activity: 'Centro Cirúrgico', professor: 'Prof. Alfredo', location: '8º Andar' },
-                { week: 4, studentId: [1], day: 'SEXTA', time: '07:00 - 13:00', activity: 'Trauma - HT', professor: 'Dr. Cedrick', location: 'Centro Cirúrgico' },
-                { week: 4, studentId: [2, 5], day: 'SEXTA', time: '07:00 - 13:00', activity: 'CAIF', professor: 'Prof. Renato', location: 'Centro Cirúrgico' },
-                { week: 4, studentId: [1,3,4], day: 'SEXTA', time: '14:00 - 19:00', activity: 'Prof. Renato Ambulatório CAIF', professor: 'Prof. Renato', location: 'Ambulatório CAIF' },
-                { week: 4, studentId: [2,5], day: 'SEXTA', time: '14:00 - 18:00', activity: 'Cirurgia', professor: 'Dra. Dayane', location: 'Centro Cirúrgico' },
-                { week: 5, studentId: [1,2,3,4,5], day: 'SEGUNDA', time: '07:00 - 09:00', activity: 'Reunião Geral', professor: 'Todos', location: '8º Andar' },
-                { week: 5, studentId: [1,2,3,4,5], day: 'SEGUNDA', time: '10:00 - 11:00', activity: 'Reunião Grupo de Parede e Cirurgia Bariátrica(Optativa)', professor: 'Dra. Solange, Dra. Karla, Dr. Fábio Tanabe', location: '7º Andar (sala 702)' },
-                { week: 5, studentId: [4,5], day: 'SEGUNDA', time: '09:30 - 12:00', activity: 'Cx Eletiva', professor: 'Dr. Alexandre', location: 'Centro Cirúrgico' },
-                { week: 5, studentId: [1,2], day: 'SEGUNDA', time: '13:00 - 18:00', activity: 'Ambulatório', professor: 'Dra. Karla', location: 'SAM 8' },
-                { week: 5, studentId: [3,5], day: 'SEGUNDA', time: '13:00 - 18:00', activity: 'Ambulatório', professor: 'Dra. Solange', location: 'SAM 3' },
-                { week: 5, studentId: [4], day: 'SEGUNDA', time: '13:00 - 18:00', activity: 'Cx Eletiva', professor: 'Dr. Romeu', location: 'Centro Cirúrgico' },
-                { week: 5, studentId: [1,2,3], day: 'TERÇA', time: '07:00 - 12:00', activity: 'Enfermarias, Visita, Assistência e Discussão de Casos', professor: 'Dr. Ademir, Dr. Romeu, Dra. Karla', location: '8º Andar' },
-                { week: 5, studentId: [4,5], day: 'TERÇA', time: '07:00 - 12:00', activity: 'Cx Eletiva', professor: 'Prof. Julio Weidervedder', location: 'Centro Cirúrgico' },
-                { week: 5, studentId: [3,4,5], day: 'TERÇA', time: '13:00 - 17:00', activity: 'Ambulatório', professor: 'Prof. Marco Aurélio', location: 'SAM 1' },
-                { week: 5, studentId: [1,2], day: 'TERÇA', time: '13:00 - 18:00', activity: 'Cx Eletiva', professor: 'Prof. Alexandre', location: 'Centro Cirúrgico' },
-                { week: 5, studentId: [3,4,5], day: 'TERÇA', time: '17:00 - 18:00', activity: 'Discussão de Casos', professor: 'Prof. Marco Aurélio', location: 'SAM 1' },
-                { week: 5, studentId: [3,4,5], day: 'QUARTA', time: '07:00 - 12:00', activity: 'Enfermarias, Visita, Assistência e Discussão de Casos', professor: 'Dra. Solange e Prof. Alexandre', location: '8º Andar' },
-                { week: 5, studentId: [1,2], day: 'QUARTA', time: '07:00 - 12:00', activity: 'Cx Eletiva', professor: 'Dra. Solange', location: 'Centro Cirúrgico' },
-                { week: 5, studentId: [4,5], day: 'QUARTA', time: '13:00 - 18:00', activity: 'Cx Eletiva', professor: 'Dra. Solange, Dr. Alexandre', location: 'Centro Cirúrgico' },
-                { week: 5, studentId: [1,2,3,4,5], day: 'QUINTA', time: '07:00 - 07:30', activity: 'Enfermaria - Visita Internados', professor: 'Dra. Karla, Dr. Alexandre Coutinho', location: '8º Andar' },
-                { week: 5, studentId: [1,2,3,4,5], day: 'QUINTA', time: '07:30 - 08:30', activity: 'Reunião Transplante Hepático', professor: 'Prof. Julio Coelho, Prof. Antonio Campos, Prof. Marco Aurélio, Dr. Alexandre Coutinho', location: '7º Andar' },
-                { week: 5, studentId: [1,2,3,4,5], day: 'QUINTA', time: '08:30 - 09:30', activity: 'Discussão de Casos da Enfermaria', professor: 'Prof. Julio Coelho, Prof. Antonio Campos, Prof. Marco Aurélio, Dr. Alexandre Coutinho', location: '7º Andar' },
-                { week: 5, studentId: [1,2], day: 'QUINTA', time: '09:30 - 12:00', activity: 'Cx Eletiva', professor: 'Prof. Marco Aurélio', location: 'Centro Cirúrgico' },
-                { week: 5, studentId: [3], day: 'QUINTA', time: '13:00 - 18:00', activity: 'Ambulatório', professor: 'Dr. Romeu', location: 'SAM 8' },
-                { week: 5, studentId: [4], day: 'QUINTA', time: '13:00 - 18:00', activity: 'Ambulatório', professor: 'Dr. Nicolas', location: 'SAM 1' },
-                { week: 5, studentId: [1,2], day: 'QUINTA', time: '13:00 - 18:00', activity: 'Cx Eletiva', professor: 'Dr. Romeu, Dra. Karla', location: 'Centro Cirúrgico' },
-                { week: 5, studentId: [1,2,5], day: 'SEXTA', time: '07:00 - 12:00', activity: 'Enfermarias, Visita, Assistência e Discussão', professor: 'Dr. Tanabe', location: '8º Andar' },
-                { week: 5, studentId: [3,4], day: 'SEXTA', time: '07:00 - 12:00', activity: 'Cx Eletiva', professor: 'Dr. Nicolas e Dr. Tanabe', location: 'Centro Cirúrgico' },
-                { week: 5, studentId: [1,5], day: 'SEXTA', time: '13:00 - 18:00', activity: 'Ambulatório', professor: 'Dr. Romeu', location: 'SAM 8' },
-                { week: 5, studentId: [2], day: 'SEXTA', time: '13:00 - 18:00', activity: 'Ambulatório', professor: 'Dr. Alexandre', location: 'SAM 1' },
-                { week: 5, studentId: [3,4], day: 'SEXTA', time: '13:00 - 18:00', activity: 'Cx Eletiva', professor: 'Dr. Romeu', location: 'Centro Cirúrgico' },
-                { week: 5, studentId: [1], day: 'SÁBADO', time: '07:00 - 10:30', activity: 'Plantão Cirúrgico', professor: 'Médico da Escala', location: 'CHC' },
-                { week: 5, studentId: [2], day: 'DOMINGO', time: '07:00 - 10:30', activity: 'Plantão Cirúrgico', professor: 'Médico da Escala', location: 'CHC' },
-                { week: 6, studentId: [1,2,3,4,5], day: 'SEGUNDA', time: '07:00 - 09:00', activity: 'Clínica Cirúrgica - Reunião Geral', professor: 'Todos os professores', location: '9º andar' },
-                { week: 6, studentId: [1], day: 'SEGUNDA', time: '09:30 - 12:00', activity: 'BIP Urgências', professor: 'Médico de plantão', location: 'CHC' },
-                { week: 6, studentId: [1,2,3,4,5], day: 'SEGUNDA', time: '10:00 - 11:00', activity: 'Reunião Grupo de Parede e Cirurgia Bariátrica (Optativa)', professor: 'Dra. Solange, Dra. Karla, Dr. Fábio Terabe', location: '7º andar, sala 702' },
-                { week: 6, studentId: [2,3], day: 'SEGUNDA', time: '13:00 - 18:00', activity: 'Ambulatório SAM 8', professor: 'Dra. Karla', location: 'SAM 8' },
-                { week: 6, studentId: [4,5], day: 'SEGUNDA', time: '13:00 - 18:00', activity: 'Ambulatório SAM 3', professor: 'Dra. Solange', location: 'SAM 3' },
-                { week: 6, studentId: [1], day: 'SEGUNDA', time: '13:00 - 18:00', activity: 'BIP Urgências', professor: 'Médico de plantão', location: 'CHC' },
-                { week: 6, studentId: [1,3,4,5], day: 'TERÇA', time: '07:00 - 12:00', activity: 'Enfermarias: Visita, Assistência e Discussão de Casos', professor: 'Dr. Adonis, Dr. Romeu, Dra. Karla', location: '8º andar' },
-                { week: 6, studentId: [2], day: 'TERÇA', time: '07:00 - 12:00', activity: 'BIP Urgências', professor: 'Médico de plantão', location: 'CHC' },
-                { week: 6, studentId: [1,3,4,5], day: 'TERÇA', time: '13:00 - 17:00', activity: 'Ambulatório', professor: 'Marco Aurélio', location: 'SAM 1' },
-                { week: 6, studentId: [2], day: 'TERÇA', time: '13:00 - 18:00', activity: 'BIP Urgências', professor: 'Médico de plantão', location: 'CHC' },
-                { week: 6, studentId: [1,3,4,5], day: 'TERÇA', time: '17:00 - 18:00', activity: 'Discussão de Casos', professor: 'Marco Aurélio', location: 'SAM 1' },
-                { week: 6, studentId: [1,2,4,5], day: 'QUARTA', time: '07:00 - 12:00', activity: 'Enfermarias: Visita, Assistência e Discussão de Casos', professor: 'Dra. Solange', location: '8º andar' },
-                { week: 6, studentId: [3], day: 'QUARTA', time: '07:00 - 12:00', activity: 'BIP Urgências', professor: 'Médico de plantão', location: 'CHC' },
-                { week: 6, studentId: [3], day: 'QUARTA', time: '13:00 - 18:00', activity: 'BIP Urgências', professor: 'Médico de plantão', location: 'CHC' },
-                { week: 6, studentId: [1,2,3,4,5], day: 'QUINTA', time: '07:00 - 07:30', activity: 'Enfermaria – Visita Internados', professor: 'Dra. Karla e Dr. Alexandre Coutinho', location: '8º andar' },
-                { week: 6, studentId: [1,2,3,4,5], day: 'QUINTA', time: '07:30 - 09:30', activity: 'Reunião TX Hepático + Discussão Fígado e Pâncreas', professor: 'Júlio Coelho, Antonio Campos, Alexandre, Marco', location: '7º andar' },
-                { week: 6, studentId: [1,2,3,5], day: 'QUINTA', time: '09:30 - 12:00', activity: 'Enfermarias: Visita, Assistência e Discussão de Casos', professor: 'Dr. Julio Wiederkehr', location: '8º andar' },
-                { week: 6, studentId: [4], day: 'QUINTA', time: '07:30 - 12:00', activity: 'BIP Urgências', professor: 'Médico de plantão', location: 'CHC' },
-                { week: 6, studentId: [3,5], day: 'QUINTA', time: '13:00 - 18:00', activity: 'Ambulatório SAM 8', professor: 'Dr. Romeu', location: 'SAM 8' },
-                { week: 6, studentId: [4], day: 'QUINTA', time: '13:00 - 18:00', activity: 'Ambulatório SAM 1', professor: 'Dr. Nicolas', location: 'SAM 1' },
-                { week: 6, studentId: [4], day: 'QUINTA', time: '13:00 - 18:00', activity: 'BIP Urgências', professor: 'Médico de plantão', location: 'CHC' },
-                { week: 6, studentId: [1,2,3,4], day: 'SEXTA', time: '07:00 - 12:00', activity: 'Enfermarias: Visita, Assistência e Discussão de Casos', professor: 'Dr. Terabe', location: '8º andar' },
-                { week: 6, studentId: [5], day: 'SEXTA', time: '07:00 - 12:00', activity: 'BIP Urgências', professor: 'Médico de plantão', location: 'CHC' },
-                { week: 6, studentId: [1,5], day: 'SEXTA', time: '13:00 - 18:00', activity: 'Ambulatório SAM 8', professor: 'Dr. Romeu', location: 'SAM 8' },
-                { week: 6, studentId: [2], day: 'SEXTA', time: '13:00 - 18:00', activity: 'Ambulatório SAM 1', professor: 'Dr. Alexandre', location: 'SAM 1' },
-                { week: 6, studentId: [5], day: 'SEXTA', time: '13:00 - 18:00', activity: 'BIP Urgências', professor: 'Médico de plantão', location: 'CHC' },
-                { week: 6, studentId: [3], day: 'SÁBADO', time: '07:00 - 10:30', activity: 'Plantão Cirúrgico', professor: 'Médico da escala', location: 'CHC' },
-                { week: 6, studentId: [4,5], day: 'DOMINGO', time: '07:00 - 10:30', activity: 'Plantão Cirúrgico', professor: 'Médico de plantão', location: 'CHC' },
-                { week: 7, studentId: [1,2,3,4,5], day: 'SEGUNDA', time: '07:00 - 12:00', activity: 'Reunião Clínica: apresentação de casos', professor: 'Prof. Edmar', location: '6º Andar' },
-                { week: 7, studentId: [1,2,3,4,5], day: 'SEGUNDA', time: '13:30 - 17:00', activity: 'Reunião Clínica: apresentação de casos', professor: 'Prof. Cunha', location: '6º Andar' },
-                { week: 7, studentId: [1,2,3,4,5], day: 'TERÇA', time: '07:00 - 10:00', activity: 'Reunião Clínica do Serviço', professor: 'Prof. Cunha', location: '6º Andar' },
-                { week: 7, studentId: [1,2,3,4,5], day: 'TERÇA', time: '10:00 - 12:30', activity: 'Ambulatório', professor: 'Prof. Márcio', location: 'SAM 7' },
-                { week: 7, studentId: [1,2,3,4,5], day: 'TERÇA', time: '13:30 - 17:00', activity: 'Ambulatório Geral', professor: 'Médico da escala', location: 'SAM 1' },
-                { week: 7, studentId: [1,2,3,4,5], day: 'QUARTA', time: '07:00 - 09:30', activity: 'Reunião Clínica: apresentação de casos', professor: 'Prof. Márcio', location: '6º Andar' },
-                { week: 7, studentId: [1,2,3,4,5], day: 'QUARTA', time: '13:30 - 16:00', activity: 'Ambulatório Ombro', professor: 'Médico da escala', location: 'SAM 1' },
-                { week: 7, studentId: [1,2,3,4,5], day: 'QUINTA', time: '07:00 - 12:00', activity: 'Ambulatório', professor: 'Prof. João Luiz', location: 'SAM 1' },
-                { week: 7, studentId: [1,2,3,4,5], day: 'QUINTA', time: '13:30 - 17:00', activity: 'Reunião Clínica: apresentação de casos', professor: 'Prof. Edmar', location: 'SAM 1' },
-                { week: 7, studentId: [1,2,3,4,5], day: 'SEXTA', time: '07:00 - 12:00', activity: 'Ambulatório - SAM 1', professor: 'Prof. Cunha', location: 'SAM 1' },
-                { week: 8, studentId: [1,2,3,4,5], day: 'SEGUNDA', time: '07:00 - 12:00', activity: 'Reunião Clínica: apresentação de casos', professor: 'Prof. Edmar', location: '6º Andar' },
-                { week: 8, studentId: [1,2,3,4,5], day: 'SEGUNDA', time: '13:30 - 17:00', activity: 'Reunião Clínica: apresentação de casos', professor: 'Prof. Cunha', location: '6º Andar' },
-                { week: 8, studentId: [1,2,3,4,5], day: 'TERÇA', time: '07:00 - 10:00', activity: 'Reunião Clínica do Serviço', professor: 'Prof. Cunha', location: '6º Andar' },
-                { week: 8, studentId: [1,2,3,4,5], day: 'TERÇA', time: '10:00 - 12:30', activity: 'Ambulatório', professor: 'Prof. Márcio', location: 'SAM 7' },
-                { week: 8, studentId: [1,2,3,4,5], day: 'TERÇA', time: '13:30 - 17:00', activity: 'Ambulatório Geral', professor: 'Médico da escala', location: 'SAM 1' },
-                { week: 8, studentId: [1,2,3,4,5], day: 'QUARTA', time: '07:00 - 09:30', activity: 'Reunião Clínica: apresentação de casos', professor: 'Prof. Márcio', location: '6º Andar' },
-                { week: 8, studentId: [1,2,3,4,5], day: 'QUARTA', time: '13:30 - 16:00', activity: 'Ambulatório Ombro', professor: 'Médico da escala', location: 'SAM 1' },
-                { week: 8, studentId: [1,2,3,4,5], day: 'QUINTA', time: '07:00 - 12:00', activity: 'Ambulatório', professor: 'Prof. João Luiz', location: 'SAM 1' },
-                { week: 8, studentId: [1,2,3,4,5], day: 'QUINTA', time: '13:30 - 17:00', activity: 'Reunião Clínica: apresentação de casos', professor: 'Prof. Edmar', location: 'SAM 1' },
-                { week: 8, studentId: [1,2,3,4,5], day: 'SEXTA', time: '07:00 - 12:00', activity: 'Ambulatório - SAM 1', professor: 'Prof. Cunha', location: 'SAM 1' },
-                { week: 9, studentId: [2,3,4,5], day: 'SEGUNDA', time: '07:15 - 07:30', activity: 'Enfermaria', professor: 'Médico da escala', location: '9º Andar' },
-                { week: 9, studentId: [1], day: 'SEGUNDA', time: '07:30 - 12:00', activity: 'CC URO', professor: 'Médico da escala', location: 'CC' },
-                { week: 9, studentId: [2,3,4,5], day: 'SEGUNDA', time: '08:00 - 12:00', activity: 'Ambulatório', professor: 'Prof. Cavalli', location: 'SAM 7' },
-                { week: 9, studentId: [1], day: 'SEGUNDA', time: '13:00 - 18:00', activity: 'CC URO', professor: 'Médico da escala', location: 'CC' },
-                { week: 9, studentId: [2,3,4,5], day: 'SEGUNDA', time: '13:00 - 18:00', activity: 'Ambulatório', professor: 'Dr. Daniel Carara', location: 'SAM 7' },
-                { week: 9, studentId: [1,3,4,5], day: 'TERÇA', time: '07:15 - 07:30', activity: 'Enfermaria', professor: 'Prof. Luiz Sérgio', location: '9º Andar' },
-                { week: 9, studentId: [2], day: 'TERÇA', time: '07:30 - 12:00', activity: 'CC URO', professor: 'Médico da escala', location: 'CC' },
-                { week: 9, studentId: [1,3,4,5], day: 'TERÇA', time: '08:30 - 09:30', activity: 'Discussão de casos', professor: 'Prof. Luiz Sérgio', location: '9º Andar' },
-                { week: 9, studentId: [1,3,4,5], day: 'TERÇA', time: '09:30 - 12:00', activity: 'Ambulatório', professor: 'Prof. Rogério de Fraga', location: 'SAM 7' },
-                { week: 9, studentId: [2], day: 'TERÇA', time: '13:00 - 18:00', activity: 'CC URO', professor: 'Médico da escala', location: 'CC' },
-                { week: 9, studentId: [1,3,4,5], day: 'TERÇA', time: '13:00 - 18:00', activity: 'Ambulatório', professor: 'Dr. Ruimario Coelho', location: 'SAM 7' },
-                { week: 9, studentId: [1,2,4,5], day: 'QUARTA', time: '07:15 - 07:30', activity: 'Enfermaria', professor: 'Prof. Rodrigo Krebs, Dr. Aranha e Dr. Osny', location: '9º Andar' },
-                { week: 9, studentId: [3], day: 'QUARTA', time: '07:30 - 12:00', activity: 'CC URO', professor: 'Médico da escala', location: 'CC' },
-                { week: 9, studentId: [1,2,4,5], day: 'QUARTA', time: '13:00 - 15:30', activity: 'Ambulatório', professor: 'Prof. Andre Matos', location: 'SAM 7' },
-                { week: 9, studentId: [3], day: 'QUARTA', time: '13:00 - 18:00', activity: 'CC URO', professor: 'Médico da escala', location: 'CC' },
-                { week: 9, studentId: [1,2,3,4,5], day: 'QUINTA', time: '07:15 - 07:30', activity: 'Enfermaria', professor: 'Prof. Luiz Sérgio', location: '9º Andar' },
-                { week: 9, studentId: [1,2,3,4,5], day: 'QUINTA', time: '08:00 - 10:00', activity: 'Reunião Clínica', professor: 'Professores Cavalli, Fraga, Krebs, Luiz Sérgio, Andre Matos', location: '9º Andar' },
-                { week: 9, studentId: [1,2,3,4,5], day: 'QUINTA', time: '10:00 - 11:00', activity: 'Discussão de Casos', professor: 'Professores Cavalli, Fraga, Krebs, Andre Matos', location: '9º Andar' },
-                { week: 9, studentId: [4], day: 'QUINTA', time: '13:00 - 18:00', activity: 'CC URO', professor: 'Médico da escala e Prof. Cavalli', location: 'CC' },
-                { week: 9, studentId: [1,2,3,5], day: 'QUINTA', time: '13:00 - 18:00', activity: 'Ambulatório', professor: 'Dr. Gil Vicente C. Fulgencio', location: 'SAM 7' },
-                { week: 9, studentId: [1,2,3], day: 'SEXTA', time: '07:15 - 07:30', activity: 'Enfermaria', professor: 'Prof. Krebs, Dr. Aranha e Dr. Ruimario', location: '9º Andar' },
-                { week: 9, studentId: [4,5], day: 'SEXTA', time: '07:30 - 12:00', activity: 'CC URO', professor: 'Médico da escala', location: 'CC' },
-                { week: 9, studentId: [3,5], day: 'SEXTA', time: '13:00 - 18:00', activity: 'CC URO', professor: 'Médico da escala', location: 'CC' },
-                { week: 9, studentId: [1,2,4], day: 'SEXTA', time: '13:00 - 18:00', activity: 'Ambulatório', professor: 'Dra. Natalie Tominaga', location: 'SAM 7' },
-                { week: 9, studentId: [1], day: 'SÁBADO', time: '07:30 - 10:30', activity: 'Enfermaria', professor: 'Médico da escala', location: '9º Andar' },
-                { week: 9, studentId: [2], day: 'DOMINGO', time: '07:30 - 10:30', activity: 'Enfermaria', professor: 'Médico da escala', location: '9º Andar' },
-                { week: 10, studentId: [2,3,4,5], day: 'SEGUNDA', time: '07:15 - 07:30', activity: 'Enfermaria', professor: 'Médico da escala', location: '9º Andar' },
-                { week: 10, studentId: [1], day: 'SEGUNDA', time: '07:30 - 12:00', activity: 'CC URO', professor: 'Médico da escala', location: 'CC' },
-                { week: 10, studentId: [2,3,4,5], day: 'SEGUNDA', time: '08:00 - 12:00', activity: 'Ambulatório', professor: 'Prof. Cavalli', location: 'SAM 7' },
-                { week: 10, studentId: [1], day: 'SEGUNDA', time: '13:00 - 18:00', activity: 'CC URO', professor: 'Médico da escala', location: 'CC' },
-                { week: 10, studentId: [2,3,4,5], day: 'SEGUNDA', time: '13:00 - 18:00', activity: 'Ambulatório', professor: 'Dr. Daniel Carara', location: 'SAM 7' },
-                { week: 10, studentId: [1,3,4,5], day: 'TERÇA', time: '07:15 - 07:30', activity: 'Enfermaria', professor: 'Prof. Luiz Sérgio', location: '9º Andar' },
-                { week: 10, studentId: [2], day: 'TERÇA', time: '07:30 - 12:00', activity: 'CC URO', professor: 'Médico da escala', location: 'CC' },
-                { week: 10, studentId: [1,3,4,5], day: 'TERÇA', time: '08:30 - 09:30', activity: 'Discussão de casos', professor: 'Prof. Luiz Sérgio', location: '9º Andar' },
-                { week: 10, studentId: [1,3,4,5], day: 'TERÇA', time: '09:30 - 12:00', activity: 'Ambulatório', professor: 'Prof. Rogério de Fraga', location: 'SAM 7' },
-                { week: 10, studentId: [2], day: 'TERÇA', time: '13:00 - 18:00', activity: 'CC URO', professor: 'Médico da escala', location: 'CC' },
-                { week: 10, studentId: [1,3,4,5], day: 'TERÇA', time: '13:00 - 18:00', activity: 'Ambulatório', professor: 'Dr. Ruimario Coelho', location: 'SAM 7' },
-                { week: 10, studentId: [1,2,4,5], day: 'QUARTA', time: '07:15 - 07:30', activity: 'Enfermaria', professor: 'Prof. Rodrigo Krebs, Dr. Aranha e Dr. Osny', location: '9º Andar' },
-                { week: 10, studentId: [3], day: 'QUARTA', time: '07:30 - 12:00', activity: 'CC URO', professor: 'Médico da escala', location: 'CC' },
-                { week: 10, studentId: [1,2,4,5], day: 'QUARTA', time: '13:00 - 15:30', activity: 'Ambulatório', professor: 'Prof. Andre Matos', location: 'SAM 7' },
-                { week: 10, studentId: [3], day: 'QUARTA', time: '13:00 - 18:00', activity: 'CC URO', professor: 'Médico da escala', location: 'CC' },
-                { week: 10, studentId: [1,2,3,4,5], day: 'QUINTA', time: '07:15 - 07:30', activity: 'Enfermaria', professor: 'Prof. Luiz Sérgio', location: '9º Andar' },
-                { week: 10, studentId: [1,2,3,4,5], day: 'QUINTA', time: '08:00 - 10:00', activity: 'Reunião Clínica', professor: 'Professores Cavalli, Fraga, Krebs, Luiz Sérgio, Andre Matos', location: '9º Andar' },
-                { week: 10, studentId: [1,2,3,4,5], day: 'QUINTA', time: '10:00 - 11:00', activity: 'Discussão de Casos', professor: 'Professores Cavalli, Fraga, Krebs, Andre Matos', location: '9º Andar' },
-                { week: 10, studentId: [4], day: 'QUINTA', time: '13:00 - 18:00', activity: 'CC URO', professor: 'Médico da escala e Prof. Cavalli', location: 'CC' },
-                { week: 10, studentId: [1,2,3,5], day: 'QUINTA', time: '13:00 - 18:00', activity: 'Ambulatório', professor: 'Dr. Gil Vicente C. Fulgencio', location: 'SAM 7' },
-                { week: 10, studentId: [1,2,3], day: 'SEXTA', time: '07:15 - 07:30', activity: 'Enfermaria', professor: 'Prof. Krebs, Dr. Aranha e Dr. Ruimario', location: '9º Andar' },
-                { week: 10, studentId: [4,5], day: 'SEXTA', time: '07:30 - 12:00', activity: 'CC URO', professor: 'Médico da escala', location: 'CC' },
-                { week: 10, studentId: [3,5], day: 'SEXTA', time: '13:00 - 18:00', activity: 'CC URO', professor: 'Médico da escala', location: 'CC' },
-                { week: 10, studentId: [1,2,4], day: 'SEXTA', time: '13:00 - 18:00', activity: 'Ambulatório', professor: 'Dra. Natalie Tominaga', location: 'SAM 7' },
-                { week: 10, studentId: [3], day: 'SÁBADO', time: '07:30 - 10:30', activity: 'Enfermaria', professor: 'Médico da escala', location: '9º Andar' },
-                { week: 10, studentId: [4,5], day: 'DOMINGO', time: '07:30 - 10:30', activity: 'Enfermaria', professor: 'Médico da escala', location: '9º Andar' },
+            { week: 1, studentId: [1,2,3,4,5], day: 'SEGUNDA', time: '07:00 - 07:30', activity: 'Recepção dos Alunos', professor: 'Prof. Stegagnin', location: '13º Andar' },
+            { week: 1, studentId: [1,2,3,4,5], day: 'SEGUNDA', time: '07:30 - 09:00', activity: 'Visita Enfermaria', professor: 'Prof. Stegagnin', location: '13º Andar' },
+            { week: 1, studentId: [1,2], day: 'SEGUNDA', time: '09:00 - 12:00', activity: 'Centro Cirúrgico', professor: 'Dr. Andre', location: 'Centro Cirúrgico' },
+            { week: 1, studentId: [1,2], day: 'SEGUNDA', time: '13:00 - 18:00', activity: 'Centro Cirúrgico', professor: 'Dra. Mariah', location: 'Centro Cirúrgico' },
+            { week: 1, studentId: [1,2,3,4,5], day: 'TERÇA', time: '07:30 - 09:00', activity: 'Aula Residentes CIPE', professor: 'Profª Izabel', location: '13º Andar' },
+            { week: 1, studentId: [1,2,3,4,5], day: 'TERÇA', time: '09:00 - 12:00', activity: 'Ambulatório CIPE', professor: 'Dra. Karmy, Dra. Vilani e Profª Izabel', location: 'SAM 1' },
+            { week: 1, studentId: [1,2,3,4,5], day: 'TERÇA', time: '13:30 - 16:00', activity: 'Aula POCUS', professor: 'Prof. André', location: 'Auditório 13º Andar' },
+            { week: 1, studentId: [3], day: 'QUARTA', time: '07:30 - 11:00', activity: 'Cirurgia Ambulatorial', professor: 'Dr. Andre e Dr. Miguel', location: 'Centro Cirúrgico' },
+            { week: 1, studentId: [1,2], day: 'QUARTA', time: '07:30 - 11:00', activity: 'Ambulatório', professor: 'Dr. Andre e Dr. Miguel', location: 'SAM 1' },
+            { week: 1, studentId: [4,5], day: 'QUARTA', time: '07:30 - 12:00', activity: 'Centro Cirúrgico', professor: 'Profª Camila', location: 'Centro Cirúrgico' },
+            { week: 1, studentId: [1,2,3], day: 'QUARTA', time: '13:30 - 18:00', activity: 'Ambulatório', professor: 'Dra. Isabela, Dra. Karina e Profª Camila', location: 'SAM 1' },
+            { week: 1, studentId: [4,5], day: 'QUARTA', time: '13:00 - 18:00', activity: 'Centro Cirúrgico', professor: 'Dra. Isabela, Dra. Karina e Profª Camila (OSD)', location: 'Centro Cirúrgico' },
+            { week: 1, studentId: [1,2,3,4,5], day: 'QUINTA', time: '07:30 - 08:30', activity: 'Aula CIPE com Residentes', professor: 'Prof. Marcelo', location: '13º Andar' },
+            { week: 1, studentId: [1,2,3,4,5], day: 'QUINTA', time: '08:30 - 10:00', activity: 'Seminário', professor: 'Prof. Marcelo', location: '13º Andar' },
+            { week: 1, studentId: [3,5], day: 'QUINTA', time: '10:00 - 12:30', activity: 'Centro Cirúrgico', professor: 'Dra. Maria Helena', location: 'Centro Cirúrgico' },
+            { week: 1, studentId: [1,2,3,4,5], day: 'QUINTA', time: '13:30 - 16:00', activity: 'Aula POCUS', professor: 'Prof. André', location: 'Auditório 13º Andar' },
+            { week: 1, studentId: [1,2,3,4,5], day: 'SEXTA', time: '07:30 - 09:00', activity: 'Reunião CIPE', professor: 'Dr. Marcelo', location: '13º Andar' },
+            { week: 1, studentId: [1,2,3,4,5], day: 'SEXTA', time: '09:00 - 12:00', activity: 'Ambulatório SAM 1', professor: 'Dra. Maria Helena e Dra. Mariah', location: 'Centro Cirúrgico' },
+            { week: 1, studentId: [1,5], day: 'SEXTA', time: '13:00 - 19:00', activity: 'Centro Cirúrgico', professor: 'Dr. Gustavo', location: 'Centro Cirúrgico' },
+            { week: 2, studentId: [1,2,3,4,5], day: 'SEGUNDA', time: '07:30 - 12:00', activity: 'Neurocirurgia e Reunião/Discussão de Casos Clínicos', professor: 'Prof. Sprengel', location: 'HC - 8º Andar' },
+            { week: 2, studentId: [1,2,3,4,5], day: 'SEGUNDA', time: '13:00 - 18:00', activity: 'Lab Microcirurgia', professor: 'Prof. Sérgio Sprengel', location: 'Hospital da Reabilitação' },
+            { week: 2, studentId: [1,2,3,4,5], day: 'TERÇA', time: '08:00 - 09:00', activity: 'Aula Vascular', professor: 'Prof. Mário Martins', location: 'SAM 8' },
+            { week: 2, studentId: [1,2,3,4,5], day: 'TERÇA', time: '09:00 - 12:00', activity: 'Cirurgia Cardiovascular', professor: 'Prof. Luís Kubrusly', location: '8º Andar' },
+            { week: 2, studentId: [1,2,3,4,5], day: 'TERÇA', time: '13:30 - 16:30', activity: 'Cirurgia Cardiovascular', professor: 'Prof. Luís Kubrusly', location: '8º Andar' },
+            { week: 2, studentId: [1,2,3,4,5], day: 'QUARTA', time: '08:00 - 10:00', activity: 'Ambulatório Vascular', professor: 'Prof. Mário Martins', location: 'SAM 8' },
+            { week: 2, studentId: [3,4], day: 'QUARTA', time: '13:00 - 18:00', activity: 'Cirurgia Vascular', professor: 'Dra. Bárbara Moreira', location: 'CC' },
+            { week: 2, studentId: [2,4], day: 'QUINTA', time: '07:00 - 08:00', activity: 'Visita Enfermaria', professor: 'Prof. Guarita', location: '12º Andar' },
+            { week: 2, studentId: [1,3,5], day: 'QUINTA', time: '08:00 - 11:00', activity: 'Ambulatório Vascular', professor: 'Dr. Valter e Prof. Jorge Timi', location: 'SAM 8' },
+            { week: 2, studentId: [2,4], day: 'QUINTA', time: '08:00 - 10:00', activity: 'Reunião Cardio - Cx Cardíaca', professor: 'Prof. Guarita', location: '11º Andar' },
+            { week: 2, studentId: [2,4], day: 'QUINTA', time: '10:00 - 12:00', activity: 'CC Cx Cardíaca', professor: 'Dr. Rodrigo Milan', location: 'CC' },
+            { week: 2, studentId: [1,2,3,4,5], day: 'SEXTA', time: '08:00 - 10:00', activity: 'Aula Cx Vasc', professor: 'Prof. Mário Martins', location: '8º Andar - Auditório 01' },
+            { week: 2, studentId: [2], day: 'SEXTA', time: '10:00 - 13:00', activity: 'Cx Vasc', professor: 'Dra. Bárbara Moreira', location: 'CC' },
+            { week: 2, studentId: [1,5], day: 'SEXTA', time: '13:00 - 19:00', activity: 'Cx Vasc', professor: 'Dr. Erick', location: 'CC' },
+            { week: 3, studentId: [1,2,3,4,5], day: 'SEGUNDA', time: '07:30 - 09:00', activity: 'Visita aos Pacientes Internados e Discussão Clínica', professor: 'Prof. Antonio Brenner e Dr. Guilherme Nicollelli', location: '7º andar – encontro no saguão' },
+            { week: 3, studentId: [3,4,5], day: 'SEGUNDA', time: '09:00 - 10:00', activity: 'Estudo', professor: 'Revisão dos casos internados, preparo de material de estudo', location: '' },
+            { week: 3, studentId: [1,2], day: 'SEGUNDA', time: '09:00 - 12:00', activity: 'CC Coloprocto', professor: 'Dr. Guilherme Nicollelli', location: 'Centro Cirúrgico' },
+            { week: 3, studentId: [1,2], day: 'SEGUNDA', time: '13:00 - 18:00', activity: 'CC Coloprocto', professor: 'Dr. Guilherme Nicollelli', location: 'Centro Cirúrgico' },
+            { week: 3, studentId: [1,2,3,4,5], day: 'TERÇA', time: '07:30 - 08:30', activity: 'Visita aos Pacientes Internados e Discussão Clínica', professor: 'Prof. Antonio Brenner', location: '7º andar – encontro no saguão' },
+            { week: 3, studentId: [1,2,5], day: 'TERÇA', time: '09:00 - 12:00', activity: 'Atividades Enfermaria e Estudo', professor: 'Prof. Antonio Brenner', location: '7º andar (início)' },
+            { week: 3, studentId: [3,4], day: 'TERÇA', time: '09:00 - 12:00', activity: 'CC Coloprocto', professor: 'Prof. Antonio Brenner', location: 'Centro Cirúrgico' },
+            { week: 3, studentId: [1,2,3,4,5], day: 'TERÇA', time: '13:00 - 17:00', activity: 'Ambulatório Coloproctologia Geral', professor: 'Prof. Antonio Brenner e Dr. Marssoni', location: 'SAM 8' },
+            { week: 3, studentId: [1,2,3,4,5], day: 'QUARTA', time: '07:30 - 10:00', activity: 'Reunião Geral do Serviço de Coloproctologia', professor: 'Profa. Maria Cristina, Prof. Antonio Brenner e médicos do serviço', location: 'Auditório 702' },
+            { week: 3, studentId: [1,2,3,4,5], day: 'QUARTA', time: '10:00 - 12:30', activity: 'Ambulatório DIII Coloprocto', professor: 'Dr. Antonio Brenner e Dr. Guilherme Nicollelli', location: 'SAM 5' },
+            { week: 3, studentId: [1,2,3,4,5], day: 'QUARTA', time: '13:00 - 17:00', activity: 'Ambulatório Coloproctologia Geral', professor: 'Prof. Antonio Brenner e Dr. Guilherme Perine', location: 'SAM 8' },
+            { week: 3, studentId: [1,2,3,4,5], day: 'QUINTA', time: '07:30 - 08:30', activity: 'Visita aos Pacientes Internados e Discussão Clínica', professor: 'Profa. Maria Cristina e Dr. Guilherme Perini', location: '7º andar' },
+            { week: 3, studentId: [1,4,5], day: 'QUINTA', time: '08:30 - 12:00', activity: 'CC Coloprocto', professor: 'Dr. Guilherme Perini, Profa. Maria Cristina', location: 'Centro Cirúrgico' },
+            { week: 3, studentId: [1,2,3,4,5], day: 'QUINTA', time: '13:00 - 17:00', activity: 'Colonoscopia', professor: 'Profa. Maria Cristina, Dr. Guilherme Nicollelli e Dr. Marssoni', location: '3º andar – Serviço de Endoscopia Digestiva' },
+            { week: 3, studentId: [1,4,5], day: 'SEXTA', time: '07:30 - 08:30', activity: 'Visita aos Pacientes Internados e Discussão Clínica', professor: 'Dr. Marssoni e Dr. Guilherme Perini', location: '7º andar' },
+            { week: 3, studentId: [2,3], day: 'SEXTA', time: '08:30 - 12:00', activity: 'CC Coloprocto', professor: 'Dr. Marssoni', location: 'Centro Cirúrgico' },
+            { week: 3, studentId: [3,4], day: 'SEXTA', time: '13:00 - 18:00', activity: 'Serviço de Endoscopia', professor: 'Dr. Guilherme Perine', location: 'Centro Cirúrgico' },
+            { week: 4, studentId: [1,2,3], day: 'SEGUNDA', time: '07:00 - 13:00', activity: 'CC CAIF', professor: 'Prof. Maria Cecília', location: 'Centro Cirúrgico e Obstétrico' },
+            { week: 4, studentId: [4,5], day: 'SEGUNDA', time: '07:00 - 13:00', activity: 'Trauma - HT', professor: 'Dr. Andre', location: 'Centro Cirúrgico Eletivo' },
+            { week: 4, studentId: [1,2], day: 'SEGUNDA', time: '14:00 - 18:00', activity: 'Cirurgia', professor: 'Dr. Yuri', location: 'Centro Cirúrgico' },
+            { week: 4, studentId: [3,4,5], day: 'SEGUNDA', time: '14:00 - 18:00', activity: 'CC HC', professor: 'Prof. Maria Cecília', location: 'Centro Cirúrgico' },
+            { week: 4, studentId: [3,4,5], day: 'TERÇA', time: '07:00 - 13:00', activity: 'CC CAIF', professor: 'Prof. Renato', location: 'Centro Cirúrgico' },
+            { week: 4, studentId: [1,2], day: 'TERÇA', time: '07:00 - 13:00', activity: 'Trauma - HT', professor: 'Dra. Dayane/Dr. Tape', location: 'Centro Cirúrgico Eletivo' },
+            { week: 4, studentId: [1,2,5], day: 'TERÇA', time: '14:00 - 16:00', activity: 'Ambulatório de Triagem', professor: 'Dr. Ovídio', location: 'SAM 3' },
+            { week: 4, studentId: [3,4], day: 'TERÇA', time: '14:00 - 18:00', activity: 'Cirurgia CC', professor: 'Prof. Renato', location: 'Centro Cirúrgico' },
+            { week: 4, studentId: [1,2], day: 'QUARTA', time: '07:00 - 13:00', activity: 'Trauma - HT', professor: 'Dr. Fernando', location: 'Centro Cirúrgico Eletivo' },
+            { week: 4, studentId: [3,4,5], day: 'QUARTA', time: '07:00 - 13:00', activity: 'Cirurgia', professor: 'Dr. Keiti', location: 'Centro Cirúrgico' },
+            { week: 4, studentId: [1,2,3,4,5], day: 'QUARTA', time: '14:00 - 18:00', activity: 'Cirurgia', professor: 'Prof. Maria Cecília', location: 'Centro Cirúrgico' },
+            { week: 4, studentId: [1,2,3,4,5], day: 'QUINTA', time: '07:00 - 08:00', activity: 'Reunião Clínica', professor: 'Prof. Renato e Alfredo', location: '8º Andar' },
+            { week: 4, studentId: [1,2,3,4,5], day: 'QUINTA', time: '08:00 - 11:30', activity: 'Ambulatório', professor: 'Prof. Renato e Alfredo', location: 'SAM 3' },
+            { week: 4, studentId: [1,2,3,4,5], day: 'QUINTA', time: '11:30 - 13:00', activity: 'Reunião Serviço', professor: 'Prof. Renato e Alfredo', location: 'Sala 1 Anexo B' },
+            { week: 4, studentId: [3,4], day: 'QUINTA', time: '14:00 - 18:00', activity: 'CC HT (Hosp. de Reabilitação)', professor: 'Dr. Harlisson', location: 'Centro Cirúrgico' },
+            { week: 4, studentId: [1,2,5], day: 'QUINTA', time: '15:00 - 19:00', activity: 'Cirurgia', professor: 'Dr. Keiti e Dr. Yuri', location: 'Centro Cirúrgico' },
+            { week: 4, studentId: [3,4], day: 'SEXTA', time: '07:00 - 13:00', activity: 'Centro Cirúrgico', professor: 'Prof. Alfredo', location: '8º Andar' },
+            { week: 4, studentId: [1], day: 'SEXTA', time: '07:00 - 13:00', activity: 'Trauma - HT', professor: 'Dr. Cedrick', location: 'Centro Cirúrgico' },
+            { week: 4, studentId: [2, 5], day: 'SEXTA', time: '07:00 - 13:00', activity: 'CAIF', professor: 'Prof. Renato', location: 'Centro Cirúrgico' },
+            { week: 4, studentId: [1,3,4], day: 'SEXTA', time: '14:00 - 19:00', activity: 'Prof. Renato Ambulatório CAIF', professor: 'Prof. Renato', location: 'Ambulatório CAIF' },
+            { week: 4, studentId: [2,5], day: 'SEXTA', time: '14:00 - 18:00', activity: 'Cirurgia', professor: 'Dra. Dayane', location: 'Centro Cirúrgico' },
+            { week: 5, studentId: [1,2,3,4,5], day: 'SEGUNDA', time: '07:00 - 09:00', activity: 'Reunião Geral', professor: 'Todos', location: '8º Andar' },
+            { week: 5, studentId: [1,2,3,4,5], day: 'SEGUNDA', time: '10:00 - 11:00', activity: 'Reunião Grupo de Parede e Cirurgia Bariátrica(Optativa)', professor: 'Dra. Solange, Dra. Karla, Dr. Fábio Tanabe', location: '7º Andar (sala 702)' },
+            { week: 5, studentId: [4,5], day: 'SEGUNDA', time: '09:30 - 12:00', activity: 'Cx Eletiva', professor: 'Dr. Alexandre', location: 'Centro Cirúrgico' },
+            { week: 5, studentId: [1,2], day: 'SEGUNDA', time: '13:00 - 18:00', activity: 'Ambulatório', professor: 'Dra. Karla', location: 'SAM 8' },
+            { week: 5, studentId: [3,5], day: 'SEGUNDA', time: '13:00 - 18:00', activity: 'Ambulatório', professor: 'Dra. Solange', location: 'SAM 3' },
+            { week: 5, studentId: [4], day: 'SEGUNDA', time: '13:00 - 18:00', activity: 'Cx Eletiva', professor: 'Dr. Romeu', location: 'Centro Cirúrgico' },
+            { week: 5, studentId: [1,2,3], day: 'TERÇA', time: '07:00 - 12:00', activity: 'Enfermarias, Visita, Assistência e Discussão de Casos', professor: 'Dr. Ademir, Dr. Romeu, Dra. Karla', location: '8º Andar' },
+            { week: 5, studentId: [4,5], day: 'TERÇA', time: '07:00 - 12:00', activity: 'Cx Eletiva', professor: 'Prof. Julio Weidervedder', location: 'Centro Cirúrgico' },
+            { week: 5, studentId: [3,4,5], day: 'TERÇA', time: '13:00 - 17:00', activity: 'Ambulatório', professor: 'Prof. Marco Aurélio', location: 'SAM 1' },
+            { week: 5, studentId: [1,2], day: 'TERÇA', time: '13:00 - 18:00', activity: 'Cx Eletiva', professor: 'Prof. Alexandre', location: 'Centro Cirúrgico' },
+            { week: 5, studentId: [3,4,5], day: 'TERÇA', time: '17:00 - 18:00', activity: 'Discussão de Casos', professor: 'Prof. Marco Aurélio', location: 'SAM 1' },
+            { week: 5, studentId: [3,4,5], day: 'QUARTA', time: '07:00 - 12:00', activity: 'Enfermarias, Visita, Assistência e Discussão de Casos', professor: 'Dra. Solange e Prof. Alexandre', location: '8º Andar' },
+            { week: 5, studentId: [1,2], day: 'QUARTA', time: '07:00 - 12:00', activity: 'Cx Eletiva', professor: 'Dra. Solange', location: 'Centro Cirúrgico' },
+            { week: 5, studentId: [4,5], day: 'QUARTA', time: '13:00 - 18:00', activity: 'Cx Eletiva', professor: 'Dra. Solange, Dr. Alexandre', location: 'Centro Cirúrgico' },
+            { week: 5, studentId: [1,2,3,4,5], day: 'QUINTA', time: '07:00 - 07:30', activity: 'Enfermaria - Visita Internados', professor: 'Dra. Karla, Dr. Alexandre Coutinho', location: '8º Andar' },
+            { week: 5, studentId: [1,2,3,4,5], day: 'QUINTA', time: '07:30 - 08:30', activity: 'Reunião Transplante Hepático', professor: 'Prof. Julio Coelho, Prof. Antonio Campos, Prof. Marco Aurélio, Dr. Alexandre Coutinho', location: '7º Andar' },
+            { week: 5, studentId: [1,2,3,4,5], day: 'QUINTA', time: '08:30 - 09:30', activity: 'Discussão de Casos da Enfermaria', professor: 'Prof. Julio Coelho, Prof. Antonio Campos, Prof. Marco Aurélio, Dr. Alexandre Coutinho', location: '7º Andar' },
+            { week: 5, studentId: [1,2], day: 'QUINTA', time: '09:30 - 12:00', activity: 'Cx Eletiva', professor: 'Prof. Marco Aurélio', location: 'Centro Cirúrgico' },
+            { week: 5, studentId: [3], day: 'QUINTA', time: '13:00 - 18:00', activity: 'Ambulatório', professor: 'Dr. Romeu', location: 'SAM 8' },
+            { week: 5, studentId: [4], day: 'QUINTA', time: '13:00 - 18:00', activity: 'Ambulatório', professor: 'Dr. Nicolas', location: 'SAM 1' },
+            { week: 5, studentId: [1,2], day: 'QUINTA', time: '13:00 - 18:00', activity: 'Cx Eletiva', professor: 'Dr. Romeu, Dra. Karla', location: 'Centro Cirúrgico' },
+            { week: 5, studentId: [1,2,5], day: 'SEXTA', time: '07:00 - 12:00', activity: 'Enfermarias, Visita, Assistência e Discussão', professor: 'Dr. Tanabe', location: '8º Andar' },
+            { week: 5, studentId: [3,4], day: 'SEXTA', time: '07:00 - 12:00', activity: 'Cx Eletiva', professor: 'Dr. Nicolas e Dr. Tanabe', location: 'Centro Cirúrgico' },
+            { week: 5, studentId: [1,5], day: 'SEXTA', time: '13:00 - 18:00', activity: 'Ambulatório', professor: 'Dr. Romeu', location: 'SAM 8' },
+            { week: 5, studentId: [2], day: 'SEXTA', time: '13:00 - 18:00', activity: 'Ambulatório', professor: 'Dr. Alexandre', location: 'SAM 1' },
+            { week: 5, studentId: [3,4], day: 'SEXTA', time: '13:00 - 18:00', activity: 'Cx Eletiva', professor: 'Dr. Romeu', location: 'Centro Cirúrgico' },
+            { week: 5, studentId: [1], day: 'SÁBADO', time: '07:00 - 10:30', activity: 'Plantão Cirúrgico', professor: 'Médico da Escala', location: 'CHC' },
+            { week: 5, studentId: [2], day: 'DOMINGO', time: '07:00 - 10:30', activity: 'Plantão Cirúrgico', professor: 'Médico da Escala', location: 'CHC' },
+            { week: 6, studentId: [1,2,3,4,5], day: 'SEGUNDA', time: '07:00 - 09:00', activity: 'Clínica Cirúrgica - Reunião Geral', professor: 'Todos os professores', location: '9º andar' },
+            { week: 6, studentId: [1], day: 'SEGUNDA', time: '09:30 - 12:00', activity: 'BIP Urgências', professor: 'Médico de plantão', location: 'CHC' },
+            { week: 6, studentId: [1,2,3,4,5], day: 'SEGUNDA', time: '10:00 - 11:00', activity: 'Reunião Grupo de Parede e Cirurgia Bariátrica (Optativa)', professor: 'Dra. Solange, Dra. Karla, Dr. Fábio Terabe', location: '7º andar, sala 702' },
+            { week: 6, studentId: [2,3], day: 'SEGUNDA', time: '13:00 - 18:00', activity: 'Ambulatório SAM 8', professor: 'Dra. Karla', location: 'SAM 8' },
+            { week: 6, studentId: [4,5], day: 'SEGUNDA', time: '13:00 - 18:00', activity: 'Ambulatório SAM 3', professor: 'Dra. Solange', location: 'SAM 3' },
+            { week: 6, studentId: [1], day: 'SEGUNDA', time: '13:00 - 18:00', activity: 'BIP Urgências', professor: 'Médico de plantão', location: 'CHC' },
+            { week: 6, studentId: [1,3,4,5], day: 'TERÇA', time: '07:00 - 12:00', activity: 'Enfermarias: Visita, Assistência e Discussão de Casos', professor: 'Dr. Adonis, Dr. Romeu, Dra. Karla', location: '8º andar' },
+            { week: 6, studentId: [2], day: 'TERÇA', time: '07:00 - 12:00', activity: 'BIP Urgências', professor: 'Médico de plantão', location: 'CHC' },
+            { week: 6, studentId: [1,3,4,5], day: 'TERÇA', time: '13:00 - 17:00', activity: 'Ambulatório', professor: 'Marco Aurélio', location: 'SAM 1' },
+            { week: 6, studentId: [2], day: 'TERÇA', time: '13:00 - 18:00', activity: 'BIP Urgências', professor: 'Médico de plantão', location: 'CHC' },
+            { week: 6, studentId: [1,3,4,5], day: 'TERÇA', time: '17:00 - 18:00', activity: 'Discussão de Casos', professor: 'Marco Aurélio', location: 'SAM 1' },
+            { week: 6, studentId: [1,2,4,5], day: 'QUARTA', time: '07:00 - 12:00', activity: 'Enfermarias: Visita, Assistência e Discussão de Casos', professor: 'Dra. Solange', location: '8º andar' },
+            { week: 6, studentId: [3], day: 'QUARTA', time: '07:00 - 12:00', activity: 'BIP Urgências', professor: 'Médico de plantão', location: 'CHC' },
+            { week: 6, studentId: [3], day: 'QUARTA', time: '13:00 - 18:00', activity: 'BIP Urgências', professor: 'Médico de plantão', location: 'CHC' },
+            { week: 6, studentId: [1,2,3,4,5], day: 'QUINTA', time: '07:00 - 07:30', activity: 'Enfermaria – Visita Internados', professor: 'Dra. Karla e Dr. Alexandre Coutinho', location: '8º andar' },
+            { week: 6, studentId: [1,2,3,4,5], day: 'QUINTA', time: '07:30 - 09:30', activity: 'Reunião TX Hepático + Discussão Fígado e Pâncreas', professor: 'Júlio Coelho, Antonio Campos, Alexandre, Marco', location: '7º andar' },
+            { week: 6, studentId: [1,2,3,5], day: 'QUINTA', time: '09:30 - 12:00', activity: 'Enfermarias: Visita, Assistência e Discussão de Casos', professor: 'Dr. Julio Wiederkehr', location: '8º andar' },
+            { week: 6, studentId: [4], day: 'QUINTA', time: '07:30 - 12:00', activity: 'BIP Urgências', professor: 'Médico de plantão', location: 'CHC' },
+            { week: 6, studentId: [3,5], day: 'QUINTA', time: '13:00 - 18:00', activity: 'Ambulatório SAM 8', professor: 'Dr. Romeu', location: 'SAM 8' },
+            { week: 6, studentId: [4], day: 'QUINTA', time: '13:00 - 18:00', activity: 'Ambulatório SAM 1', professor: 'Dr. Nicolas', location: 'SAM 1' },
+            { week: 6, studentId: [4], day: 'QUINTA', time: '13:00 - 18:00', activity: 'BIP Urgências', professor: 'Médico de plantão', location: 'CHC' },
+            { week: 6, studentId: [1,2,3,4], day: 'SEXTA', time: '07:00 - 12:00', activity: 'Enfermarias: Visita, Assistência e Discussão de Casos', professor: 'Dr. Terabe', location: '8º andar' },
+            { week: 6, studentId: [5], day: 'SEXTA', time: '07:00 - 12:00', activity: 'BIP Urgências', professor: 'Médico de plantão', location: 'CHC' },
+            { week: 6, studentId: [1,5], day: 'SEXTA', time: '13:00 - 18:00', activity: 'Ambulatório SAM 8', professor: 'Dr. Romeu', location: 'SAM 8' },
+            { week: 6, studentId: [2], day: 'SEXTA', time: '13:00 - 18:00', activity: 'Ambulatório SAM 1', professor: 'Dr. Alexandre', location: 'SAM 1' },
+            { week: 6, studentId: [5], day: 'SEXTA', time: '13:00 - 18:00', activity: 'BIP Urgências', professor: 'Médico de plantão', location: 'CHC' },
+            { week: 6, studentId: [3], day: 'SÁBADO', time: '07:00 - 10:30', activity: 'Plantão Cirúrgico', professor: 'Médico da escala', location: 'CHC' },
+            { week: 6, studentId: [4,5], day: 'DOMINGO', time: '07:00 - 10:30', activity: 'Plantão Cirúrgico', professor: 'Médico de plantão', location: 'CHC' },
+            { week: 7, studentId: [1,2,3,4,5], day: 'SEGUNDA', time: '07:00 - 12:00', activity: 'Reunião Clínica: apresentação de casos', professor: 'Prof. Edmar', location: '6º Andar' },
+            { week: 7, studentId: [1,2,3,4,5], day: 'SEGUNDA', time: '13:30 - 17:00', activity: 'Reunião Clínica: apresentação de casos', professor: 'Prof. Cunha', location: '6º Andar' },
+            { week: 7, studentId: [1,2,3,4,5], day: 'TERÇA', time: '07:00 - 10:00', activity: 'Reunião Clínica do Serviço', professor: 'Prof. Cunha', location: '6º Andar' },
+            { week: 7, studentId: [1,2,3,4,5], day: 'TERÇA', time: '10:00 - 12:30', activity: 'Ambulatório', professor: 'Prof. Márcio', location: 'SAM 7' },
+            { week: 7, studentId: [1,2,3,4,5], day: 'TERÇA', time: '13:30 - 17:00', activity: 'Ambulatório Geral', professor: 'Médico da escala', location: 'SAM 1' },
+            { week: 7, studentId: [1,2,3,4,5], day: 'QUARTA', time: '07:00 - 09:30', activity: 'Reunião Clínica: apresentação de casos', professor: 'Prof. Márcio', location: '6º Andar' },
+            { week: 7, studentId: [1,2,3,4,5], day: 'QUARTA', time: '13:30 - 16:00', activity: 'Ambulatório Ombro', professor: 'Médico da escala', location: 'SAM 1' },
+            { week: 7, studentId: [1,2,3,4,5], day: 'QUINTA', time: '07:00 - 12:00', activity: 'Ambulatório', professor: 'Prof. João Luiz', location: 'SAM 1' },
+            { week: 7, studentId: [1,2,3,4,5], day: 'QUINTA', time: '13:30 - 17:00', activity: 'Reunião Clínica: apresentação de casos', professor: 'Prof. Edmar', location: 'SAM 1' },
+            { week: 7, studentId: [1,2,3,4,5], day: 'SEXTA', time: '07:00 - 12:00', activity: 'Ambulatório - SAM 1', professor: 'Prof. Cunha', location: 'SAM 1' },
+            { week: 8, studentId: [1,2,3,4,5], day: 'SEGUNDA', time: '07:00 - 12:00', activity: 'Reunião Clínica: apresentação de casos', professor: 'Prof. Edmar', location: '6º Andar' },
+            { week: 8, studentId: [1,2,3,4,5], day: 'SEGUNDA', time: '13:30 - 17:00', activity: 'Reunião Clínica: apresentação de casos', professor: 'Prof. Cunha', location: '6º Andar' },
+            { week: 8, studentId: [1,2,3,4,5], day: 'TERÇA', time: '07:00 - 10:00', activity: 'Reunião Clínica do Serviço', professor: 'Prof. Cunha', location: '6º Andar' },
+            { week: 8, studentId: [1,2,3,4,5], day: 'TERÇA', time: '10:00 - 12:30', activity: 'Ambulatório', professor: 'Prof. Márcio', location: 'SAM 7' },
+            { week: 8, studentId: [1,2,3,4,5], day: 'TERÇA', time: '13:30 - 17:00', activity: 'Ambulatório Geral', professor: 'Médico da escala', location: 'SAM 1' },
+            { week: 8, studentId: [1,2,3,4,5], day: 'QUARTA', time: '07:00 - 09:30', activity: 'Reunião Clínica: apresentação de casos', professor: 'Prof. Márcio', location: '6º Andar' },
+            { week: 8, studentId: [1,2,3,4,5], day: 'QUARTA', time: '13:30 - 16:00', activity: 'Ambulatório Ombro', professor: 'Médico da escala', location: 'SAM 1' },
+            { week: 8, studentId: [1,2,3,4,5], day: 'QUINTA', time: '07:00 - 12:00', activity: 'Ambulatório', professor: 'Prof. João Luiz', location: 'SAM 1' },
+            { week: 8, studentId: [1,2,3,4,5], day: 'QUINTA', time: '13:30 - 17:00', activity: 'Reunião Clínica: apresentação de casos', professor: 'Prof. Edmar', location: 'SAM 1' },
+            { week: 8, studentId: [1,2,3,4,5], day: 'SEXTA', time: '07:00 - 12:00', activity: 'Ambulatório - SAM 1', professor: 'Prof. Cunha', location: 'SAM 1' },
+            { week: 9, studentId: [2,3,4,5], day: 'SEGUNDA', time: '07:15 - 07:30', activity: 'Enfermaria', professor: 'Médico da escala', location: '9º Andar' },
+            { week: 9, studentId: [1], day: 'SEGUNDA', time: '07:30 - 12:00', activity: 'CC URO', professor: 'Médico da escala', location: 'CC' },
+            { week: 9, studentId: [2,3,4,5], day: 'SEGUNDA', time: '08:00 - 12:00', activity: 'Ambulatório', professor: 'Prof. Cavalli', location: 'SAM 7' },
+            { week: 9, studentId: [1], day: 'SEGUNDA', time: '13:00 - 18:00', activity: 'CC URO', professor: 'Médico da escala', location: 'CC' },
+            { week: 9, studentId: [2,3,4,5], day: 'SEGUNDA', time: '13:00 - 18:00', activity: 'Ambulatório', professor: 'Dr. Daniel Carara', location: 'SAM 7' },
+            { week: 9, studentId: [1,3,4,5], day: 'TERÇA', time: '07:15 - 07:30', activity: 'Enfermaria', professor: 'Prof. Luiz Sérgio', location: '9º Andar' },
+            { week: 9, studentId: [2], day: 'TERÇA', time: '07:30 - 12:00', activity: 'CC URO', professor: 'Médico da escala', location: 'CC' },
+            { week: 9, studentId: [1,3,4,5], day: 'TERÇA', time: '08:30 - 09:30', activity: 'Discussão de casos', professor: 'Prof. Luiz Sérgio', location: '9º Andar' },
+            { week: 9, studentId: [1,3,4,5], day: 'TERÇA', time: '09:30 - 12:00', activity: 'Ambulatório', professor: 'Prof. Rogério de Fraga', location: 'SAM 7' },
+            { week: 9, studentId: [2], day: 'TERÇA', time: '13:00 - 18:00', activity: 'CC URO', professor: 'Médico da escala', location: 'CC' },
+            { week: 9, studentId: [1,3,4,5], day: 'TERÇA', time: '13:00 - 18:00', activity: 'Ambulatório', professor: 'Dr. Ruimario Coelho', location: 'SAM 7' },
+            { week: 9, studentId: [1,2,4,5], day: 'QUARTA', time: '07:15 - 07:30', activity: 'Enfermaria', professor: 'Prof. Rodrigo Krebs, Dr. Aranha e Dr. Osny', location: '9º Andar' },
+            { week: 9, studentId: [3], day: 'QUARTA', time: '07:30 - 12:00', activity: 'CC URO', professor: 'Médico da escala', location: 'CC' },
+            { week: 9, studentId: [1,2,4,5], day: 'QUARTA', time: '13:00 - 15:30', activity: 'Ambulatório', professor: 'Prof. Andre Matos', location: 'SAM 7' },
+            { week: 9, studentId: [3], day: 'QUARTA', time: '13:00 - 18:00', activity: 'CC URO', professor: 'Médico da escala', location: 'CC' },
+            { week: 9, studentId: [1,2,3,4,5], day: 'QUINTA', time: '07:15 - 07:30', activity: 'Enfermaria', professor: 'Prof. Luiz Sérgio', location: '9º Andar' },
+            { week: 9, studentId: [1,2,3,4,5], day: 'QUINTA', time: '08:00 - 10:00', activity: 'Reunião Clínica', professor: 'Professores Cavalli, Fraga, Krebs, Luiz Sérgio, Andre Matos', location: '9º Andar' },
+            { week: 9, studentId: [1,2,3,4,5], day: 'QUINTA', time: '10:00 - 11:00', activity: 'Discussão de Casos', professor: 'Professores Cavalli, Fraga, Krebs, Andre Matos', location: '9º Andar' },
+            { week: 9, studentId: [4], day: 'QUINTA', time: '13:00 - 18:00', activity: 'CC URO', professor: 'Médico da escala e Prof. Cavalli', location: 'CC' },
+            { week: 9, studentId: [1,2,3,5], day: 'QUINTA', time: '13:00 - 18:00', activity: 'Ambulatório', professor: 'Dr. Gil Vicente C. Fulgencio', location: 'SAM 7' },
+            { week: 9, studentId: [1,2,3], day: 'SEXTA', time: '07:15 - 07:30', activity: 'Enfermaria', professor: 'Prof. Krebs, Dr. Aranha e Dr. Ruimario', location: '9º Andar' },
+            { week: 9, studentId: [4,5], day: 'SEXTA', time: '07:30 - 12:00', activity: 'CC URO', professor: 'Médico da escala', location: 'CC' },
+            { week: 9, studentId: [3,5], day: 'SEXTA', time: '13:00 - 18:00', activity: 'CC URO', professor: 'Médico da escala', location: 'CC' },
+            { week: 9, studentId: [1,2,4], day: 'SEXTA', time: '13:00 - 18:00', activity: 'Ambulatório', professor: 'Dra. Natalie Tominaga', location: 'SAM 7' },
+            { week: 9, studentId: [1], day: 'SÁBADO', time: '07:30 - 10:30', activity: 'Enfermaria', professor: 'Médico da escala', location: '9º Andar' },
+            { week: 9, studentId: [2], day: 'DOMINGO', time: '07:30 - 10:30', activity: 'Enfermaria', professor: 'Médico da escala', location: '9º Andar' },
+            { week: 10, studentId: [2,3,4,5], day: 'SEGUNDA', time: '07:15 - 07:30', activity: 'Enfermaria', professor: 'Médico da escala', location: '9º Andar' },
+            { week: 10, studentId: [1], day: 'SEGUNDA', time: '07:30 - 12:00', activity: 'CC URO', professor: 'Médico da escala', location: 'CC' },
+            { week: 10, studentId: [2,3,4,5], day: 'SEGUNDA', time: '08:00 - 12:00', activity: 'Ambulatório', professor: 'Prof. Cavalli', location: 'SAM 7' },
+            { week: 10, studentId: [1], day: 'SEGUNDA', time: '13:00 - 18:00', activity: 'CC URO', professor: 'Médico da escala', location: 'CC' },
+            { week: 10, studentId: [2,3,4,5], day: 'SEGUNDA', time: '13:00 - 18:00', activity: 'Ambulatório', professor: 'Dr. Daniel Carara', location: 'SAM 7' },
+            { week: 10, studentId: [1,3,4,5], day: 'TERÇA', time: '07:15 - 07:30', activity: 'Enfermaria', professor: 'Prof. Luiz Sérgio', location: '9º Andar' },
+            { week: 10, studentId: [2], day: 'TERÇA', time: '07:30 - 12:00', activity: 'CC URO', professor: 'Médico da escala', location: 'CC' },
+            { week: 10, studentId: [1,3,4,5], day: 'TERÇA', time: '08:30 - 09:30', activity: 'Discussão de casos', professor: 'Prof. Luiz Sérgio', location: '9º Andar' },
+            { week: 10, studentId: [1,3,4,5], day: 'TERÇA', time: '09:30 - 12:00', activity: 'Ambulatório', professor: 'Prof. Rogério de Fraga', location: 'SAM 7' },
+            { week: 10, studentId: [2], day: 'TERÇA', time: '13:00 - 18:00', activity: 'CC URO', professor: 'Médico da escala', location: 'CC' },
+            { week: 10, studentId: [1,3,4,5], day: 'TERÇA', time: '13:00 - 18:00', activity: 'Ambulatório', professor: 'Dr. Ruimario Coelho', location: 'SAM 7' },
+            { week: 10, studentId: [1,2,4,5], day: 'QUARTA', time: '07:15 - 07:30', activity: 'Enfermaria', professor: 'Prof. Rodrigo Krebs, Dr. Aranha e Dr. Osny', location: '9º Andar' },
+            { week: 10, studentId: [3], day: 'QUARTA', time: '07:30 - 12:00', activity: 'CC URO', professor: 'Médico da escala', location: 'CC' },
+            { week: 10, studentId: [1,2,4,5], day: 'QUARTA', time: '13:00 - 15:30', activity: 'Ambulatório', professor: 'Prof. Andre Matos', location: 'SAM 7' },
+            { week: 10, studentId: [3], day: 'QUARTA', time: '13:00 - 18:00', activity: 'CC URO', professor: 'Médico da escala', location: 'CC' },
+            { week: 10, studentId: [1,2,3,4,5], day: 'QUINTA', time: '07:15 - 07:30', activity: 'Enfermaria', professor: 'Prof. Luiz Sérgio', location: '9º Andar' },
+            { week: 10, studentId: [1,2,3,4,5], day: 'QUINTA', time: '08:00 - 10:00', activity: 'Reunião Clínica', professor: 'Professores Cavalli, Fraga, Krebs, Luiz Sérgio, Andre Matos', location: '9º Andar' },
+            { week: 10, studentId: [1,2,3,4,5], day: 'QUINTA', time: '10:00 - 11:00', activity: 'Discussão de Casos', professor: 'Professores Cavalli, Fraga, Krebs, Andre Matos', location: '9º Andar' },
+            { week: 10, studentId: [4], day: 'QUINTA', time: '13:00 - 18:00', activity: 'CC URO', professor: 'Médico da escala e Prof. Cavalli', location: 'CC' },
+            { week: 10, studentId: [1,2,3,5], day: 'QUINTA', time: '13:00 - 18:00', activity: 'Ambulatório', professor: 'Dr. Gil Vicente C. Fulgencio', location: 'SAM 7' },
+            { week: 10, studentId: [1,2,3], day: 'SEXTA', time: '07:15 - 07:30', activity: 'Enfermaria', professor: 'Prof. Krebs, Dr. Aranha e Dr. Ruimario', location: '9º Andar' },
+            { week: 10, studentId: [4,5], day: 'SEXTA', time: '07:30 - 12:00', activity: 'CC URO', professor: 'Médico da escala', location: 'CC' },
+            { week: 10, studentId: [3,5], day: 'SEXTA', time: '13:00 - 18:00', activity: 'CC URO', professor: 'Médico da escala', location: 'CC' },
+            { week: 10, studentId: [1,2,4], day: 'SEXTA', time: '13:00 - 18:00', activity: 'Ambulatório', professor: 'Dra. Natalie Tominaga', location: 'SAM 7' },
+            { week: 10, studentId: [3], day: 'SÁBADO', time: '07:30 - 10:30', activity: 'Enfermaria', professor: 'Médico da escala', location: '9º Andar' },
+            { week: 10, studentId: [4,5], day: 'DOMINGO', time: '07:30 - 10:30', activity: 'Enfermaria', professor: 'Médico da escala', location: '9º Andar' },
             ];
 
             const scheduleGrid = document.getElementById('schedule-grid');
@@ -378,7 +394,7 @@
             const sidebarClose = document.getElementById('sidebar-close');
 
             function toggleSidebar() {
-                sidebarOverlay.classList.toggle('hidden');
+                sidebarOverlay.classList.toggle('is-open');
             }
 
             sidebarToggle.addEventListener('click', toggleSidebar);
@@ -390,12 +406,23 @@
             });
 
             function loadChecklistData() {
-                const data = localStorage.getItem(LOCAL_STORAGE_KEY);
+                const data = localStorage.getItem(LOCAL_STORAGE_KEY_CHECKLIST);
                 checklistData = data ? JSON.parse(data) : {};
             }
 
             function saveChecklistData() {
-                localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(checklistData));
+                localStorage.setItem(LOCAL_STORAGE_KEY_CHECKLIST, JSON.stringify(checklistData));
+            }
+
+            function loadLastStudent() {
+                const savedStudent = localStorage.getItem(LOCAL_STORAGE_KEY_STUDENT);
+                if (savedStudent) {
+                    currentStudent = savedStudent;
+                }
+            }
+
+            function saveLastStudent() {
+                localStorage.setItem(LOCAL_STORAGE_KEY_STUDENT, currentStudent);
             }
 
             function populateSelectors() {
@@ -422,44 +449,48 @@
                     option2.textContent = student.name;
                     studentSelectorDesktop.appendChild(option2);
                 });
+
+                // Set the selectors to the current (possibly loaded) student
+                studentSelectorMobile.value = currentStudent;
+                studentSelectorDesktop.value = currentStudent;
             }
 
             function syncSelectors(source, target) {
                  target.value = source.value;
             }
 
-            weekSelectorMobile.addEventListener('change', (e) => {
-                syncSelectors(weekSelectorMobile, weekSelectorDesktop);
+            function handleWeekChange(e) {
+                syncSelectors(e.target, e.target.id === 'week-selector-mobile' ? weekSelectorDesktop : weekSelectorMobile);
                 currentWeek = parseInt(e.target.value);
                 updateView();
-            });
-            weekSelectorDesktop.addEventListener('change', (e) => {
-                syncSelectors(weekSelectorDesktop, weekSelectorMobile);
-                currentWeek = parseInt(e.target.value);
-                updateView();
-            });
+            }
 
-            studentSelectorMobile.addEventListener('change', (e) => {
-                syncSelectors(studentSelectorMobile, studentSelectorDesktop);
+            weekSelectorMobile.addEventListener('change', handleWeekChange);
+            weekSelectorDesktop.addEventListener('change', handleWeekChange);
+
+            function handleStudentChange(e) {
+                const isMobile = e.target.id === 'student-selector-mobile';
+                const otherSelector = isMobile ? studentSelectorDesktop : studentSelectorMobile;
+                syncSelectors(e.target, otherSelector);
+                
                 currentStudent = e.target.value;
+                saveLastStudent(); // Save the new selection
+
                 const selectedStudent = students.find(s => s.id == currentStudent);
                 studentImageMobile.src = selectedStudent.imageUrl;
                 studentImageMobile.alt = `Foto de ${selectedStudent.name}`;
                 studentImageDesktop.src = selectedStudent.imageUrl;
                 studentImageDesktop.alt = `Foto de ${selectedStudent.name}`;
+                
                 renderSchedule(currentWeek, currentStudent);
-                toggleSidebar();
-            });
-             studentSelectorDesktop.addEventListener('change', (e) => {
-                syncSelectors(studentSelectorDesktop, studentSelectorMobile);
-                currentStudent = e.target.value;
-                const selectedStudent = students.find(s => s.id == currentStudent);
-                studentImageMobile.src = selectedStudent.imageUrl;
-                studentImageMobile.alt = `Foto de ${selectedStudent.name}`;
-                studentImageDesktop.src = selectedStudent.imageUrl;
-                studentImageDesktop.alt = `Foto de ${selectedStudent.name}`;
-                renderSchedule(currentWeek, currentStudent);
-            });
+                
+                if (isMobile) {
+                    toggleSidebar();
+                }
+            }
+
+            studentSelectorMobile.addEventListener('change', handleStudentChange);
+            studentSelectorDesktop.addEventListener('change', handleStudentChange);
             
             function handleChecklistChange(event) {
                 const checkbox = event.target;
@@ -552,11 +583,19 @@
                 const subtitleText = `${selectedWeekData.title} (${selectedWeekData.dates})`;
                 scheduleSubtitleMobile.textContent = subtitleText;
                 scheduleSubtitleDesktop.textContent = subtitleText;
+                
+                const selectedStudent = students.find(s => s.id == currentStudent);
+                if (selectedStudent) {
+                    studentImageMobile.src = selectedStudent.imageUrl;
+                    studentImageDesktop.src = selectedStudent.imageUrl;
+                }
+
                 renderSchedule(currentWeek, currentStudent);
             }
             
             function initializeAppLogic() {
                 loadChecklistData();
+                loadLastStudent();
                 populateSelectors();
                 updateView();
             }
