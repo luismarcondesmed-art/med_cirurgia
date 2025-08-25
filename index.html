@@ -49,17 +49,38 @@
             gap: 1rem;
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
         }
+        /* Custom scrollbar for webkit browsers */
+        aside::-webkit-scrollbar {
+            width: 8px;
+        }
+        aside::-webkit-scrollbar-track {
+            background: #2B2B2B;
+        }
+        aside::-webkit-scrollbar-thumb {
+            background-color: #4A4A4A;
+            border-radius: 10px;
+            border: 2px solid #2B2B2B;
+        }
     </style>
 </head>
 <body class="bg-[#1B1B1B] text-[#F3F3F3]">
 
     <div class="flex flex-col h-screen">
-        <header class="text-center p-4 relative border-b border-gray-700 bg-[#2B2B2B] flex-shrink-0">
+        <header class="text-center p-4 relative border-b border-gray-700 bg-[#2B2B2B] flex-shrink-0 flex items-center justify-center">
+            <button id="sidebar-toggle" class="lg:hidden absolute left-4 top-1/2 -translate-y-1/2 p-2 rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+            </button>
             <h1 class="text-2xl md:text-3xl font-bold">Cronograma de Estágio</h1>
         </header>
 
         <div class="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-8 p-4 sm:p-6 lg:p-8 overflow-hidden">
-            <aside class="lg:col-span-3 flex flex-col gap-8 overflow-y-auto pr-4">
+            <!-- Sidebar para mobile (overlay) e desktop (fixa) -->
+            <aside id="sidebar" class="hidden fixed inset-y-0 left-0 z-30 w-full max-w-xs bg-[#1B1B1B] p-6 lg:relative lg:col-span-3 lg:flex lg:w-auto lg:max-w-none lg:bg-transparent lg:p-0 lg:z-auto flex-col gap-8 overflow-y-auto">
+                <button id="sidebar-close" class="lg:hidden absolute top-4 right-4 p-2 rounded-md hover:bg-gray-700">
+                     <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
                 <div class="p-6 bg-[#2B2B2B] rounded-lg shadow-lg flex flex-col gap-2">
                     <label for="week-selector" class="block text-sm font-medium text-center mb-2">Selecione a Semana</label>
                     <select id="week-selector" class="w-full p-3 bg-[#2D2D2D] border border-gray-600 rounded-md shadow-sm focus:ring-[#2899F5] focus:border-[#2899F5]"></select>
@@ -76,7 +97,7 @@
                 </div>
             </aside>
 
-            <main id="main-content" class="lg:col-span-9 overflow-y-auto pr-4">
+            <main id="main-content" class="col-span-12 lg:col-span-9 overflow-y-auto">
                  <div id="schedule-grid" class="gap-4"></div>
             </main>
         </div>
@@ -322,6 +343,18 @@
             const clearWeekButton = document.getElementById('clearWeekButton');
             const daysOfWeek = ['SEGUNDA', 'TERÇA', 'QUARTA', 'QUINTA', 'SEXTA', 'SÁBADO', 'DOMINGO'];
             
+            // --- Mobile Sidebar Elements ---
+            const sidebar = document.getElementById('sidebar');
+            const sidebarToggle = document.getElementById('sidebar-toggle');
+            const sidebarClose = document.getElementById('sidebar-close');
+
+            function toggleSidebar() {
+                sidebar.classList.toggle('hidden');
+            }
+
+            sidebarToggle.addEventListener('click', toggleSidebar);
+            sidebarClose.addEventListener('click', toggleSidebar);
+
             function loadChecklistData() {
                 const data = localStorage.getItem(LOCAL_STORAGE_KEY);
                 checklistData = data ? JSON.parse(data) : {};
@@ -341,6 +374,9 @@
                 weekSelector.addEventListener('change', (e) => {
                     currentWeek = parseInt(e.target.value);
                     updateView();
+                    if (window.innerWidth < 1024) { // lg breakpoint in Tailwind
+                        toggleSidebar();
+                    }
                 });
             }
 
@@ -358,6 +394,9 @@
                     studentImage.src = selectedStudent.imageUrl;
                     studentImage.alt = `Foto de ${selectedStudent.name}`;
                     renderSchedule(currentWeek, currentStudent);
+                    if (window.innerWidth < 1024) { // lg breakpoint in Tailwind
+                        toggleSidebar();
+                    }
                 });
             }
             
