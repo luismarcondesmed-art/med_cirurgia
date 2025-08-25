@@ -62,6 +62,11 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+        #schedule-grid {
+            display: grid;
+            gap: 1rem;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        }
     </style>
 </head>
 <body class="bg-[#1B1B1B] text-[#F3F3F3]">
@@ -85,14 +90,14 @@
                 </div>
                  <div class="bg-[#2B2B2B] p-6 rounded-lg shadow-lg text-center">
                     <h3 class="text-lg font-semibold mb-4">Sincronização</h3>
-                    <p class="text-xs text-gray-400 mb-2">Partilhe este URL para colaborar:</p>
+                    <p class="text-xs text-gray-400 mb-2">Partilhe este ID de Sessão para colaborar:</p>
                     <div class="flex items-center justify-center bg-[#1B1B1B] p-2 rounded-md mb-4">
                         <span id="sessionIdDisplay" class="font-mono text-sm text-green-400 break-all"></span>
                         <button id="copySessionId" class="ml-2 p-1 hover:bg-gray-700 rounded flex-shrink-0">
                             <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z"></path><path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z"></path></svg>
                         </button>
                     </div>
-                     <input type="text" id="syncIdInput" placeholder="Cole um URL ou ID de sessão" class="w-full p-2 bg-[#2D2D2D] border border-gray-600 rounded-md mb-2 text-center">
+                     <input type="text" id="syncIdInput" placeholder="Cole um ID de sessão" class="w-full p-2 bg-[#2D2D2D] border border-gray-600 rounded-md mb-2 text-center">
                      <button id="syncButton" class="w-full p-2 bg-[#0078D4] hover:bg-[#2899F5] rounded-md font-semibold transition-colors mt-2">Sincronizar</button>
                      <button id="clearWeekButton" class="w-full mt-4 p-2 bg-red-600 hover:bg-red-700 rounded-md font-semibold transition-colors text-white text-sm">Limpar marcações da semana</button>
                 </div>
@@ -113,7 +118,6 @@
         import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // --- Configuração do Firebase ---
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
         const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
             apiKey: "YOUR_API_KEY",
             authDomain: "YOUR_AUTH_DOMAIN",
@@ -122,6 +126,8 @@
             messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
             appId: "YOUR_APP_ID"
         };
+        
+        const appId = typeof __app_id !== 'undefined' ? __app_id : firebaseConfig.appId || 'default-app-id';
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
@@ -134,6 +140,7 @@
         let checklistData = {};
         let unsubscribeChecklist;
         let isInitialLoad = true;
+        let isAuthReady = false;
 
         const students = [
             { id: 'all', name: 'Todos os Ratos', imageUrl: 'https://i.imgur.com/5AW2oEL.png' },
@@ -410,7 +417,6 @@
             const card = checkbox.closest('.activity-card');
             const activityId = checkbox.id;
             
-            // Optimistic UI Update
             checklistData[activityId] = checkbox.checked;
             if (checkbox.checked) {
                 card.classList.add('checked');
@@ -423,7 +429,6 @@
                 await setDoc(sessionDocRef, checklistData, { merge: true });
             } catch (error) {
                 console.error("Erro ao salvar o checklist: ", error);
-                // Revert UI on error
                 checklistData[activityId] = !checkbox.checked;
                  if (checkbox.checked) {
                     card.classList.remove('checked');
@@ -448,8 +453,6 @@
             });
             
             scheduleGrid.innerHTML = '';
-            const gridClasses = `grid grid-cols-1 md:grid-cols-2 lg:grid-cols-${Math.min(daysToRender.length, 5) || 1} gap-4`;
-            scheduleGrid.className = gridClasses;
 
             daysToRender.forEach(day => {
                 const activitiesForDay = weekData
@@ -509,17 +512,17 @@
         }
         
         function updateView() {
-            if (!currentSessionId) return; // Não renderiza sem uma sessão
+            if (!currentSessionId) return;
             const selectedWeekData = weeks.find(w => w.id === currentWeek);
             scheduleSubtitle.textContent = `${selectedWeekData.title} (${selectedWeekData.dates})`;
             renderSchedule(currentWeek, currentStudent);
         }
         
         function setupRealtimeListener(sessionId) {
-            if (!sessionId) return;
+            if (!sessionId || !isAuthReady) return;
             
             currentSessionId = sessionId;
-            sessionIdDisplay.textContent = sessionId.substring(0, 8) + '...';
+            sessionIdDisplay.textContent = sessionId;
 
             const sessionDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'checklists', currentSessionId);
             
@@ -537,107 +540,80 @@
                 }
             }, (error) => {
                 console.error("Erro ao carregar dados do checklist: ", error);
-                // Mesmo com erro, força a renderização para evitar tela de loading
                 isInitialLoad = false;
                 updateView();
             });
         }
 
         async function initializeAppLogic() {
-    populateWeekSelector();
-    createStudentSelector();
+            populateWeekSelector();
+            createStudentSelector();
 
-    let sessionId = localStorage.getItem('sessionId');
-    if (!sessionId) {
-        sessionId = crypto.randomUUID();
-        localStorage.setItem('sessionId', sessionId);
-    }
-
-    currentSessionId = sessionId;
-    sessionIdDisplay.textContent = sessionId.substring(0, 8) + '.';
-
-    onAuthStateChanged(auth, user => {
-        if (user) {
-            currentUserId = user.uid;
-            setupRealtimeListener(sessionId);
-        }
-    });
-
-    try {
-        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-            await signInWithCustomToken(auth, __initial_auth_token);
-        } else if (!auth.currentUser) {
-            await signInAnonymously(auth);
-        }
-    } catch (error) {
-        console.error("Erro na autenticação:", error);
-        if (!auth.currentUser) {
-            await signInAnonymously(auth);
-        }
-    }
-}
+            let sessionId = localStorage.getItem('sessionId');
+            if (!sessionId) {
+                sessionId = crypto.randomUUID();
+                localStorage.setItem('sessionId', sessionId);
+            }
             
-            onAuthStateChanged(auth, user => {
+            onAuthStateChanged(auth, (user) => {
                 if (user) {
                     currentUserId = user.uid;
-                    setupRealtimeListener(sessionId);
+                    isAuthReady = true;
+                    setupRealtimeListener(localStorage.getItem('sessionId'));
                 }
             });
 
-            window.addEventListener('hashchange', () => {
-                const newSessionId = getSessionIdFromHash();
-                if(newSessionId && newSessionId !== currentSessionId) {
-                    isInitialLoad = true; // Força o recarregamento completo ao mudar de sessão
-                    setupRealtimeListener(newSessionId);
+            if (!auth.currentUser) {
+                try {
+                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                        await signInWithCustomToken(auth, __initial_auth_token);
+                    } else {
+                        await signInAnonymously(auth);
+                    }
+                } catch (error) {
+                    console.error("Erro na autenticação inicial:", error);
+                    // Se a autenticação falhar, ainda tentamos mostrar a interface
+                    isInitialLoad = false;
+                    updateView();
                 }
-            });
-
-            try {
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    await signInWithCustomToken(auth, __initial_auth_token);
-                } else if (!auth.currentUser) {
-                    await signInAnonymously(auth);
-                }
-            } catch (error) {
-                console.error("Erro na autenticação:", error);
-                if (!auth.currentUser) {
-                   await signInAnonymously(auth);
-                }
+            } else {
+                 isAuthReady = true;
+                 currentUserId = auth.currentUser.uid;
+                 setupRealtimeListener(sessionId);
             }
         }
-
 
         // --- Event Listeners ---
         copySessionIdButton.addEventListener('click', () => {
             if (currentSessionId) {
-                const fullUrl = window.location.href;
                 const textArea = document.createElement('textarea');
-                textArea.value = fullUrl;
+                textArea.value = currentSessionId;
                 document.body.appendChild(textArea);
                 textArea.select();
                 try {
                     document.execCommand('copy');
                 } catch (err) {
-                    console.error('Falha ao copiar URL:', err);
+                    console.error('Falha ao copiar ID:', err);
                 }
                 document.body.removeChild(textArea);
             }
         });
 
         syncButton.addEventListener('click', () => {
-    const newSessionId = syncIdInput.value.trim();
-    if (newSessionId && newSessionId !== currentSessionId) {
-        localStorage.setItem('sessionId', newSessionId);
-        currentSessionId = newSessionId;
-        isInitialLoad = true;
-        setupRealtimeListener(newSessionId);
-    }
-    syncIdInput.value = '';
-});
+            let valueToSync = syncIdInput.value.trim();
+            if (valueToSync) {
+                let newSessionId = valueToSync;
+                try {
+                    const url = new URL(valueToSync);
+                    newSessionId = url.hash.substring(1) || valueToSync; 
                 } catch (e) {
-                    if (urlToSync !== currentSessionId) {
-                         // REMOVIDO: window.location.hash = urlToSync;
-                    }
+                    newSessionId = valueToSync;
+                }
+
+                if (newSessionId && newSessionId !== currentSessionId) {
+                    localStorage.setItem('sessionId', newSessionId);
+                    isInitialLoad = true;
+                    setupRealtimeListener(newSessionId);
                 }
                 syncIdInput.value = '';
             }
@@ -671,3 +647,4 @@
         });
     </script>
 </body>
+</html>
