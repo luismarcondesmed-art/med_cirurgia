@@ -22,6 +22,11 @@
         }
         .activity-card.checked {
             opacity: 0.65;
+            background-color: #3a3a3a;
+        }
+        .activity-card.checked .activity-title {
+            text-decoration: line-through;
+            color: #888;
         }
         .activity-title {
             word-wrap: break-word;
@@ -82,19 +87,12 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // --- Variáveis Globais ---
-        let db, auth;
-        let currentUserId = null;
-        let currentWeek = 1;
-        let currentStudent = 'all';
-        let checklistData = {};
-        let unsubscribeUserPrefs; 
-
         // --- Configuração do Firebase ---
-        const firebaseConfig = {
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
             apiKey: "YOUR_API_KEY",
             authDomain: "YOUR_AUTH_DOMAIN",
             projectId: "YOUR_PROJECT_ID",
@@ -104,10 +102,15 @@
         };
 
         const app = initializeApp(firebaseConfig);
-        db = getFirestore(app);
-        auth = getAuth(app);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+        
+        let currentUserId = null;
+        let currentWeek = 1;
+        let currentStudent = 'all';
+        let checklistData = {};
+        let unsubscribeUserPrefs;
 
-        // --- Dados da Aplicação ---
         const students = [
             { id: 'all', name: 'Todos os Ratos', imageUrl: 'https://i.imgur.com/5AW2oEL.png' },
             { id: 1, name: 'Big', imageUrl: 'https://i.imgur.com/RaVjIKr.png' },
@@ -131,6 +134,7 @@
         ];
         
         const scheduleData = [
+            // ... (O seu scheduleData continua aqui, inalterado)
             { week: 1, studentId: [1,2,3,4,5], day: 'SEGUNDA', time: '07:00 - 07:30', activity: 'Recepção dos Alunos', professor: 'Prof. Stegagnin', location: '13º Andar' },
             { week: 1, studentId: [1,2,3,4,5], day: 'SEGUNDA', time: '07:30 - 09:00', activity: 'Visita Enfermaria', professor: 'Prof. Stegagnin', location: '13º Andar' },
             { week: 1, studentId: [1,2], day: 'SEGUNDA', time: '09:00 - 12:00', activity: 'Centro Cirúrgico', professor: 'Dr. Andre', location: 'Centro Cirúrgico' },
@@ -337,6 +341,10 @@
         const studentSelector = document.getElementById('student-selector');
         const studentImage = document.getElementById('student-image');
         const scheduleSubtitle = document.getElementById('schedule-subtitle');
+        const userIdDisplay = document.getElementById('userIdDisplay');
+        const copyUserIdButton = document.getElementById('copyUserId');
+        const loginKeywordInput = document.getElementById('loginKeyword');
+        const loginButton = document.getElementById('loginButton');
         const daysOfWeek = ['SEGUNDA', 'TERÇA', 'QUARTA', 'QUINTA', 'SEXTA', 'SÁBADO', 'DOMINGO'];
         
         function populateWeekSelector() {
@@ -368,32 +376,35 @@
                 renderSchedule(currentWeek, currentStudent);
             });
         }
+        
+        async function handleChecklistChange(event) {
+            if (!currentUserId) return;
+            const checkbox = event.target;
+            const activityId = checkbox.id;
+            checklistData[activityId] = checkbox.checked;
+            
+            const userDocRef = doc(db, `artifacts/${appId}/users/${currentUserId}/checklist`, 'data');
+            try {
+                await setDoc(userDocRef, checklistData, { merge: true });
+            } catch (error) {
+                console.error("Erro ao salvar o checklist: ", error);
+            }
+        }
 
         function renderSchedule(selectedWeek, selectedStudentId) {
             const weekData = scheduleData.filter(item => item.week === selectedWeek);
             
             let daysToRender = [];
             daysOfWeek.forEach(day => {
-                const activitiesForDay = weekData
-                    .filter(item => selectedStudentId === 'all' || item.studentId.includes(parseInt(selectedStudentId)))
-                    .some(item => item.day === day);
-                
-                if (activitiesForDay) {
+                const hasActivities = weekData.some(item => item.day === day && (selectedStudentId === 'all' || item.studentId.includes(parseInt(selectedStudentId))));
+                if (hasActivities) {
                     daysToRender.push(day);
                 }
             });
-
-            if (daysToRender.length === 0 && selectedStudentId === 'all') {
-                 daysToRender = ['SEGUNDA', 'TERÇA', 'QUARTA', 'QUINTA', 'SEXTA'];
-            }
             
             scheduleGrid.innerHTML = '';
-            const gridContainer = document.createElement('div');
-            gridContainer.className = 'grid grid-cols-1 md:grid-cols-2 gap-4';
-
-            const colClass = `lg:grid-cols-${daysToRender.length || 1}`;
-            gridContainer.classList.add(colClass);
-
+            const gridClasses = `grid grid-cols-1 md:grid-cols-2 lg:grid-cols-${Math.min(daysToRender.length, 5) || 1} gap-4`;
+            scheduleGrid.className = gridClasses;
 
             daysToRender.forEach(day => {
                 const activitiesForDay = weekData
@@ -405,14 +416,17 @@
                 dayColumn.className = 'flex flex-col gap-4';
 
                 const dayHeader = document.createElement('h2');
-                dayHeader.className = 'text-xl font-bold text-center p-3 bg-[#E1E1E1] dark:bg-[#2D2D2D] rounded-lg shadow-sm';
+                dayHeader.className = 'text-xl font-bold text-center p-3 bg-[#2D2D2D] rounded-lg shadow-sm';
                 dayHeader.textContent = day.charAt(0) + day.slice(1).toLowerCase();
                 dayColumn.appendChild(dayHeader);
 
                 if (activitiesForDay.length > 0) {
-                    activitiesForDay.forEach(item => {
+                    activitiesForDay.forEach((item, index) => {
+                        const activityId = `week-${selectedWeek}-day-${day}-activity-${index}`;
+                        const isChecked = checklistData[activityId] || false;
+
                         const card = document.createElement('div');
-                        card.className = `activity-card rounded-lg p-4 border-l-4 shadow-md bg-[#E1E1E1] dark:bg-[#2D2D2D] border-[#0078D4] dark:border-[#2899F5]`;
+                        card.className = `activity-card rounded-lg p-4 border-l-4 shadow-md bg-[#2D2D2D] border-[#2899F5] ${isChecked ? 'checked' : ''}`;
 
                         let involvedStudents = 'Todos';
                         if (item.studentId.length < students.length - 1) { 
@@ -423,25 +437,30 @@
                         }
                         
                         card.innerHTML = `
-                            <p class="font-bold text-md activity-title">${item.activity}</p>
-                            <p class="text-sm text-gray-500 dark:text-gray-400 font-medium mt-1">${item.time}</p>
-                            <div class="mt-3 border-t border-gray-300 dark:border-gray-700 pt-3 text-sm">
+                            <div class="flex items-start justify-between">
+                                <div class="flex-1">
+                                    <p class="font-bold text-md activity-title">${item.activity}</p>
+                                    <p class="text-sm text-gray-400 font-medium mt-1">${item.time}</p>
+                                </div>
+                                <input type="checkbox" id="${activityId}" class="ml-4 mt-1 h-5 w-5 rounded bg-gray-700 border-gray-600 text-blue-500 focus:ring-blue-600" ${isChecked ? 'checked' : ''}>
+                            </div>
+                            <div class="mt-3 border-t border-gray-700 pt-3 text-sm">
                                 <p><strong>Professor:</strong> ${item.professor}</p>
                                 <p><strong>Local:</strong> ${item.location}</p>
-                                <p class="mt-2 text-xs text-gray-400 dark:text-gray-500"><strong>Alunos:</strong> ${involvedStudents}</p>
+                                <p class="mt-2 text-xs text-gray-500"><strong>Alunos:</strong> ${involvedStudents}</p>
                             </div>
                         `;
                         dayColumn.appendChild(card);
+                        card.querySelector(`#${activityId}`).addEventListener('change', handleChecklistChange);
                     });
                 } else {
                      const noActivityCard = document.createElement('div');
-                     noActivityCard.className = 'text-center p-4 text-gray-500 bg-gray-50 dark:bg-gray-800/50 border border-dashed border-gray-200 dark:border-gray-700 rounded-lg h-full flex items-center justify-center';
+                     noActivityCard.className = 'text-center p-4 text-gray-500 bg-gray-800/50 border border-dashed border-gray-700 rounded-lg h-full flex items-center justify-center';
                      noActivityCard.textContent = 'Nenhuma atividade.';
                      dayColumn.appendChild(noActivityCard);
                 }
-                gridContainer.appendChild(dayColumn);
+                scheduleGrid.appendChild(dayColumn);
             });
-            scheduleGrid.appendChild(gridContainer);
         }
         
         function updateView() {
@@ -449,11 +468,84 @@
             scheduleSubtitle.textContent = `${selectedWeekData.title} (${selectedWeekData.dates})`;
             renderSchedule(currentWeek, currentStudent);
         }
+        
+        function setupRealtimeListener(userId) {
+            const userDocRef = doc(db, `artifacts/${appId}/users/${userId}/checklist`, 'data');
+            if (unsubscribeUserPrefs) {
+                unsubscribeUserPrefs();
+            }
+            unsubscribeUserPrefs = onSnapshot(userDocRef, (doc) => {
+                if (doc.exists()) {
+                    checklistData = doc.data();
+                } else {
+                    checklistData = {};
+                }
+                updateView(); 
+            }, (error) => {
+                console.error("Erro ao carregar dados do checklist: ", error);
+            });
+        }
+
+        async function initializeAuth() {
+            onAuthStateChanged(auth, user => {
+                if (user) {
+                    currentUserId = user.uid;
+                    userIdDisplay.textContent = currentUserId;
+                    setupRealtimeListener(currentUserId);
+                } else {
+                    // Se não houver token, faz login anônimo
+                     signInAnonymously(auth).catch(error => {
+                        console.error("Erro no login anônimo:", error);
+                    });
+                }
+            });
+            
+            // Tenta usar o token inicial, se disponível
+            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                try {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } catch (error) {
+                    console.error("Erro ao logar com token customizado:", error);
+                    await signInAnonymously(auth);
+                }
+            } else {
+                 // Se não houver usuário logado, faz login anônimo
+                if(!auth.currentUser){
+                    await signInAnonymously(auth);
+                }
+            }
+        }
+
+        // --- Event Listeners ---
+        copyUserIdButton.addEventListener('click', () => {
+            if (currentUserId) {
+                const textArea = document.createElement('textarea');
+                textArea.value = currentUserId;
+                document.body.appendChild(textArea);
+                textArea.select();
+                try {
+                    document.execCommand('copy');
+                } catch (err) {
+                    console.error('Falha ao copiar ID:', err);
+                }
+                document.body.removeChild(textArea);
+            }
+        });
+
+        loginButton.addEventListener('click', () => {
+             const keyword = loginKeywordInput.value.trim();
+             if (keyword) {
+                currentUserId = keyword;
+                userIdDisplay.textContent = currentUserId;
+                setupRealtimeListener(currentUserId);
+                loginKeywordInput.value = '';
+             }
+        });
 
         document.addEventListener('DOMContentLoaded', () => {
             populateWeekSelector();
             createStudentSelector();
-            updateView();
+            initializeAuth();
         });
     </script>
 </body>
