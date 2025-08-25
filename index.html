@@ -77,7 +77,6 @@
                     <label for="week-selector" class="block text-sm font-medium text-center mb-2">Selecione a Semana</label>
                     <select id="week-selector" class="w-full p-3 bg-[#2D2D2D] border border-gray-600 rounded-md shadow-sm focus:ring-[#2899F5] focus:border-[#2899F5]"></select>
                     <p id="schedule-subtitle" class="text-sm text-gray-400 mt-2 text-center"></p>
-                    <button id="clearWeekButton" class="w-full mt-4 p-2 bg-red-600 hover:bg-red-700 rounded-md font-semibold transition-colors text-white text-sm">Limpar marcações da semana</button>
                 </div>
                 <div class="bg-[#2B2B2B] p-6 rounded-lg shadow-lg text-center">
                     <h3 class="text-lg font-semibold mb-4">Selecione o Aluno</h3>
@@ -93,8 +92,9 @@
                             <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z"></path><path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z"></path></svg>
                         </button>
                     </div>
-                     <input type="text" id="syncIdInput" placeholder="Cole um URL para sincronizar" class="w-full p-2 bg-[#2D2D2D] border border-gray-600 rounded-md mb-2 text-center">
-                     <button id="syncButton" class="w-full p-2 bg-[#0078D4] hover:bg-[#2899F5] rounded-md font-semibold transition-colors">Sincronizar com URL</button>
+                     <input type="text" id="syncIdInput" placeholder="Cole um URL ou ID de sessão" class="w-full p-2 bg-[#2D2D2D] border border-gray-600 rounded-md mb-2 text-center">
+                     <button id="syncButton" class="w-full p-2 bg-[#0078D4] hover:bg-[#2899F5] rounded-md font-semibold transition-colors mt-2">Sincronizar</button>
+                     <button id="clearWeekButton" class="w-full mt-4 p-2 bg-red-600 hover:bg-red-700 rounded-md font-semibold transition-colors text-white text-sm">Limpar marcações da semana</button>
                 </div>
             </aside>
 
@@ -519,7 +519,7 @@
             if (!sessionId) return;
             
             currentSessionId = sessionId;
-            sessionIdDisplay.textContent = sessionId.substring(0, 8) + '...'; // Mostra uma versão curta
+            sessionIdDisplay.textContent = sessionId.substring(0, 8) + '...';
 
             const sessionDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'checklists', currentSessionId);
             
@@ -537,6 +537,8 @@
                 }
             }, (error) => {
                 console.error("Erro ao carregar dados do checklist: ", error);
+                // Mesmo com erro, força a renderização para evitar tela de loading
+                isInitialLoad = false;
                 updateView();
             });
         }
@@ -564,6 +566,7 @@
             window.addEventListener('hashchange', () => {
                 const newSessionId = getSessionIdFromHash();
                 if(newSessionId && newSessionId !== currentSessionId) {
+                    isInitialLoad = true; // Força o recarregamento completo ao mudar de sessão
                     setupRealtimeListener(newSessionId);
                 }
             });
@@ -610,7 +613,6 @@
                         window.location.hash = newSessionId;
                     }
                 } catch (e) {
-                    console.error("URL inválido para sincronizar:", e);
                     if (urlToSync !== currentSessionId) {
                          window.location.hash = urlToSync;
                     }
