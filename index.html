@@ -77,6 +77,7 @@
                     <label for="week-selector" class="block text-sm font-medium text-center mb-2">Selecione a Semana</label>
                     <select id="week-selector" class="w-full p-3 bg-[#2D2D2D] border border-gray-600 rounded-md shadow-sm focus:ring-[#2899F5] focus:border-[#2899F5]"></select>
                     <p id="schedule-subtitle" class="text-sm text-gray-400 mt-2 text-center"></p>
+                    <button id="clearWeekButton" class="w-full mt-4 p-2 bg-red-600 hover:bg-red-700 rounded-md font-semibold transition-colors text-white text-sm">Limpar marcações da semana</button>
                 </div>
                 <div class="bg-[#2B2B2B] p-6 rounded-lg shadow-lg text-center">
                     <h3 class="text-lg font-semibold mb-4">Selecione o Aluno</h3>
@@ -85,15 +86,15 @@
                 </div>
                  <div class="bg-[#2B2B2B] p-6 rounded-lg shadow-lg text-center">
                     <h3 class="text-lg font-semibold mb-4">Sincronização</h3>
-                    <p class="text-xs text-gray-400 mb-2">Seu ID de Sessão (Partilhável):</p>
+                    <p class="text-xs text-gray-400 mb-2">Partilhe este URL para colaborar:</p>
                     <div class="flex items-center justify-center bg-[#1B1B1B] p-2 rounded-md mb-4">
-                        <span id="sessionIdDisplay" class="font-mono text-lg text-green-400 break-all"></span>
+                        <span id="sessionIdDisplay" class="font-mono text-sm text-green-400 break-all"></span>
                         <button id="copySessionId" class="ml-2 p-1 hover:bg-gray-700 rounded flex-shrink-0">
                             <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z"></path><path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z"></path></svg>
                         </button>
                     </div>
-                     <input type="text" id="syncIdInput" placeholder="Cole um ID para sincronizar" class="w-full p-2 bg-[#2D2D2D] border border-gray-600 rounded-md mb-2 text-center">
-                     <button id="syncButton" class="w-full p-2 bg-[#0078D4] hover:bg-[#2899F5] rounded-md font-semibold transition-colors">Sincronizar com ID</button>
+                     <input type="text" id="syncIdInput" placeholder="Cole um URL para sincronizar" class="w-full p-2 bg-[#2D2D2D] border border-gray-600 rounded-md mb-2 text-center">
+                     <button id="syncButton" class="w-full p-2 bg-[#0078D4] hover:bg-[#2899F5] rounded-md font-semibold transition-colors">Sincronizar com URL</button>
                 </div>
             </aside>
 
@@ -132,6 +133,7 @@
         let currentStudent = 'all';
         let checklistData = {};
         let unsubscribeChecklist;
+        let isInitialLoad = true;
 
         const students = [
             { id: 'all', name: 'Todos os Ratos', imageUrl: 'https://i.imgur.com/5AW2oEL.png' },
@@ -369,6 +371,7 @@
         const copySessionIdButton = document.getElementById('copySessionId');
         const syncIdInput = document.getElementById('syncIdInput');
         const syncButton = document.getElementById('syncButton');
+        const clearWeekButton = document.getElementById('clearWeekButton');
         const daysOfWeek = ['SEGUNDA', 'TERÇA', 'QUARTA', 'QUINTA', 'SEXTA', 'SÁBADO', 'DOMINGO'];
         
         function populateWeekSelector() {
@@ -415,7 +418,7 @@
                 card.classList.remove('checked');
             }
 
-            const sessionDocRef = doc(db, `artifacts/${appId}/public/data/checklists`, currentSessionId);
+            const sessionDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'checklists', currentSessionId);
             try {
                 await setDoc(sessionDocRef, checklistData, { merge: true });
             } catch (error) {
@@ -516,9 +519,9 @@
             if (!sessionId) return;
             
             currentSessionId = sessionId;
-            sessionIdDisplay.textContent = currentSessionId;
+            sessionIdDisplay.textContent = sessionId.substring(0, 8) + '...'; // Mostra uma versão curta
 
-            const sessionDocRef = doc(db, `artifacts/${appId}/public/data/checklists`, currentSessionId);
+            const sessionDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'checklists', currentSessionId);
             
             if (unsubscribeChecklist) {
                 unsubscribeChecklist();
@@ -526,10 +529,14 @@
 
             unsubscribeChecklist = onSnapshot(sessionDocRef, (doc) => {
                 checklistData = doc.exists() ? doc.data() : {};
-                updateView(); 
+                if(isInitialLoad){
+                    updateView(); 
+                    isInitialLoad = false;
+                } else {
+                    renderSchedule(currentWeek, currentStudent);
+                }
             }, (error) => {
                 console.error("Erro ao carregar dados do checklist: ", error);
-                // Mesmo com erro, tenta renderizar a view para não ficar em branco
                 updateView();
             });
         }
@@ -538,20 +545,26 @@
             populateWeekSelector();
             createStudentSelector();
 
-            const urlParams = new URLSearchParams(window.location.search);
-            let sessionIdFromUrl = urlParams.get('session');
+            const getSessionIdFromHash = () => window.location.hash.substring(1);
+            
+            let sessionId = getSessionIdFromHash();
 
-            if (!sessionIdFromUrl) {
-                sessionIdFromUrl = crypto.randomUUID();
-                const newUrl = `${window.location.pathname}?session=${sessionIdFromUrl}`;
-                // Usar replaceState para não quebrar o histórico de navegação
-                window.history.replaceState({ path: newUrl }, '', newUrl);
+            if (!sessionId) {
+                sessionId = crypto.randomUUID();
+                window.location.hash = sessionId;
             }
             
             onAuthStateChanged(auth, user => {
                 if (user) {
                     currentUserId = user.uid;
-                    setupRealtimeListener(sessionIdFromUrl);
+                    setupRealtimeListener(sessionId);
+                }
+            });
+
+            window.addEventListener('hashchange', () => {
+                const newSessionId = getSessionIdFromHash();
+                if(newSessionId && newSessionId !== currentSessionId) {
+                    setupRealtimeListener(newSessionId);
                 }
             });
 
@@ -573,7 +586,7 @@
         // --- Event Listeners ---
         copySessionIdButton.addEventListener('click', () => {
             if (currentSessionId) {
-                const fullUrl = `${window.location.origin}${window.location.pathname}?session=${currentSessionId}`;
+                const fullUrl = window.location.href;
                 const textArea = document.createElement('textarea');
                 textArea.value = fullUrl;
                 document.body.appendChild(textArea);
@@ -588,13 +601,45 @@
         });
 
         syncButton.addEventListener('click', () => {
-             const newSessionId = syncIdInput.value.trim();
-             if (newSessionId && newSessionId !== currentSessionId) {
-                const newUrl = `${window.location.pathname}?session=${newSessionId}`;
-                window.history.pushState({ path: newUrl }, '', newUrl);
-                setupRealtimeListener(newSessionId);
+            let urlToSync = syncIdInput.value.trim();
+            if (urlToSync) {
+                try {
+                    const url = new URL(urlToSync);
+                    const newSessionId = url.hash.substring(1);
+                    if (newSessionId && newSessionId !== currentSessionId) {
+                        window.location.hash = newSessionId;
+                    }
+                } catch (e) {
+                    console.error("URL inválido para sincronizar:", e);
+                    if (urlToSync !== currentSessionId) {
+                         window.location.hash = urlToSync;
+                    }
+                }
                 syncIdInput.value = '';
-             }
+            }
+        });
+
+        clearWeekButton.addEventListener('click', async () => {
+            if (!currentUserId || !currentSessionId) return;
+
+            const prefix = `week-${currentWeek}-`;
+            let needsUpdate = false;
+
+            for (const key in checklistData) {
+                if (key.startsWith(prefix)) {
+                    delete checklistData[key];
+                    needsUpdate = true;
+                }
+            }
+
+            if (needsUpdate) {
+                const sessionDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'checklists', currentSessionId);
+                try {
+                    await setDoc(sessionDocRef, checklistData); 
+                } catch (error) {
+                    console.error("Erro ao limpar marcações da semana: ", error);
+                }
+            }
         });
 
         document.addEventListener('DOMContentLoaded', () => {
