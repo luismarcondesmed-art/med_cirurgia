@@ -363,12 +363,13 @@
             if (!userId) return;
             const userDocRef = doc(db, 'users', userId);
             try {
-                // Save the current state to Firestore
+                // Save the current state to Firestore, including the selected week
                 await setDoc(userDocRef, {
                     checklistData,
                     currentStudent,
                     currentSpecialty,
-                    hideStudyTime
+                    hideStudyTime,
+                    currentWeekOrRodizio
                 }, { merge: true });
             } catch (error) {
                 console.error("Error saving state: ", error);
@@ -381,30 +382,39 @@
             userIdDisplayDesktop.value = uid;
             const userDocRef = doc(db, 'users', userId);
 
-            // Detach any existing listener before creating a new one
             if (unsubscribe) unsubscribe();
 
             // Listen for real-time changes to the user's data
             unsubscribe = onSnapshot(userDocRef, (docSnap) => {
+                const oldSpecialty = currentSpecialty;
+
                 if (docSnap.exists()) {
                     const data = docSnap.data();
                     checklistData = data.checklistData || {};
                     currentStudent = data.currentStudent || 'all';
                     currentSpecialty = data.currentSpecialty || 'cirurgia';
                     hideStudyTime = data.hideStudyTime || false;
+                    currentWeekOrRodizio = data.currentWeekOrRodizio || '1';
                 } else {
-                    // If no document exists, create one with the default state
-                    saveStateToFirebase(); 
+                    saveStateToFirebase(); // Create doc with initial state
+                    return; 
                 }
                 
-                // Update UI based on the loaded data
                 btnCirurgia.classList.toggle('active', currentSpecialty === 'cirurgia');
                 btnPediatria.classList.toggle('active', currentSpecialty === 'pediatria');
                 hideStudyDesktop.checked = hideStudyTime;
                 hideStudyMobile.checked = hideStudyTime;
 
-                updateUILayout();
-                populateSelectors();
+                // If specialty changed, rebuild the selectors
+                if (oldSpecialty !== currentSpecialty) {
+                    updateUILayout();
+                    populateSelectors();
+                }
+
+                // Ensure selectors reflect the current state
+                weekSelectorDesktop.value = currentWeekOrRodizio;
+                weekSelectorMain.value = currentWeekOrRodizio;
+                
                 updateView();
             });
         }
@@ -412,34 +422,37 @@
         // --- Core Application Logic ---
 
         function switchSpecialty(newSpecialty) {
-            // Prevent unnecessary re-renders if the specialty is already selected
-            if (newSpecialty === currentSpecialty && document.body.dataset.initialized) return;
-            document.body.dataset.initialized = true;
+            if (newSpecialty === currentSpecialty) return;
 
             currentSpecialty = newSpecialty;
             
+            // Reset to the first week of the new specialty
+            const data = allData[currentSpecialty];
+            if (data && data.weeks && data.weeks.length > 0) {
+                currentWeekOrRodizio = data.weeks[0].id;
+            } else {
+                currentWeekOrRodizio = '1'; // Fallback
+            }
+
             updateUILayout();
             populateSelectors();
-            updateView();
             saveStateToFirebase();
         }
 
         function populateSelectors() {
             const data = allData[currentSpecialty];
-            if (!data) return; // Guard clause if data isn't loaded yet
+            if (!data) return; 
             const weeks = data.weeks;
             const students = data.students;
 
             const selector = weekSelectorDesktop;
             const mobileSelector = weekSelectorMain;
             
-            // Clear existing options
             selector.innerHTML = '';
             mobileSelector.innerHTML = '';
             studentSelectorMobile.innerHTML = '';
             studentSelectorDesktop.innerHTML = '';
 
-            // Populate week/rotation selectors
             weeks.forEach(week => {
                 const option = document.createElement('option');
                 option.value = week.id;
@@ -448,7 +461,6 @@
                 mobileSelector.appendChild(option.cloneNode(true));
             });
 
-            // Populate student selectors only for 'cirurgia'
             if (currentSpecialty === 'cirurgia') {
                 students.forEach(student => {
                     const option = document.createElement('option');
@@ -457,22 +469,12 @@
                     studentSelectorMobile.appendChild(option.cloneNode(true));
                     studentSelectorDesktop.appendChild(option.cloneNode(true));
                 });
-                studentSelectorMobile.value = currentStudent;
-                studentSelectorDesktop.value = currentStudent;
-            }
-            
-            // Set the initial week/rotation
-            if (weeks && weeks.length > 0) {
-                currentWeekOrRodizio = weeks[0].id;
-                selector.value = currentWeekOrRodizio;
-                mobileSelector.value = currentWeekOrRodizio;
             }
         }
         
         function updateUILayout() {
             const isCirurgia = currentSpecialty === 'cirurgia';
             
-            // Show/hide elements based on the selected specialty
             studentContainerDesktop.style.display = isCirurgia ? 'block' : 'none';
             locationsContainerDesktop.style.display = isCirurgia ? 'none' : 'block';
             weekSelectorContainerDesktop.style.display = isCirurgia ? 'flex' : 'none';
@@ -487,7 +489,6 @@
             if (currentSpecialty !== 'pediatria') return;
             
             const weekData = allData.pediatria.schedule.filter(item => item.week == currentWeekOrRodizio);
-            // Get a unique list of locations for the current rotation
             const locations = [...new Set(weekData.map(item => item.location))].filter(loc => loc && loc !== '-');
             
             locationsListDesktop.innerHTML = '';
@@ -521,6 +522,8 @@
                 if (selectedStudent) {
                     studentImageMobile.src = selectedStudent.imageUrl;
                     studentImageDesktop.src = selectedStudent.imageUrl;
+                    studentSelectorMobile.value = currentStudent;
+                    studentSelectorDesktop.value = currentStudent;
                 }
             } else {
                 populateLocationsList();
@@ -533,17 +536,14 @@
             if (!data) return;
             let weekData = data.schedule.filter(item => item.week == currentWeekOrRodizio);
 
-            // Filter by student for 'cirurgia'
             if (currentSpecialty === 'cirurgia') {
                 weekData = weekData.filter(item => currentStudent === 'all' || (item.studentId && item.studentId.includes(parseInt(currentStudent))));
             }
             
-            // Filter out study times if the option is checked
             let filteredData = hideStudyTime ? weekData.filter(item => !item.activity.toLowerCase().includes('horário estudo')) : weekData;
 
             scheduleGrid.innerHTML = '';
 
-            // Group activities by day of the week
             const groupedByDay = filteredData.reduce((acc, item) => {
                 if (!acc[item.day]) acc[item.day] = [];
                 acc[item.day].push(item);
@@ -552,7 +552,6 @@
 
             const orderedDays = daysOfWeek.filter(day => groupedByDay[day]);
 
-            // Create and append the schedule cards to the grid
             orderedDays.forEach(day => {
                 const activitiesForDay = groupedByDay[day].sort((a, b) => a.time.localeCompare(b.time));
                 const dayColumn = document.createElement('div');
@@ -571,7 +570,6 @@
                     const card = document.createElement('div');
                     card.className = `activity-card rounded-lg p-4 border-l-4 shadow-md bg-[#2D2D2D] border-[#2899F5] ${isChecked ? 'checked' : ''}`;
                     
-                    // Highlight the current activity based on time
                     const now = new Date();
                     const currentTime = now.getHours() * 100 + now.getMinutes();
                     const [startTimeStr, endTimeStr] = item.time.split(' - ');
@@ -586,7 +584,6 @@
                         card.classList.add('current-activity');
                     }
 
-                    // Get student names for 'cirurgia'
                     let studentHtml = '';
                     if (currentSpecialty === 'cirurgia' && item.studentId) {
                         const involvedStudents = allData.cirurgia.students
@@ -629,7 +626,7 @@
             const isDesktop = e.target.id.includes('desktop');
             syncSelectors(e.target, isDesktop ? weekSelectorMain : weekSelectorDesktop);
             currentWeekOrRodizio = e.target.value;
-            updateView();
+            saveStateToFirebase();
         }
 
         function handleStudentChange(e) {
@@ -637,12 +634,6 @@
             syncSelectors(e.target, isMobile ? studentSelectorDesktop : studentSelectorMobile);
             
             currentStudent = e.target.value;
-            
-            const selectedStudent = allData.cirurgia.students.find(s => s.id == currentStudent);
-            studentImageMobile.src = selectedStudent.imageUrl;
-            studentImageDesktop.src = selectedStudent.imageUrl;
-            
-            renderSchedule();
             saveStateToFirebase();
             
             if (isMobile) {
@@ -663,9 +654,6 @@
 
         function handleHideStudyChange(e) {
             hideStudyTime = e.target.checked;
-            hideStudyDesktop.checked = hideStudyTime;
-            hideStudyMobile.checked = hideStudyTime;
-            renderSchedule();
             saveStateToFirebase();
         }
 
@@ -727,11 +715,8 @@
 
             if (currentWeekInfo) {
                 currentWeekOrRodizio = currentWeekInfo.id;
-                weekSelectorDesktop.value = currentWeekOrRodizio;
-                weekSelectorMain.value = currentWeekOrRodizio;
-                updateView();
+                saveStateToFirebase();
                 
-                // Scroll to today's column after a short delay to allow rendering
                 setTimeout(() => {
                     const dayCol = document.getElementById(`day-col-${todayDay}`);
                     if (dayCol) {
@@ -751,12 +736,10 @@
         
         // --- Initialization ---
 
-        // Update the current activity highlight every minute
         setInterval(() => {
             renderSchedule();
         }, 60000);
 
-        // Start the application
         fetchData();
     </script>
 </body>
