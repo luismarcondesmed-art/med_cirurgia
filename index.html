@@ -62,21 +62,21 @@
             border-radius: 10px;
             border: 2px solid #2B2B2B;
         }
-        #sidebar-overlay {
+        #sidebar-overlay, #confirm-modal-overlay {
             transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
             visibility: hidden;
             opacity: 0;
         }
-        #sidebar-overlay.is-open {
+        #sidebar-overlay.is-open, #confirm-modal-overlay.is-open {
             visibility: visible;
             opacity: 1;
         }
-        #sidebar-mobile {
+        #sidebar-mobile, #confirm-modal {
             transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
             transform: scale(0.95);
             opacity: 0;
         }
-        #sidebar-overlay.is-open #sidebar-mobile {
+        #sidebar-overlay.is-open #sidebar-mobile, #confirm-modal-overlay.is-open #confirm-modal {
             transform: scale(1);
             opacity: 1;
         }
@@ -86,6 +86,15 @@
         .specialty-btn.active {
             background-color: #2899F5;
             color: white;
+        }
+        #toast-notification {
+            transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+            transform: translateY(100%);
+            opacity: 0;
+        }
+        #toast-notification.show {
+            transform: translateY(0);
+            opacity: 1;
         }
     </style>
 </head>
@@ -177,13 +186,28 @@
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
     </button>
 
+    <!-- Toast Notification -->
+    <div id="toast-notification" class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg">
+        <p id="toast-message">ID copiado!</p>
+    </div>
+
+    <!-- Confirm Modal -->
+    <div id="confirm-modal-overlay" class="fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center p-4">
+        <div id="confirm-modal" class="relative w-full max-w-sm bg-[#2B2B2B] rounded-2xl shadow-2xl p-6">
+            <p id="confirm-message" class="text-center mb-6">Você tem certeza?</p>
+            <div class="flex justify-center gap-4">
+                <button id="confirm-btn-yes" class="px-6 py-2 bg-green-600 hover:bg-green-700 rounded-md font-semibold transition-colors">Sim</button>
+                <button id="confirm-btn-no" class="px-6 py-2 bg-gray-600 hover:bg-gray-700 rounded-md font-semibold transition-colors">Não</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Firebase SDKs -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
         import { getFirestore, doc, onSnapshot, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-        // Cole aqui a configuração do seu projeto Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyCJ3QH3rGpS9ReSVQ4WolBRrjcjZAyxeLw",
             authDomain: "medcirurgia-fb447.firebaseapp.com",
@@ -194,7 +218,6 @@
             measurementId: "G-J3K8Q4PWFW"
         };
 
-        // Inicialize o Firebase
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
@@ -252,6 +275,41 @@
         const userIdInput = document.getElementById('userIdInput');
         const loadUserIdBtn = document.getElementById('loadUserId');
 
+        const toast = document.getElementById('toast-notification');
+        const toastMessage = document.getElementById('toast-message');
+        const confirmModalOverlay = document.getElementById('confirm-modal-overlay');
+        const confirmMessage = document.getElementById('confirm-message');
+        const confirmBtnYes = document.getElementById('confirm-btn-yes');
+        const confirmBtnNo = document.getElementById('confirm-btn-no');
+
+        function showToast(message) {
+            toastMessage.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        function showConfirm(message, onConfirm) {
+            confirmMessage.textContent = message;
+            confirmModalOverlay.classList.add('is-open');
+
+            const handleYes = () => {
+                onConfirm();
+                cleanup();
+            };
+            const handleNo = () => cleanup();
+
+            function cleanup() {
+                confirmModalOverlay.classList.remove('is-open');
+                confirmBtnYes.removeEventListener('click', handleYes);
+                confirmBtnNo.removeEventListener('click', handleNo);
+            }
+
+            confirmBtnYes.addEventListener('click', handleYes);
+            confirmBtnNo.addEventListener('click', handleNo);
+        }
+
         async function fetchData() {
             try {
                 const [cirurgiaRes, pediatriaRes] = await Promise.all([
@@ -261,14 +319,11 @@
                 allData.cirurgia = await cirurgiaRes.json();
                 allData.pediatria = await pediatriaRes.json();
                 
-                // Now that data is loaded, proceed with Firebase auth
                 onAuthStateChanged(auth, (user) => {
                     if (user) {
                         setupFirestoreListener(user.uid);
                     } else {
-                        signInAnonymously(auth).catch((error) => {
-                            console.error("Erro no login anônimo:", error);
-                        });
+                        signInAnonymously(auth).catch((error) => console.error("Anonymous sign-in error:", error));
                     }
                 });
 
@@ -279,19 +334,13 @@
         }
 
         function toggleSidebar() {
-            if (sidebarOverlay.classList.contains('is-open')) {
-                sidebarOverlay.classList.remove('is-open');
-            } else {
-                sidebarOverlay.classList.add('is-open');
-            }
+            sidebarOverlay.classList.toggle('is-open');
         }
 
         sidebarToggle.addEventListener('click', toggleSidebar);
         sidebarClose.addEventListener('click', toggleSidebar);
         sidebarOverlay.addEventListener('click', (e) => {
-            if (e.target === sidebarOverlay) {
-                toggleSidebar();
-            }
+            if (e.target === sidebarOverlay) toggleSidebar();
         });
         
         async function saveStateToFirebase() {
@@ -303,9 +352,9 @@
                     currentStudent,
                     currentSpecialty,
                     hideStudyTime
-                }, { merge: true }); // Use merge to avoid overwriting data unintentionally
+                }, { merge: true });
             } catch (error) {
-                console.error("Erro ao salvar dados: ", error);
+                console.error("Error saving state: ", error);
             }
         }
 
@@ -578,8 +627,17 @@
                 renderSchedule();
             }
             
-            btnCirurgia.addEventListener('click', () => switchSpecialty('cirurgia'));
-            btnPediatria.addEventListener('click', () => switchSpecialty('pediatria'));
+            function main() {
+                const lastSpecialty = localStorage.getItem('cronograma_lastSpecialty');
+                if(lastSpecialty) {
+                    currentSpecialty = lastSpecialty;
+                }
+
+                btnCirurgia.addEventListener('click', () => switchSpecialty('cirurgia'));
+                btnPediatria.addEventListener('click', () => switchSpecialty('pediatria'));
+
+                switchSpecialty(currentSpecialty);
+            }
 
             function clearWeekData() {
                 Object.keys(checklistData)
@@ -614,7 +672,7 @@
                         }
                     }, 100);
                 } else {
-                    alert('Nenhuma atividade programada para hoje nesta especialidade.');
+                    showToast('Nenhuma atividade programada para hoje.');
                 }
             });
             
@@ -632,17 +690,17 @@
             copyUserIdBtn.addEventListener('click', () => {
                 userIdDisplay.select();
                 document.execCommand('copy');
-                alert('ID copiado para a área de transferência!');
+                showToast('ID copiado para a área de transferência!');
             });
 
             loadUserIdBtn.addEventListener('click', () => {
                 const newId = userIdInput.value.trim();
                 if (newId && newId !== userId) {
-                    if (confirm(`Você tem certeza que quer carregar os dados do ID ${newId}? Seus dados atuais serão sobrescritos.`)) {
+                    showConfirm(`Carregar dados do ID ${newId}? Seus dados atuais serão sobrescritos.`, () => {
                         setupFirestoreListener(newId);
-                    }
+                    });
                 }
-            };
+            });
             
             setInterval(() => {
                 renderSchedule();
