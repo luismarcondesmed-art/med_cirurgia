@@ -213,4 +213,15 @@
         { "week": 10, "studentId": [1,2,4,5], "day": "QUARTA", "time": "13:00 - 15:30", "activity": "Ambulatório", "professor": "Prof. Andre Matos", "location": "SAM 7" },
         { "week": 10, "studentId": [3], "day": "QUARTA", "time": "13:00 - 18:00", "activity": "CC URO", "professor": "Médico da escala", "location": "CC" },
         { "week": 10, "studentId": [1,2,3,4,5], "day": "QUINTA", "time": "07:15 - 07:30", "activity": "Enfermaria", "professor": "Prof. Luiz Sérgio", "location": "9º Andar" },
-        { "week": 10, "studentId": [1,2,3,4,5], "day": "QUINTA", "time": "08:00 - 1
+        { "week": 10, "studentId": [1,2,3,4,5], "day": "QUINTA", "time": "08:00 - 10:00", "activity": "Reunião Clínica", "professor": "Professores Cavalli, Fraga, Krebs, Luiz Sérgio, Andre Matos", "location": "9º Andar" },
+        { "week": 10, "studentId": [1,2,3,4,5], "day": "QUINTA", "time": "10:00 - 11:00", "activity": "Discussão de Casos", "professor": "Professores Cavalli, Fraga, Krebs, Andre Matos", "location": "9º Andar" },
+        { "week": 10, "studentId": [4], "day": "QUINTA", "time": "13:00 - 18:00", "activity": "CC URO", "professor": "Médico da escala e Prof. Cavalli", "location": "CC" },
+        { "week": 10, "studentId": [1,2,3,5], "day": "QUINTA", "time": "13:00 - 18:00", "activity": "Ambulatório", "professor": "Dr. Gil Vicente C. Fulgencio", "location": "SAM 7" },
+        { "week": 10, "studentId": [1,2,3], "day": "SEXTA", "time": "07:15 - 07:30", "activity": "Enfermaria", "professor": "Prof. Krebs, Dr. Aranha e Dr. Ruimario", "location": "9º Andar" },
+        { "week": 10, "studentId": [4,5], "day": "SEXTA", "time": "07:30 - 12:00", "activity": "CC URO", "professor": "Médico da escala", "location": "CC" },
+        { "week": 10, "studentId": [3,5], "day": "SEXTA", "time": "13:00 - 18:00", "activity": "CC URO", "professor": "Médico da escala", "location": "CC" },
+        { "week": 10, "studentId": [1,2,4], "day": "SEXTA", "time": "13:00 - 18:00", "activity": "Ambulatório", "professor": "Dra. Natalie Tominaga", "location": "SAM 7" },
+        { "week": 10, "studentId": [3], "day": "SÁBADO", "time": "07:30 - 10:30", "activity": "Enfermaria", "professor": "Médico da escala", "location": "9º Andar" },
+        { "week": 10, "studentId": [4,5], "day": "DOMINGO", "time": "07:30 - 10:30", "activity": "Enfermaria", "professor": "Médico da escala", "location": "9º Andar" }
+    ]
+}
