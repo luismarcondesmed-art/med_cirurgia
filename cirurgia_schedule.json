@@ -1,0 +1,47 @@
+{
+    "cycle_start_date": "2025-08-25",
+    "students": [
+        { "id": "all", "name": "Todos os Ratos", "imageUrl": "https://i.imgur.com/5AW2oEL.png" },
+        { "id": 1, "name": "Big", "imageUrl": "https://i.imgur.com/RaVjIKr.png" },
+        { "id": 2, "name": "Jerso", "imageUrl": "https://i.imgur.com/Rc1FxGy.png" },
+        { "id": 3, "name": "Negão", "imageUrl": "https://i.imgur.com/3jRzf17.png" },
+        { "id": 4, "name": "Marcondes", "imageUrl": "https://i.imgur.com/Yy1mHjs.png" },
+        { "id": 5, "name": "Lyan", "imageUrl": "https://i.imgur.com/BftVHjo.png" }
+    ],
+    "weeks": [
+        { "id": 1, "title": "CIPE", "dates": "25/08/25 a 31/08/25", "start": "2025-08-25", "end": "2025-08-31" },
+        { "id": 2, "title": "MULTI", "dates": "01/09/25 a 07/09/25", "start": "2025-09-01", "end": "2025-09-07" },
+        { "id": 3, "title": "COLOPROCTO", "dates": "08/09/25 a 14/09/25", "start": "2025-09-08", "end": "2025-09-14" },
+        { "id": 4, "title": "CX PLÁSTICA", "dates": "15/09/25 a 21/09/25", "start": "2025-09-15", "end": "2025-09-21" },
+        { "id": 5, "title": "CLÍNICA CIRÚRGICA 1", "dates": "22/09/25 a 28/09/25", "start": "2025-09-22", "end": "2025-09-28" },
+        { "id": 6, "title": "CLÍNICA CIRÚRGICA 2", "dates": "29/09/25 a 05/10/25", "start": "2025-09-29", "end": "2025-10-05" },
+        { "id": 7, "title": "ORTOPEDIA 1", "dates": "06/10/25 a 12/10/25", "start": "2025-10-06", "end": "2025-10-12" },
+        { "id": 8, "title": "ORTOPEDIA 2", "dates": "13/10/25 a 19/10/25", "start": "2025-10-13", "end": "2025-10-19" },
+        { "id": 9, "title": "UROLOGIA 1", "dates": "20/10/25 a 26/10/25", "start": "2025-10-20", "end": "2025-10-26" },
+        { "id": 10, "title": "UROLOGIA 2", "dates": "27/10/25 a 01/11/25", "start": "2025-10-27", "end": "2025-11-01" }
+    ],
+    "schedule": [
+        { "week": 1, "studentId": [1, 2, 3, 4, 5], "day": "SEGUNDA", "time": "07:00 - 07:30", "activity": "Recepção dos Alunos", "professor": "Prof. Steganin (DD)", "location": "13º Andar" },
+        { "week": 1, "studentId": [1, 2, 3, 4, 5], "day": "SEGUNDA", "time": "07:30 - 09:00", "activity": "Visita Enfermaria", "professor": "Prof. Steganin (DD)", "location": "13º Andar" },
+        { "week": 1, "studentId": [1, 2], "day": "SEGUNDA", "time": "09:00 - 12:00", "activity": "Centro Cirúrgico", "professor": "Dr André, Profa Izabel (OSD)", "location": "Centro Cirúrgico" },
+        { "week": 1, "studentId": [1, 2], "day": "SEGUNDA", "time": "13:00 - 18:00", "activity": "Centro Cirúrgico", "professor": "Dra Mariah, Profa Izabel (OSD)", "location": "Centro Cirúrgico" },
+        { "week": 1, "studentId": [1, 2, 3, 4, 5], "day": "TERÇA", "time": "07:30 - 09:00", "activity": "Aula Residentes CIPE", "professor": "Profa Izabel (DD)", "location": "13º Andar" },
+        { "week": 1, "studentId": [1, 2, 3, 4, 5], "day": "TERÇA", "time": "09:00 - 12:00", "activity": "Ambulatório CIPE", "professor": "Dra Vilani, Profa Izabel (DD)", "location": "SAM 1" },
+        { "week": 1, "studentId": [1, 2, 3, 4, 5], "day": "TERÇA", "time": "13:30 - 15:30", "activity": "Aula POCUS", "professor": "Prof. André (DD)", "location": "Auditório 13º Andar" },
+        { "week": 1, "studentId": [1, 2, 3, 4, 5], "day": "TERÇA", "time": "15:30 - 18:00", "activity": "Visita à Beira Leito", "professor": "Prof. André (DD)", "location": "Enfermaria" },
+        { "week": 1, "studentId": [3], "day": "QUARTA", "time": "07:30 - 11:00", "activity": "Centro Cirúrgico Ambulatorial", "professor": "Dr. André/Dr. Miguel, Prof. Camila (OSD)", "location": "Centro Cirúrgico" },
+        { "week": 1, "studentId": [1, 2], "day": "QUARTA", "time": "07:30 - 11:00", "activity": "Ambulatório SAM 1", "professor": "Dr. André/Dr. Miguel, Prof. Camila (OSD)", "location": "SAM 1" },
+        { "week": 1, "studentId": [4, 5], "day": "QUARTA", "time": "07:30 - 12:00", "activity": "Centro Cirúrgico", "professor": "Prof. Camila (DD)", "location": "Centro Cirúrgico" },
+        { "week": 1, "studentId": [1, 2, 3], "day": "QUARTA", "time": "13:30 - 18:00", "activity": "Ambulatório SAM 1", "professor": "Dra. Isabela e/ou Dra. Karina, Prof. Camila (OSD)", "location": "SAM 1" },
+        { "week": 1, "studentId": [4, 5], "day": "QUARTA", "time": "13:00 - 18:00", "activity": "Centro Cirúrgico", "professor": "Dra. Isabela e/ou Dra. Karina, Prof. Camila (OSD)", "location": "Centro Cirúrgico" },
+        { "week": 1, "studentId": [1, 2, 3, 4, 5], "day": "QUINTA", "time": "07:30 - 08:30", "activity": "Aula CIPE com Residentes", "professor": "Prof. Marcelo (DD)", "location": "13º Andar" },
+        { "week": 1, "studentId": [1, 2, 3, 4, 5], "day": "QUINTA", "time": "08:30 - 10:00", "activity": "Seminário", "professor": "Prof. Marcelo (DD)", "location": "13º Andar" },
+        { "week": 1, "studentId": [3, 4], "day": "QUINTA", "time": "10:00 - 12:30", "activity": "Centro Cirúrgico", "professor": "Dra Maria Helena, Prof. Marcelo (OSD)", "location": "Centro Cirúrgico" },
+        { "week": 1, "studentId": [1, 2, 3, 4, 5], "day": "QUINTA", "time": "13:30 - 16:00", "activity": "Aula Prática POCUS", "professor": "Prof. André (DD)", "location": "Auditório 13º Andar" },
+        { "week": 1, "studentId": [1, 2, 3, 4, 5], "day": "QUINTA", "time": "16:00 - 18:00", "activity": "Centro Cirúrgico", "professor": "Dra Isabela e/ou Dra Karina, Prof. Camila (OSD)", "location": "Centro Cirúrgico" },
+        { "week": 1, "studentId": [1, 2, 3, 4, 5], "day": "SEXTA", "time": "07:30 - 08:00", "activity": "Reunião CIPE", "professor": "Dr. André, Prof. Camila (OSD)", "location": "13º Andar" },
+        { "week": 1, "studentId": [1, 2, 3, 4, 5], "day": "SEXTA", "time": "08:00 - 10:00", "activity": "Seminário", "professor": "Prof. Marcelo (DD)", "location": "13º Andar" },
+        { "week": 1, "studentId": [1, 2, 3, 4, 5], "day": "SEXTA", "time": "09:00 - 12:00", "activity": "Ambulatório SAM 1", "professor": "Dra Maria Helena/Dra Mariah, Profa. Camila (OSD)", "location": "SAM 1" },
+        { "week": 1, "studentId": [1, 2], "day": "SEXTA", "time": "13:00 - 18:00", "activity": "Centro Cirúrgico", "professor": "Dr. Gustavo, Prof. Steganini (OSD)", "location": "Centro Cirúrgico" }
+    ]
+}
