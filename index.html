@@ -286,9 +286,9 @@
                 btnCirurgia.classList.toggle('active', newSpecialty === 'cirurgia');
                 btnPediatria.classList.toggle('active', newSpecialty === 'pediatria');
                 
+                updateUILayout();
                 loadState();
                 populateSelectors();
-                updateUILayout();
                 updateView();
             }
 
@@ -329,7 +329,7 @@
                 selector.value = currentWeekOrRodizio;
                 mobileSelector.value = currentWeekOrRodizio;
             }
-
+            
             function updateUILayout() {
                 const isCirurgia = currentSpecialty === 'cirurgia';
                 
@@ -339,8 +339,8 @@
                 weekSelectorContainerDesktop.style.display = isCirurgia ? 'flex' : 'none';
                 
                 // Main Content Selector Visibility
-                weekSelectorContainerMain.style.display = isCirurgia && window.innerWidth >= 1024 ? 'none' : 'block';
-
+                weekSelectorContainerMain.style.display = 'block'; // Always visible now
+                
                 // Labels
                 const weekLabel = isCirurgia ? 'Selecione a Semana' : 'Selecione o Rodízio';
                 document.getElementById('week-label-desktop').textContent = weekLabel;
@@ -351,7 +351,7 @@
                 if (currentSpecialty !== 'pediatria') return;
                 
                 const weekData = allData.pediatria.schedule.filter(item => item.week == currentWeekOrRodizio);
-                const locations = [...new Set(weekData.map(item => item.location))].filter(loc => loc !== '-');
+                const locations = [...new Set(weekData.map(item => item.location))].filter(loc => loc && loc !== '-');
                 
                 locationsListDesktop.innerHTML = '';
                 if (locations.length > 0) {
@@ -419,7 +419,11 @@
 
             function renderSchedule() {
                 const data = allData[currentSpecialty];
-                const weekData = data.schedule.filter(item => item.week == currentWeekOrRodizio);
+                let weekData = data.schedule.filter(item => item.week == currentWeekOrRodizio);
+
+                if (currentSpecialty === 'cirurgia') {
+                    weekData = weekData.filter(item => currentStudent === 'all' || (item.studentId && item.studentId.includes(parseInt(currentStudent))));
+                }
                 
                 let filteredData = weekData;
                 if(hideStudyTime) {
