@@ -335,16 +335,19 @@
         // --- Data Handling and Firebase ---
 
         async function fetchData() {
+            const defaultSchedule = { weeks: [], students: [], schedule: [] };
             try {
-                // Fetch both schedule JSON files concurrently
-                const [cirurgiaRes, pediatriaRes] = await Promise.all([
-                    fetch('cirurgia_schedule.json'),
-                    fetch('pediatria_schedule.json')
+                const results = await Promise.allSettled([
+                    fetch('cirurgia_schedule.json').then(res => res.ok ? res.json() : Promise.reject()),
+                    fetch('pediatria_schedule.json').then(res => res.ok ? res.json() : Promise.reject())
                 ]);
-                allData.cirurgia = await cirurgiaRes.json();
-                allData.pediatria = await pediatriaRes.json();
+
+                allData.cirurgia = results[0].status === 'fulfilled' ? results[0].value : defaultSchedule;
+                allData.pediatria = results[1].status === 'fulfilled' ? results[1].value : defaultSchedule;
                 
-                // Set up authentication and Firestore listener after data is loaded
+                // Render the initial UI skeleton immediately after fetching data
+                initializeUI();
+
                 onAuthStateChanged(auth, (user) => {
                     if (user) {
                         setupFirestoreListener(user.uid);
@@ -354,8 +357,10 @@
                 });
 
             } catch (error) {
-                mainContent.innerHTML = `<p class="text-red-400 text-center">Falha ao carregar os dados do cronograma. Verifique se os arquivos .json estão na mesma pasta.</p>`;
-                console.error("Error fetching schedule data:", error);
+                console.error("Error during initial data fetch:", error);
+                allData.cirurgia = defaultSchedule;
+                allData.pediatria = defaultSchedule;
+                initializeUI(); // Initialize with empty data even on failure
             }
         }
 
@@ -363,7 +368,6 @@
             if (!userId) return;
             const userDocRef = doc(db, 'users', userId);
             try {
-                // Save the current state to Firestore, including the selected week
                 await setDoc(userDocRef, {
                     checklistData,
                     currentStudent,
@@ -384,34 +388,52 @@
 
             if (unsubscribe) unsubscribe();
 
-            // Listen for real-time changes to the user's data
             unsubscribe = onSnapshot(userDocRef, (docSnap) => {
                 const oldSpecialty = currentSpecialty;
+                let stateChanged = false;
 
                 if (docSnap.exists()) {
                     const data = docSnap.data();
-                    checklistData = data.checklistData || {};
-                    currentStudent = data.currentStudent || 'all';
-                    currentSpecialty = data.currentSpecialty || 'cirurgia';
-                    hideStudyTime = data.hideStudyTime || false;
-                    currentWeekOrRodizio = data.currentWeekOrRodizio || '1';
+                    // Check if state actually changed to prevent unnecessary re-renders
+                    if (JSON.stringify(checklistData) !== JSON.stringify(data.checklistData || {})) {
+                        checklistData = data.checklistData || {};
+                        stateChanged = true;
+                    }
+                    if (currentStudent !== (data.currentStudent || 'all')) {
+                         currentStudent = data.currentStudent || 'all';
+                         stateChanged = true;
+                    }
+                    if (currentSpecialty !== (data.currentSpecialty || 'cirurgia')) {
+                        currentSpecialty = data.currentSpecialty || 'cirurgia';
+                        stateChanged = true;
+                    }
+                     if (hideStudyTime !== (data.hideStudyTime || false)) {
+                        hideStudyTime = data.hideStudyTime || false;
+                        stateChanged = true;
+                    }
+                    if (currentWeekOrRodizio !== (data.currentWeekOrRodizio || '1')) {
+                        currentWeekOrRodizio = data.currentWeekOrRodizio || '1';
+                        stateChanged = true;
+                    }
                 } else {
-                    saveStateToFirebase(); // Create doc with initial state
+                    saveStateToFirebase(); 
                     return; 
                 }
                 
+                if (!stateChanged && document.body.dataset.initialized) return;
+
+                document.body.dataset.initialized = true;
+
                 btnCirurgia.classList.toggle('active', currentSpecialty === 'cirurgia');
                 btnPediatria.classList.toggle('active', currentSpecialty === 'pediatria');
                 hideStudyDesktop.checked = hideStudyTime;
                 hideStudyMobile.checked = hideStudyTime;
 
-                // If specialty changed, rebuild the selectors
                 if (oldSpecialty !== currentSpecialty) {
                     updateUILayout();
                     populateSelectors();
                 }
 
-                // Ensure selectors reflect the current state
                 weekSelectorDesktop.value = currentWeekOrRodizio;
                 weekSelectorMain.value = currentWeekOrRodizio;
                 
@@ -420,22 +442,21 @@
         }
         
         // --- Core Application Logic ---
+        
+        function initializeUI() {
+            updateUILayout();
+            populateSelectors();
+            updateView();
+        }
 
         function switchSpecialty(newSpecialty) {
             if (newSpecialty === currentSpecialty) return;
 
             currentSpecialty = newSpecialty;
             
-            // Reset to the first week of the new specialty
             const data = allData[currentSpecialty];
-            if (data && data.weeks && data.weeks.length > 0) {
-                currentWeekOrRodizio = data.weeks[0].id;
-            } else {
-                currentWeekOrRodizio = '1'; // Fallback
-            }
+            currentWeekOrRodizio = (data?.weeks?.[0]?.id) || '1';
 
-            updateUILayout();
-            populateSelectors();
             saveStateToFirebase();
         }
 
@@ -461,7 +482,7 @@
                 mobileSelector.appendChild(option.cloneNode(true));
             });
 
-            if (currentSpecialty === 'cirurgia') {
+            if (currentSpecialty === 'cirurgia' && students) {
                 students.forEach(student => {
                     const option = document.createElement('option');
                     option.value = student.id;
@@ -486,7 +507,7 @@
         }
 
         function populateLocationsList() {
-            if (currentSpecialty !== 'pediatria') return;
+            if (currentSpecialty !== 'pediatria' || !allData.pediatria) return;
             
             const weekData = allData.pediatria.schedule.filter(item => item.week == currentWeekOrRodizio);
             const locations = [...new Set(weekData.map(item => item.location))].filter(loc => loc && loc !== '-');
@@ -618,28 +639,19 @@
         
         // --- Event Handlers ---
 
-        function syncSelectors(source, target) {
-             if(target) target.value = source.value;
-        }
-
         function handleWeekChange(e) {
-            const isDesktop = e.target.id.includes('desktop');
-            syncSelectors(e.target, isDesktop ? weekSelectorMain : weekSelectorDesktop);
             currentWeekOrRodizio = e.target.value;
+            syncSelectors(e.target, e.target.id.includes('desktop') ? weekSelectorMain : weekSelectorDesktop);
             saveStateToFirebase();
         }
 
         function handleStudentChange(e) {
-            const isMobile = e.target.id.includes('mobile');
-            syncSelectors(e.target, isMobile ? studentSelectorDesktop : studentSelectorMobile);
-            
             currentStudent = e.target.value;
+            syncSelectors(e.target, e.target.id.includes('mobile') ? studentSelectorDesktop : studentSelectorMobile);
             saveStateToFirebase();
             
-            if (isMobile) {
-                setTimeout(() => {
-                    toggleSidebar();
-                }, 300);
+            if (e.target.id.includes('mobile')) {
+                setTimeout(() => toggleSidebar(), 300);
             }
         }
 
@@ -648,8 +660,6 @@
             const activityId = checkbox.id;
             checklistData[activityId] = checkbox.checked;
             saveStateToFirebase();
-            const card = checkbox.closest('.activity-card');
-            card.classList.toggle('checked', checkbox.checked);
         }
 
         function handleHideStudyChange(e) {
@@ -680,6 +690,10 @@
                     setupFirestoreListener(newId);
                 });
             }
+        }
+        
+        function syncSelectors(source, target) {
+             if(target) target.value = source.value;
         }
 
         // --- Event Listener Setup ---
