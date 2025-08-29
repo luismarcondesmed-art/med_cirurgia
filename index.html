@@ -100,20 +100,40 @@
 </head>
 <body class="bg-[#1B1B1B] text-[#F3F3F3]">
 
-    <div class="flex flex-col h-screen">
-        <header class="text-center p-4 relative border-b border-gray-700 bg-[#2B2B2B] flex-shrink-0 flex items-center justify-center">
-            <button id="sidebar-toggle" class="lg:hidden absolute left-4 top-1/2 -translate-y-1/2 p-2 rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500">
+    <!-- Retractable Specialty Sidebar -->
+    <aside class="fixed top-0 left-0 h-screen z-30 bg-[#2B2B2B] border-r border-gray-700 w-20 hover:w-56 transition-all duration-300 ease-in-out group hidden lg:flex flex-col">
+        <div class="flex items-center justify-center h-20 border-b border-gray-700">
+             <svg class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+        </div>
+        <nav class="flex-grow pt-4 space-y-2">
+            <a href="#" id="btn-cirurgia" class="specialty-btn flex items-center py-3 px-6 text-gray-300 hover:bg-gray-700 hover:text-white rounded-r-lg">
+                <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span class="ml-4 font-semibold whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200">Cirurgia</span>
+            </a>
+            <a href="#" id="btn-pediatria" class="specialty-btn flex items-center py-3 px-6 text-gray-300 hover:bg-gray-700 hover:text-white rounded-r-lg">
+                 <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
+                </svg>
+                <span class="ml-4 font-semibold whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200">Pediatria</span>
+            </a>
+        </nav>
+    </aside>
+
+    <div class="lg:pl-20"> <!-- Main content offset for the sidebar -->
+        <header class="lg:hidden text-center p-4 relative border-b border-gray-700 bg-[#2B2B2B] flex-shrink-0 flex items-center justify-center">
+            <button id="sidebar-toggle" class="absolute left-4 top-1/2 -translate-y-1/2 p-2 rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
             </button>
-            <div class="flex items-center gap-2 bg-[#1B1B1B] p-1 rounded-lg">
-                <button id="btn-cirurgia" class="specialty-btn px-4 py-2 text-sm font-semibold rounded-md">Cirurgia</button>
-                <button id="btn-pediatria" class="specialty-btn px-4 py-2 text-sm font-semibold rounded-md">Pediatria</button>
-            </div>
+            <h1 class="text-lg font-bold">Cronograma</h1>
         </header>
 
-        <div id="content-wrapper" class="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:p-8 overflow-hidden">
+        <div id="content-wrapper" class="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-8 p-4 md:p-8 overflow-hidden h-screen">
             <!-- Sidebar for desktop -->
-            <aside id="sidebar-desktop" class="hidden lg:flex lg:col-span-3 flex-col gap-8 overflow-y-auto p-4 sm:p-6 lg:p-0">
+            <aside id="sidebar-desktop" class="hidden lg:flex lg:col-span-3 flex-col gap-8 overflow-y-auto">
                  <div id="week-selector-container-desktop" class="p-6 bg-[#2B2B2B] rounded-lg shadow-lg flex-col gap-2">
                      <label id="week-label-desktop" for="week-selector-desktop" class="block text-sm font-medium text-center mb-2">Selecione a Semana</label>
                      <select id="week-selector-desktop" class="w-full p-3 bg-[#2D2D2D] border border-gray-600 rounded-md shadow-sm focus:ring-[#2899F5] focus:border-[#2899F5]"></select>
@@ -147,7 +167,7 @@
                 </div>
             </aside>
 
-            <main id="main-content" class="col-span-12 lg:col-span-9 overflow-y-auto p-4 sm:p-6 lg:p-0">
+            <main id="main-content" class="col-span-12 lg:col-span-9 overflow-y-auto">
                 <div id="week-selector-container-main" class="p-4 bg-[#2B2B2B] border border-gray-700 rounded-lg mb-6 lg:hidden">
                     <label id="week-label-main" for="week-selector-main" class="block text-sm font-medium text-center mb-2">Selecione</label>
                     <select id="week-selector-main" class="w-full p-3 bg-[#2D2D2D] border border-gray-600 rounded-md shadow-sm focus:ring-[#2899F5] focus:border-[#2899F5]"></select>
@@ -166,6 +186,10 @@
                      <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                  </svg>
             </button>
+            <div id="specialty-selector-container-mobile" class="flex items-center gap-2 bg-[#1B1B1B] p-1 rounded-lg">
+                 <button id="btn-cirurgia-mobile" class="specialty-btn flex-1 px-4 py-2 text-sm font-semibold rounded-md">Cirurgia</button>
+                 <button id="btn-pediatria-mobile" class="specialty-btn flex-1 px-4 py-2 text-sm font-semibold rounded-md">Pediatria</button>
+            </div>
             <div id="student-selector-container-mobile" class="bg-[#2B2B2B] rounded-lg text-center">
                 <h3 class="text-lg font-semibold mb-4">Selecione o Aluno</h3>
                 <img id="student-image-mobile" src="https://i.imgur.com/5AW2oEL.png" alt="Foto do Grupo" class="w-full h-auto mx-auto rounded-lg object-cover border-4 border-gray-600 mb-4">
@@ -278,6 +302,8 @@
 
         const btnCirurgia = document.getElementById('btn-cirurgia');
         const btnPediatria = document.getElementById('btn-pediatria');
+        const btnCirurgiaMobile = document.getElementById('btn-cirurgia-mobile');
+        const btnPediatriaMobile = document.getElementById('btn-pediatria-mobile');
 
         const todayBtn = document.getElementById('today-btn');
         
@@ -471,8 +497,8 @@
 
                 document.body.dataset.initialized = true;
 
-                btnCirurgia.classList.toggle('active', currentSpecialty === 'cirurgia');
-                btnPediatria.classList.toggle('active', currentSpecialty === 'pediatria');
+                updateActiveSpecialtyButtons();
+
                 hideStudyDesktop.checked = hideStudyTime;
                 hideStudyMobile.checked = hideStudyTime;
 
@@ -508,11 +534,20 @@
             currentWeekOrRodizio = (data?.weeks?.[0]?.id) || '1';
         }
 
+        function updateActiveSpecialtyButtons() {
+            const isCirurgia = currentSpecialty === 'cirurgia';
+            btnCirurgia.classList.toggle('active', isCirurgia);
+            btnPediatria.classList.toggle('active', !isCirurgia);
+            btnCirurgiaMobile.classList.toggle('active', isCirurgia);
+            btnPediatriaMobile.classList.toggle('active', !isCirurgia);
+        }
+
         function switchSpecialty(newSpecialty) {
             if (newSpecialty === currentSpecialty) return;
             currentSpecialty = newSpecialty;
             const data = allData[currentSpecialty];
             currentWeekOrRodizio = (data?.weeks?.[0]?.id) || '1';
+            updateActiveSpecialtyButtons();
             updateUILayout();
             populateSelectors();
             updateView();
@@ -556,9 +591,7 @@
             
             studentContainerDesktop.style.display = isCirurgia ? 'block' : 'none';
             locationsContainerDesktop.style.display = isCirurgia ? 'none' : 'block';
-            weekSelectorContainerDesktop.style.display = isCirurgia ? 'flex' : 'none';
-            weekSelectorContainerMain.style.display = 'block';
-
+            
             const weekLabel = isCirurgia ? 'Selecione a Semana' : 'Selecione o Rodízio';
             document.getElementById('week-label-desktop').textContent = weekLabel;
             weekLabelMain.textContent = weekLabel;
@@ -787,8 +820,10 @@
             if (e.target === sidebarOverlay) toggleSidebar();
         });
 
-        btnCirurgia.addEventListener('click', () => switchSpecialty('cirurgia'));
-        btnPediatria.addEventListener('click', () => switchSpecialty('pediatria'));
+        btnCirurgia.addEventListener('click', (e) => { e.preventDefault(); switchSpecialty('cirurgia'); });
+        btnPediatria.addEventListener('click', (e) => { e.preventDefault(); switchSpecialty('pediatria'); });
+        btnCirurgiaMobile.addEventListener('click', () => switchSpecialty('cirurgia'));
+        btnPediatriaMobile.addEventListener('click', () => switchSpecialty('pediatria'));
 
         weekSelectorMain.addEventListener('change', handleWeekChange);
         weekSelectorDesktop.addEventListener('change', handleWeekChange);
