@@ -63,21 +63,21 @@
             border-radius: 10px;
             border: 2px solid #2B2B2B;
         }
-        #sidebar-overlay, #confirm-modal-overlay {
+        #sidebar-overlay, #confirm-modal-overlay, #sync-modal-overlay {
             transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
             visibility: hidden;
             opacity: 0;
         }
-        #sidebar-overlay.is-open, #confirm-modal-overlay.is-open {
+        #sidebar-overlay.is-open, #confirm-modal-overlay.is-open, #sync-modal-overlay.is-open {
             visibility: visible;
             opacity: 1;
         }
-        #sidebar-mobile, #confirm-modal {
+        #sidebar-mobile, #confirm-modal, #sync-modal {
             transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
             transform: scale(0.95);
             opacity: 0;
         }
-        #sidebar-overlay.is-open #sidebar-mobile, #confirm-modal-overlay.is-open #confirm-modal {
+        #sidebar-overlay.is-open #sidebar-mobile, #confirm-modal-overlay.is-open #confirm-modal, #sync-modal-overlay.is-open #sync-modal {
             transform: scale(1);
             opacity: 1;
         }
@@ -97,19 +97,6 @@
             transform: translateY(0);
             opacity: 1;
         }
-        .remove-oncall-btn {
-            background: none;
-            border: none;
-            color: #ef4444; /* red-500 */
-            cursor: pointer;
-            font-size: 1.2rem;
-            line-height: 1;
-            margin-left: auto;
-            padding: 0 0.5rem;
-        }
-        .remove-oncall-btn:hover {
-            color: #f87171; /* red-400 */
-        }
     </style>
 </head>
 <body class="bg-[#1B1B1B] text-[#F3F3F3]">
@@ -124,7 +111,7 @@
         <nav class="flex-grow flex flex-col justify-center space-y-2">
             <a href="#" id="btn-cirurgia" class="specialty-btn flex items-center py-3 px-6 justify-center group-hover:justify-start text-gray-300 hover:bg-gray-700 hover:text-white rounded-r-lg">
                 <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M9.53 16.122a3 3 0 00-5.78 1.128 2.25 2.25 0 01-2.4 2.245 4.5 4.5 0 008.4-2.245c0-.399-.078-.78-.22-1.128zm0 0a15.998 15.998 0 003.388-1.62m-5.043-.025a15.998 15.998 0 011.622-3.385m5.043.025a15.998 15.998 0 001.622-3.385m3.388 1.62a15.998 15.998 0 00-1.62-3.385m-1.622 3.385a15.998 15.998 0 01-3.388 1.62m5.043-.025a15.998 15.998 0 01-1.622 3.385m-5.043.025a15.998 15.998 0 00-1.622 3.385m-1.62-3.385a15.998 15.998 0 00-3.388-1.62m11.622 5.043a15.998 15.998 0 003.388-1.62" />
+                   <path stroke-linecap="round" stroke-linejoin="round" d="M9.53 16.122a3 3 0 00-5.78 1.128 2.25 2.25 0 01-2.4 2.245 4.5 4.5 0 008.4-2.245c0-.399-.078-.78-.22-1.128zm0 0a15.998 15.998 0 003.388-1.62m-5.043-.025a15.998 15.998 0 011.622-3.385m5.043.025a15.998 15.998 0 001.622-3.385m3.388 1.62a15.998 15.998 0 00-1.62-3.385m-1.622 3.385a15.998 15.998 0 01-3.388 1.62m5.043-.025a15.998 15.998 0 01-1.622 3.385m-5.043.025a15.998 15.998 0 00-1.622 3.385m-1.62-3.385a15.998 15.998 0 00-3.388-1.62m11.622 5.043a15.998 15.998 0 003.388-1.62" />
                 </svg>
                 <span class="font-semibold whitespace-nowrap opacity-0 w-0 group-hover:ml-4 group-hover:opacity-100 group-hover:w-auto transition-all duration-300 ease-in-out">Cirurgia</span>
             </a>
@@ -135,6 +122,14 @@
                 <span class="font-semibold whitespace-nowrap opacity-0 w-0 group-hover:ml-4 group-hover:opacity-100 group-hover:w-auto transition-all duration-300 ease-in-out">Pediatria</span>
             </a>
         </nav>
+        <div class="mt-auto mb-4">
+            <button id="sync-modal-open-btn" class="flex items-center py-3 px-6 justify-center group-hover:justify-start text-gray-300 hover:bg-gray-700 hover:text-white rounded-r-lg w-full">
+                <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 16.5V9.75m0 0l3 3m-3-3l-3 3M6.75 19.5a4.5 4.5 0 01-1.41-8.775 5.25 5.25 0 0110.233-2.33 3 3 0 013.758 3.848A3.752 3.752 0 0118 19.5H6.75z" />
+                </svg>
+                <span class="font-semibold whitespace-nowrap opacity-0 w-0 group-hover:ml-4 group-hover:opacity-100 group-hover:w-auto transition-all duration-300 ease-in-out">Sincronizar</span>
+            </button>
+        </div>
     </aside>
 
     <div class="lg:pl-20"> <!-- Main content offset for the sidebar -->
@@ -166,15 +161,6 @@
                      </div>
                      <button id="clearWeekButton-desktop" class="w-full mt-4 p-2 bg-red-600 hover:bg-red-700 rounded-md font-semibold transition-colors text-white text-sm">Limpar marcações</button>
                  </div>
-                 <div class="bg-[#2B2B2B] p-6 rounded-lg shadow-lg text-center">
-                    <h3 class="text-lg font-semibold mb-4">Sincronização</h3>
-                    <button id="sync-button-desktop" class="w-full p-2 bg-blue-600 hover:bg-blue-700 rounded-md font-semibold transition-colors text-white text-sm mb-4">Sincronizar</button>
-                    <p class="text-xs text-gray-400 mb-2">Seu ID de Usuário:</p>
-                    <input id="userIdDisplay-desktop" type="text" readonly class="w-full p-2 bg-[#1B1B1B] text-center text-xs rounded-md mb-2 truncate">
-                    <button id="copyUserId-desktop" class="w-full p-2 bg-gray-600 hover:bg-gray-700 rounded-md font-semibold transition-colors text-white text-sm mb-4">Copiar ID</button>
-                    <input id="userIdInput-desktop" type="text" placeholder="Cole um ID para carregar" class="w-full p-2 bg-[#1B1B1B] text-center text-xs rounded-md mb-2">
-                    <button id="loadUserId-desktop" class="w-full p-2 bg-green-600 hover:bg-green-700 rounded-md font-semibold transition-colors text-white text-sm">Carregar ID</button>
-                </div>
             </aside>
 
             <main id="main-content" class="col-span-12 lg:col-span-9 overflow-y-auto">
@@ -225,6 +211,26 @@
         </aside>
     </div>
     
+    <!-- Sync Modal -->
+    <div id="sync-modal-overlay" class="fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center p-4">
+        <div id="sync-modal" class="relative w-full max-w-sm bg-[#2B2B2B] rounded-2xl shadow-2xl p-6">
+             <button id="sync-modal-close-btn" class="absolute top-4 right-4 p-2 rounded-full hover:bg-gray-700">
+                 <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                     <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                 </svg>
+            </button>
+            <div class="bg-[#2B2B2B] p-6 rounded-lg shadow-lg text-center">
+                <h3 class="text-lg font-semibold mb-4">Sincronização</h3>
+                <button id="sync-button-modal" class="w-full p-2 bg-blue-600 hover:bg-blue-700 rounded-md font-semibold transition-colors text-white text-sm mb-4">Sincronizar Agora</button>
+                <p class="text-xs text-gray-400 mb-2">Seu ID de Usuário:</p>
+                <input id="userIdDisplay-modal" type="text" readonly class="w-full p-2 bg-[#1B1B1B] text-center text-xs rounded-md mb-2 truncate">
+                <button id="copyUserId-modal" class="w-full p-2 bg-gray-600 hover:bg-gray-700 rounded-md font-semibold transition-colors text-white text-sm mb-4">Copiar ID</button>
+                <input id="userIdInput-modal" type="text" placeholder="Cole um ID para carregar" class="w-full p-2 bg-[#1B1B1B] text-center text-xs rounded-md mb-2">
+                <button id="loadUserId-modal" class="w-full p-2 bg-green-600 hover:bg-green-700 rounded-md font-semibold transition-colors text-white text-sm">Carregar ID</button>
+            </div>
+        </div>
+    </div>
+
     <!-- "Today" Button -->
     <button id="today-btn" class="fixed bottom-6 right-6 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-3 rounded-full shadow-lg z-30">
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
@@ -324,13 +330,17 @@
         const userIdInputMobile = document.getElementById('userIdInput-mobile');
         const loadUserIdBtnMobile = document.getElementById('loadUserId-mobile');
 
-        const userIdDisplayDesktop = document.getElementById('userIdDisplay-desktop');
-        const copyUserIdBtnDesktop = document.getElementById('copyUserId-desktop');
-        const userIdInputDesktop = document.getElementById('userIdInput-desktop');
-        const loadUserIdBtnDesktop = document.getElementById('loadUserId-desktop');
+        const syncModalOverlay = document.getElementById('sync-modal-overlay');
+        const syncModalOpenBtn = document.getElementById('sync-modal-open-btn');
+        const syncModalCloseBtn = document.getElementById('sync-modal-close-btn');
+        const syncButtonModal = document.getElementById('sync-button-modal');
+        const userIdDisplayModal = document.getElementById('userIdDisplay-modal');
+        const copyUserIdModal = document.getElementById('copyUserId-modal');
+        const userIdInputModal = document.getElementById('userIdInput-modal');
+        const loadUserIdModal = document.getElementById('loadUserId-modal');
+        
 
         const syncButtonMobile = document.getElementById('sync-button-mobile');
-        const syncButtonDesktop = document.getElementById('sync-button-desktop');
 
         const toast = document.getElementById('toast-notification');
         const toastMessage = document.getElementById('toast-message');
@@ -372,6 +382,11 @@
         function toggleSidebar() {
             sidebarOverlay.classList.toggle('is-open');
         }
+        
+        function toggleSyncModal() {
+            syncModalOverlay.classList.toggle('is-open');
+        }
+
 
         // --- Data Handling and Firebase ---
 
@@ -474,7 +489,7 @@
         function setupFirestoreListener(uid) {
             userId = uid;
             userIdDisplayMobile.value = uid;
-            userIdDisplayDesktop.value = uid;
+            userIdDisplayModal.value = uid;
             // Corrected path to match standard Firestore structure for user data
             const userDocRef = doc(db, 'users', userId);
 
@@ -833,7 +848,13 @@
         hideStudyDesktop.addEventListener('change', handleHideStudyChange);
         
         syncButtonMobile.addEventListener('click', saveStateToFirebase);
-        syncButtonDesktop.addEventListener('click', saveStateToFirebase);
+        syncButtonModal.addEventListener('click', saveStateToFirebase);
+        
+        syncModalOpenBtn.addEventListener('click', toggleSyncModal);
+        syncModalCloseBtn.addEventListener('click', toggleSyncModal);
+        syncModalOverlay.addEventListener('click', (e) => {
+            if(e.target === syncModalOverlay) toggleSyncModal();
+        });
 
         todayBtn.addEventListener('click', () => {
             const now = new Date();
@@ -859,10 +880,10 @@
         });
         
         copyUserIdBtnMobile.addEventListener('click', () => handleCopyId(userIdDisplayMobile));
-        copyUserIdBtnDesktop.addEventListener('click', () => handleCopyId(userIdDisplayDesktop));
+        copyUserIdModal.addEventListener('click', () => handleCopyId(userIdDisplayModal));
 
         loadUserIdBtnMobile.addEventListener('click', () => handleLoadId(userIdInputMobile));
-        loadUserIdBtnDesktop.addEventListener('click', () => handleLoadId(userIdInputDesktop));
+        loadUserIdModal.addEventListener('click', () => handleLoadId(userIdInputModal));
         
         // --- Initialization ---
 
