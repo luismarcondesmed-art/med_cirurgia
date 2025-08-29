@@ -2,7 +2,7 @@
 <html lang="pt-BR" class="dark">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale-1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cronograma Interativo de Estágios</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -104,7 +104,7 @@
     <aside class="fixed top-0 left-0 h-screen z-30 bg-[#2B2B2B] border-r border-gray-700 w-20 hover:w-56 transition-all duration-300 ease-in-out group hidden lg:flex flex-col">
         <div class="flex items-center justify-center h-20 border-b border-gray-700">
              <svg class="h-8 w-8 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 12c0-1.232-.046-2.453-.138-3.662a4.006 4.006 0 00-3.7-3.7 48.678 48.678 0 00-7.324 0 4.006 4.006 0 00-3.7 3.7c-.092 1.21-.138 2.43-.138 3.662v4.286a4.006 4.006 0 003.7 3.7 48.678 48.678 0 007.324 0 4.006 4.006 0 003.7-3.7v-4.286zM12 15a3 3 0 100-6 3 3 0 000 6z" />
             </svg>
         </div>
         <nav class="flex-grow flex flex-col justify-center space-y-2">
@@ -143,6 +143,16 @@
                      <h3 class="text-lg font-semibold mb-4">Selecione o Aluno</h3>
                      <img id="student-image-desktop" src="https://i.imgur.com/5AW2oEL.png" alt="Foto do Grupo" class="w-full h-auto mx-auto rounded-lg object-cover border-4 border-gray-600 mb-4">
                      <select id="student-selector-desktop" class="w-full p-3 bg-[#2D2D2D] border border-gray-600 rounded-md shadow-sm focus:ring-[#2899F5] focus:border-[#2899F5]"></select>
+                 </div>
+                 <div id="pedia-oncall-container-desktop" class="bg-[#2B2B2B] p-6 rounded-lg shadow-lg text-center hidden">
+                    <h3 class="text-lg font-semibold mb-4">Plantões PA</h3>
+                    <select id="student-selector-pedia-desktop" class="w-full p-3 bg-[#2D2D2D] border border-gray-600 rounded-md shadow-sm focus:ring-[#2899F5] focus:border-[#2899F5] mb-4"></select>
+                    <div class="flex gap-2 mb-4">
+                        <input type="date" id="oncall-date-desktop" class="w-full p-3 bg-[#2D2D2D] border border-gray-600 rounded-md shadow-sm focus:ring-[#2899F5] focus:border-[#2899F5]">
+                        <button id="add-oncall-btn-desktop" class="p-3 bg-green-600 hover:bg-green-700 rounded-md font-semibold transition-colors text-white text-sm">Add</button>
+                    </div>
+                    <h4 class="text-md font-semibold mb-2 border-t border-gray-700 pt-4">Plantões Agendados</h4>
+                    <ul id="oncall-list-desktop" class="text-left space-y-2 text-sm"></ul>
                  </div>
                  <div id="locations-container-desktop" class="bg-[#2B2B2B] p-6 rounded-lg shadow-lg text-center hidden">
                      <h3 class="text-lg font-semibold mb-4">Locais do Rodízio</h3>
@@ -195,6 +205,16 @@
                 <img id="student-image-mobile" src="https://i.imgur.com/5AW2oEL.png" alt="Foto do Grupo" class="w-full h-auto mx-auto rounded-lg object-cover border-4 border-gray-600 mb-4">
                 <select id="student-selector-mobile" class="w-full p-3 bg-[#2D2D2D] border border-gray-600 rounded-md shadow-sm focus:ring-[#2899F5] focus:border-[#2899F5]"></select>
             </div>
+             <div id="pedia-oncall-container-mobile" class="bg-[#2B2B2B] p-6 rounded-lg shadow-lg text-center hidden">
+                <h3 class="text-lg font-semibold mb-4">Plantões PA</h3>
+                <select id="student-selector-pedia-mobile" class="w-full p-3 bg-[#2D2D2D] border border-gray-600 rounded-md shadow-sm focus:ring-[#2899F5] focus:border-[#2899F5] mb-4"></select>
+                <div class="flex gap-2 mb-4">
+                    <input type="date" id="oncall-date-mobile" class="w-full p-3 bg-[#2D2D2D] border border-gray-600 rounded-md shadow-sm focus:ring-[#2899F5] focus:border-[#2899F5]">
+                    <button id="add-oncall-btn-mobile" class="p-3 bg-green-600 hover:bg-green-700 rounded-md font-semibold transition-colors text-white text-sm">Add</button>
+                </div>
+                <h4 class="text-md font-semibold mb-2 border-t border-gray-700 pt-4">Plantões Agendados</h4>
+                <ul id="oncall-list-mobile" class="text-left space-y-2 text-sm"></ul>
+             </div>
              <div class="bg-[#2B2B2B] p-6 rounded-lg shadow-lg text-center">
                 <h3 class="text-lg font-semibold mb-4">Sincronização</h3>
                 <button id="sync-button-mobile" class="w-full p-2 bg-blue-600 hover:bg-blue-700 rounded-md font-semibold transition-colors text-white text-sm mb-4">Sincronizar</button>
@@ -269,6 +289,7 @@
         let currentStudent = 'all';
         let checklistData = {}; // To store the checked state of activities
         let hideStudyTime = false;
+        let pediaOnCallData = {}; // NEW: To store pediatrics on-call dates
 
         // --- DOM Element References ---
         const scheduleGrid = document.getElementById('schedule-grid');
@@ -294,6 +315,18 @@
         const locationsContainerDesktop = document.getElementById('locations-container-desktop');
         const locationsListDesktop = document.getElementById('locations-list-desktop');
         
+        const pediaOnCallContainerDesktop = document.getElementById('pedia-oncall-container-desktop');
+        const studentSelectorPediaDesktop = document.getElementById('student-selector-pedia-desktop');
+        const onCallDateDesktop = document.getElementById('oncall-date-desktop');
+        const onCallListDesktop = document.getElementById('oncall-list-desktop');
+        const addOnCallBtnDesktop = document.getElementById('add-oncall-btn-desktop');
+        
+        const pediaOnCallContainerMobile = document.getElementById('pedia-oncall-container-mobile');
+        const studentSelectorPediaMobile = document.getElementById('student-selector-pedia-mobile');
+        const onCallDateMobile = document.getElementById('oncall-date-mobile');
+        const onCallListMobile = document.getElementById('oncall-list-mobile');
+        const addOnCallBtnMobile = document.getElementById('add-oncall-btn-mobile');
+
         const daysOfWeek = ['SEGUNDA', 'TERÇA', 'QUARTA', 'QUINTA', 'SEXTA', 'SÁBADO', 'DOMINGO'];
         
         const sidebarOverlay = document.getElementById('sidebar-overlay');
@@ -389,7 +422,11 @@
                         { id: '1', title: 'Rodízio Pediatria 1 (Teste)', dates: '25/08 - 31/08', start: '2025-08-25', end: '2025-08-31' },
                         { id: '2', title: 'Rodízio Pediatria 2 (Teste)', dates: '01/09 - 07/09', start: '2025-09-01', end: '2025-09-07' }
                     ],
-                    students: [],
+                    students: [
+                        { id: 'p1', name: 'Ped Aluno 1' },
+                        { id: 'p2', name: 'Ped Aluno 2' },
+                        { id: 'p3', name: 'Ped Aluno 3' }
+                    ],
                     schedule: [
                         { week: '1', day: 'QUINTA', time: '10:00 - 12:00', activity: 'Enfermaria Pediátrica (Mock)', professor: 'Dra. Criança', location: 'Hospital Infantil de Teste' },
                         { week: '2', day: 'SEXTA', time: '14:00 - 16:00', activity: 'UTI Neonatal (Mock)', professor: 'Dr. Bebê', location: 'Hospital Infantil de Teste' }
@@ -444,7 +481,8 @@
                     currentStudent,
                     currentSpecialty,
                     hideStudyTime,
-                    currentWeekOrRodizio
+                    currentWeekOrRodizio,
+                    pediaOnCallData // Save on-call data
                 });
                 showToast("Sincronizado com sucesso!");
             } catch (error) {
@@ -486,6 +524,10 @@
                     }
                     if (currentWeekOrRodizio !== (data.currentWeekOrRodizio || '1')) {
                         currentWeekOrRodizio = data.currentWeekOrRodizio || '1';
+                        stateChanged = true;
+                    }
+                    if (JSON.stringify(pediaOnCallData) !== JSON.stringify(data.pediaOnCallData || {})) {
+                        pediaOnCallData = data.pediaOnCallData || {};
                         stateChanged = true;
                     }
                 } else {
@@ -530,6 +572,7 @@
             currentSpecialty = 'cirurgia';
             currentStudent = 'all';
             hideStudyTime = false;
+            pediaOnCallData = {};
             const data = allData[currentSpecialty];
             currentWeekOrRodizio = (data?.weeks?.[0]?.id) || '1';
         }
@@ -564,8 +607,11 @@
             
             selector.innerHTML = '';
             mobileSelector.innerHTML = '';
-            studentSelectorMobile.innerHTML = '';
             studentSelectorDesktop.innerHTML = '';
+            studentSelectorMobile.innerHTML = '';
+            studentSelectorPediaDesktop.innerHTML = '';
+            studentSelectorPediaMobile.innerHTML = '';
+            
 
             weeks.forEach(week => {
                 const option = document.createElement('option');
@@ -580,8 +626,16 @@
                     const option = document.createElement('option');
                     option.value = student.id;
                     option.textContent = student.name;
-                    studentSelectorMobile.appendChild(option.cloneNode(true));
                     studentSelectorDesktop.appendChild(option.cloneNode(true));
+                    studentSelectorMobile.appendChild(option.cloneNode(true));
+                });
+            } else if (currentSpecialty === 'pediatria' && students) {
+                 students.forEach(student => {
+                    const option = document.createElement('option');
+                    option.value = student.id;
+                    option.textContent = student.name;
+                    studentSelectorPediaDesktop.appendChild(option.cloneNode(true));
+                    studentSelectorPediaMobile.appendChild(option.cloneNode(true));
                 });
             }
         }
@@ -590,7 +644,11 @@
             const isCirurgia = currentSpecialty === 'cirurgia';
             
             studentContainerDesktop.style.display = isCirurgia ? 'block' : 'none';
+            pediaOnCallContainerDesktop.style.display = isCirurgia ? 'none' : 'block';
             locationsContainerDesktop.style.display = isCirurgia ? 'none' : 'block';
+            
+            studentContainerMobile.style.display = isCirurgia ? 'block' : 'none';
+            pediaOnCallContainerMobile.style.display = isCirurgia ? 'none' : 'block';
             
             const weekLabel = isCirurgia ? 'Selecione a Semana' : 'Selecione o Rodízio';
             document.getElementById('week-label-desktop').textContent = weekLabel;
@@ -619,6 +677,44 @@
                 locationsListDesktop.innerHTML = `<li class="text-gray-500">Nenhum local específico neste rodízio.</li>`;
             }
         }
+        
+        function renderOnCallList() {
+            onCallListDesktop.innerHTML = '';
+            onCallListMobile.innerHTML = '';
+            const students = allData.pediatria?.students || [];
+            if (students.length === 0) return;
+
+            const sortedEntries = Object.entries(pediaOnCallData)
+                .filter(([_, dates]) => dates && dates.length > 0)
+                .sort((a, b) => {
+                    const studentA = students.find(s => s.id === a[0]);
+                    const studentB = students.find(s => s.id === b[0]);
+                    return studentA.name.localeCompare(studentB.name);
+                });
+
+            if (sortedEntries.length === 0) {
+                const li = document.createElement('li');
+                li.textContent = 'Nenhum plantão agendado.';
+                li.className = 'text-gray-500';
+                onCallListDesktop.appendChild(li.cloneNode(true));
+                onCallListMobile.appendChild(li);
+                return;
+            }
+
+            for (const [studentId, dates] of sortedEntries) {
+                const student = students.find(s => s.id === studentId);
+                if (student) {
+                    const li = document.createElement('li');
+                    const formattedDates = dates
+                        .map(date => new Date(date + 'T00:00:00').toLocaleDateString('pt-BR'))
+                        .join(', ');
+                    li.innerHTML = `<strong>${student.name}:</strong> ${formattedDates}`;
+                    onCallListDesktop.appendChild(li.cloneNode(true));
+                    onCallListMobile.appendChild(li);
+                }
+            }
+        }
+
 
         function updateView() {
             const data = allData[currentSpecialty];
@@ -639,6 +735,7 @@
                 }
             } else {
                 populateLocationsList();
+                renderOnCallList();
             }
             renderSchedule();
         }
@@ -748,6 +845,40 @@
                 setTimeout(() => toggleSidebar(), 300);
             }
         }
+        
+        function handleAddOnCall(e) {
+            const isDesktop = e.target.id.includes('desktop');
+            const studentSelector = isDesktop ? studentSelectorPediaDesktop : studentSelectorPediaMobile;
+            const dateInput = isDesktop ? onCallDateDesktop : onCallDateMobile;
+            
+            const studentId = studentSelector.value;
+            const date = dateInput.value;
+
+            if (!studentId || !date) {
+                showToast("Selecione um aluno e uma data.");
+                return;
+            }
+
+            if (!pediaOnCallData[studentId]) {
+                pediaOnCallData[studentId] = [];
+            }
+
+            if (pediaOnCallData[studentId].length >= 5) {
+                showToast("Este aluno já atingiu o limite de 5 plantões.");
+                return;
+            }
+            
+            if (pediaOnCallData[studentId].includes(date)) {
+                 showToast("Esta data já foi adicionada para este aluno.");
+                return;
+            }
+
+            pediaOnCallData[studentId].push(date);
+            pediaOnCallData[studentId].sort(); // Keep dates sorted
+            renderOnCallList();
+            dateInput.value = ''; // Clear input after adding
+        }
+
 
         function handleChecklistChange(event) {
             const checkbox = event.target;
@@ -830,6 +961,9 @@
 
         studentSelectorMobile.addEventListener('change', handleStudentChange);
         studentSelectorDesktop.addEventListener('change', handleStudentChange);
+        
+        addOnCallBtnDesktop.addEventListener('click', handleAddOnCall);
+        addOnCallBtnMobile.addEventListener('click', handleAddOnCall);
 
         clearWeekButtonMobile.addEventListener('click', clearWeekData);
         clearWeekButtonDesktop.addEventListener('click', clearWeekData);
