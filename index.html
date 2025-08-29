@@ -138,16 +138,17 @@
                  </div>
                  <div class="bg-[#2B2B2B] p-6 rounded-lg shadow-lg text-center">
                     <h3 class="text-lg font-semibold mb-4">Sincronização</h3>
+                    <button id="sync-button-desktop" class="w-full p-2 bg-blue-600 hover:bg-blue-700 rounded-md font-semibold transition-colors text-white text-sm mb-4">Sincronizar</button>
                     <p class="text-xs text-gray-400 mb-2">Seu ID de Usuário:</p>
                     <input id="userIdDisplay-desktop" type="text" readonly class="w-full p-2 bg-[#1B1B1B] text-center text-xs rounded-md mb-2 truncate">
-                    <button id="copyUserId-desktop" class="w-full p-2 bg-blue-600 hover:bg-blue-700 rounded-md font-semibold transition-colors text-white text-sm mb-4">Copiar ID</button>
+                    <button id="copyUserId-desktop" class="w-full p-2 bg-gray-600 hover:bg-gray-700 rounded-md font-semibold transition-colors text-white text-sm mb-4">Copiar ID</button>
                     <input id="userIdInput-desktop" type="text" placeholder="Cole um ID para carregar" class="w-full p-2 bg-[#1B1B1B] text-center text-xs rounded-md mb-2">
                     <button id="loadUserId-desktop" class="w-full p-2 bg-green-600 hover:bg-green-700 rounded-md font-semibold transition-colors text-white text-sm">Carregar ID</button>
                 </div>
             </aside>
 
             <main id="main-content" class="col-span-12 lg:col-span-9 overflow-y-auto p-4 sm:p-6 lg:p-0">
-                <div id="week-selector-container-main" class="p-4 bg-[#2B2B2B] border border-gray-700 rounded-lg mb-6">
+                <div id="week-selector-container-main" class="p-4 bg-[#2B2B2B] border border-gray-700 rounded-lg mb-6 lg:hidden">
                     <label id="week-label-main" for="week-selector-main" class="block text-sm font-medium text-center mb-2">Selecione</label>
                     <select id="week-selector-main" class="w-full p-3 bg-[#2D2D2D] border border-gray-600 rounded-md shadow-sm focus:ring-[#2899F5] focus:border-[#2899F5]"></select>
                     <p id="schedule-subtitle-main" class="text-sm text-gray-400 mt-2 text-center"></p>
@@ -172,9 +173,10 @@
             </div>
              <div class="bg-[#2B2B2B] p-6 rounded-lg shadow-lg text-center">
                 <h3 class="text-lg font-semibold mb-4">Sincronização</h3>
+                <button id="sync-button-mobile" class="w-full p-2 bg-blue-600 hover:bg-blue-700 rounded-md font-semibold transition-colors text-white text-sm mb-4">Sincronizar</button>
                 <p class="text-xs text-gray-400 mb-2">Seu ID de Usuário:</p>
                 <input id="userIdDisplay-mobile" type="text" readonly class="w-full p-2 bg-[#1B1B1B] text-center text-xs rounded-md mb-2 truncate">
-                <button id="copyUserId-mobile" class="w-full p-2 bg-blue-600 hover:bg-blue-700 rounded-md font-semibold transition-colors text-white text-sm mb-4">Copiar ID</button>
+                <button id="copyUserId-mobile" class="w-full p-2 bg-gray-600 hover:bg-gray-700 rounded-md font-semibold transition-colors text-white text-sm mb-4">Copiar ID</button>
                 <input id="userIdInput-mobile" type="text" placeholder="Cole um ID para carregar" class="w-full p-2 bg-[#1B1B1B] text-center text-xs rounded-md mb-2">
                 <button id="loadUserId-mobile" class="w-full p-2 bg-green-600 hover:bg-green-700 rounded-md font-semibold transition-colors text-white text-sm">Carregar ID</button>
             </div>
@@ -292,6 +294,9 @@
         const userIdInputDesktop = document.getElementById('userIdInput-desktop');
         const loadUserIdBtnDesktop = document.getElementById('loadUserId-desktop');
 
+        const syncButtonMobile = document.getElementById('sync-button-mobile');
+        const syncButtonDesktop = document.getElementById('sync-button-desktop');
+
         const toast = document.getElementById('toast-notification');
         const toastMessage = document.getElementById('toast-message');
         const confirmModalOverlay = document.getElementById('confirm-modal-overlay');
@@ -331,16 +336,6 @@
 
         function toggleSidebar() {
             sidebarOverlay.classList.toggle('is-open');
-        }
-
-        // --- Debounce Utility ---
-        function debounce(func, delay) {
-            let timeout;
-            return function(...args) {
-                const context = this;
-                clearTimeout(timeout);
-                timeout = setTimeout(() => func.apply(context, args), delay);
-            };
         }
 
         // --- Data Handling and Firebase ---
@@ -413,8 +408,6 @@
             }
         }
 
-        const debouncedSaveState = debounce(saveStateToFirebase, 2000);
-
         async function saveStateToFirebase() {
             if (!userId) return;
             // Corrected path to match standard Firestore structure for user data
@@ -427,8 +420,10 @@
                     hideStudyTime,
                     currentWeekOrRodizio
                 });
+                showToast("Sincronizado com sucesso!");
             } catch (error) {
                 console.error("Error saving state: ", error);
+                showToast("Erro ao sincronizar.");
             }
         }
 
@@ -521,7 +516,6 @@
             updateUILayout();
             populateSelectors();
             updateView();
-            debouncedSaveState();
         }
 
         function populateSelectors() {
@@ -710,14 +704,12 @@
             currentWeekOrRodizio = e.target.value;
             syncSelectors(e.target, e.target.id.includes('desktop') ? weekSelectorMain : weekSelectorDesktop);
             updateView();
-            debouncedSaveState();
         }
 
         function handleStudentChange(e) {
             currentStudent = e.target.value;
             syncSelectors(e.target, e.target.id.includes('mobile') ? studentSelectorDesktop : studentSelectorMobile);
             updateView();
-            debouncedSaveState();
             
             if (e.target.id.includes('mobile')) {
                 setTimeout(() => toggleSidebar(), 300);
@@ -731,14 +723,11 @@
             
             // Optimistic UI update
             checkbox.closest('.activity-card').classList.toggle('checked', checkbox.checked);
-
-            debouncedSaveState();
         }
 
         function handleHideStudyChange(e) {
             hideStudyTime = e.target.checked;
             renderSchedule(); // Optimistic UI update
-            debouncedSaveState();
         }
 
         function clearWeekData() {
@@ -812,6 +801,9 @@
 
         hideStudyMobile.addEventListener('change', handleHideStudyChange);
         hideStudyDesktop.addEventListener('change', handleHideStudyChange);
+        
+        syncButtonMobile.addEventListener('click', saveStateToFirebase);
+        syncButtonDesktop.addEventListener('click', saveStateToFirebase);
 
         todayBtn.addEventListener('click', () => {
             const now = new Date();
@@ -824,7 +816,6 @@
             if (currentWeekInfo) {
                 currentWeekOrRodizio = currentWeekInfo.id;
                 updateView();
-                debouncedSaveState();
                 
                 setTimeout(() => {
                     const dayCol = document.getElementById(`day-col-${todayDay}`);
