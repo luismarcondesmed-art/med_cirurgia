@@ -30,6 +30,7 @@
         { "week": 1, "studentId": [1,2,3,4,5], "day": "TERÇA", "time": "15:30 - 19:00", "activity": "VISITA À BEIRA LEITO", "professor": "PROF. ANDRÉ (OD)", "location": "" },
         { "week": 1, "studentId": [3], "day": "QUARTA", "time": "07:30 - 11:00", "activity": "CENTRO CIRÚRGICO AMBULATORIAL", "professor": "DR ANDRÉ/DR MIGUEL - PROF. CAMILA (OSD)", "location": "" },
         { "week": 1, "studentId": [1,2], "day": "QUARTA", "time": "07:30 - 10:00", "activity": "AMBULATÓRIO SAM1", "professor": "DR ANDRÉ/DR MIGUEL - PROF. CAMILA (OSD)", "location": "" },
+        { "week": 1, "studentId": [4,5], "day": "QUARTA", "time": "07:30 - 12:00", "activity": "CENTRO CIRÚRGICO", "professor": "DRA CAMILA (OSD)", "location": "" },
         { "week": 1, "studentId": [1,2,3], "day": "QUARTA", "time": "13:30 - 18:00", "activity": "AMBULATÓRIO SAM1", "professor": "DRA ISABELA E/OU DRA KARIN - PROF. CAMILA (OSD)", "location": "" },
         { "week": 1, "studentId": [4,5], "day": "QUARTA", "time": "13:00 - 18:00", "activity": "CENTRO CIRÚRGICO", "professor": "DRA ISABELA E/OU DRA KARIN/ PROF. CAMILA (OSD)", "location": "" },
         { "week": 1, "studentId": [1,2,3,4,5], "day": "QUINTA", "time": "07:30 - 08:30", "activity": "AULA CIPE COM RESIDENTES", "professor": "PROF. MARCELO (OD)", "location": "13º ANDAR" },
@@ -222,3 +223,4 @@
         { "week": 10, "studentId": [4,5], "day": "DOMINGO", "time": "07:30 - 10:30", "activity": "Enfermaria", "professor": "Médico da escala", "location": "9º Andar" }
     ]
 }
+
