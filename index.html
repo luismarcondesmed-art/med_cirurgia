@@ -598,7 +598,7 @@
             const data = allData[currentSpecialty];
             currentWeekOrRodizio = (data?.weeks?.[0]?.id) || '1';
             
-            // BUG FIX: Reset student based on new specialty
+            // Reset student based on new specialty to avoid invalid state
             if (newSpecialty === 'pediatria') {
                 currentStudent = data?.students?.[0]?.id || 'p1';
             } else {
@@ -648,9 +648,9 @@
         function updateUILayout() {
             const isCirurgia = currentSpecialty === 'cirurgia';
             
-            // BUG FIX: Show student selector only for Cirurgia
-            studentContainerDesktop.style.display = isCirurgia ? 'block' : 'none';
-            studentContainerMobile.style.display = isCirurgia ? 'block' : 'none';
+            // BUG FIX: The student selector should always be visible
+            studentContainerDesktop.style.display = 'block';
+            studentContainerMobile.style.display = 'block';
             
             const weekLabel = isCirurgia ? 'Selecione a Semana' : 'Selecione o Rodízio';
             document.getElementById('week-label-desktop').textContent = weekLabel;
@@ -666,7 +666,6 @@
             scheduleSubtitleDesktop.textContent = subtitleText;
             scheduleSubtitleMain.textContent = subtitleText;
             
-            // This logic now correctly handles both specialties
             const selectedStudent = data.students.find(s => s.id == currentStudent);
             if (selectedStudent) {
                 studentImageMobile.src = selectedStudent.imageUrl || 'https://i.imgur.com/5AW2oEL.png';
