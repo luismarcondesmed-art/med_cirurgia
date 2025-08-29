@@ -193,7 +193,7 @@
             </div>
              <div class="bg-[#2B2B2B] p-6 rounded-lg shadow-lg text-center">
                 <h3 class="text-lg font-semibold mb-4">Sincronização</h3>
-                <button id="sync-button-mobile" class="w-full p-2 bg-blue-600 hover:bg-blue-700 rounded-md font-semibold transition-colors text-white text-sm mb-4">Sincronizar</button>
+                <button id="sync-button-mobile" class="w-full p-2 bg-blue-600 hover:bg-blue-700 rounded-md font-semibold transition-colors text-white text-sm mb-4">Sincronizar Dados Pessoais</button>
                 <p class="text-xs text-gray-400 mb-2">Seu ID de Usuário:</p>
                 <input id="userIdDisplay-mobile" type="text" readonly class="w-full p-2 bg-[#1B1B1B] text-center text-xs rounded-md mb-2 truncate">
                 <button id="copyUserId-mobile" class="w-full p-2 bg-gray-600 hover:bg-gray-700 rounded-md font-semibold transition-colors text-white text-sm mb-4">Copiar ID</button>
@@ -221,7 +221,7 @@
             </button>
             <div class="bg-[#2B2B2B] p-6 rounded-lg shadow-lg text-center">
                 <h3 class="text-lg font-semibold mb-4">Sincronização</h3>
-                <button id="sync-button-modal" class="w-full p-2 bg-blue-600 hover:bg-blue-700 rounded-md font-semibold transition-colors text-white text-sm mb-4">Sincronizar Agora</button>
+                <button id="sync-button-modal" class="w-full p-2 bg-blue-600 hover:bg-blue-700 rounded-md font-semibold transition-colors text-white text-sm mb-4">Sincronizar Dados Pessoais</button>
                 <p class="text-xs text-gray-400 mb-2">Seu ID de Usuário:</p>
                 <input id="userIdDisplay-modal" type="text" readonly class="w-full p-2 bg-[#1B1B1B] text-center text-xs rounded-md mb-2 truncate">
                 <button id="copyUserId-modal" class="w-full p-2 bg-gray-600 hover:bg-gray-700 rounded-md font-semibold transition-colors text-white text-sm mb-4">Copiar ID</button>
@@ -278,7 +278,8 @@
         
         // --- Global State Variables ---
         let userId = null;
-        let unsubscribe; // To detach the Firestore listener
+        let unsubscribeUser; // Listener for user-specific data
+        let unsubscribeShared; // Listener for shared data
         let allData = {}; // To store schedule data from JSON files
         let currentSpecialty = 'cirurgia';
         let currentWeekOrRodizio = '1';
@@ -413,12 +414,12 @@
                         { id: '2', title: 'Rodízio Pediatria 2 (Teste)', dates: '01/09 - 07/09', start: '2025-09-01', end: '2025-09-07' }
                     ],
                     students: [
-                        { id: 'p1', name: 'Ped Aluno 1' },
-                        { id: 'p2', name: 'Ped Aluno 2' },
-                        { id: 'p3', name: 'Ped Aluno 3' }
+                        { id: 'p1', name: 'Ped Aluno 1', imageUrl: 'https://placehold.co/400x400/F4EBF4/A976A9?text=P1' },
+                        { id: 'p2', name: 'Ped Aluno 2', imageUrl: 'https://placehold.co/400x400/F4EBF4/A976A9?text=P2' },
+                        { id: 'p3', name: 'Ped Aluno 3', imageUrl: 'https://placehold.co/400x400/F4EBF4/A976A9?text=P3' }
                     ],
                     schedule: [
-                        { week: '1', day: 'QUINTA', time: '10:00 - 12:00', activity: 'Enfermaria Pediátrica (Mock)', professor: 'Dra. Criança', location: 'Hospital Infantil de Teste' },
+                        { week: '1', day: 'QUINTA', time: '10:00 - 12:00', activity: 'PA Pediatria', professor: 'Dra. Criança', location: 'Hospital Infantil de Teste', slots: 2 },
                         { week: '2', day: 'SEXTA', time: '14:00 - 16:00', activity: 'PA PLANTÃO', professor: 'Dr. Bebê', location: 'Hospital Infantil de Teste', slots: 3 }
                     ]
                 }
@@ -435,6 +436,7 @@
                 
                 initializeUI();
                 initializeAuth();
+                setupSharedOnCallListener(); // Set up the shared listener once
 
             } catch (error) {
                 console.error("Error during initial data fetch:", error);
@@ -442,6 +444,7 @@
                 allData.pediatria = mockSchedule.pediatria;
                 initializeUI();
                 initializeAuth();
+                setupSharedOnCallListener();
             }
         }
         
@@ -450,7 +453,7 @@
                 if (user) {
                     const activeUserId = localStorage.getItem('loadedUserId') || user.uid;
                     if (!userId || userId !== activeUserId) {
-                        setupFirestoreListener(activeUserId);
+                        setupUserListener(activeUserId);
                     }
                 }
             });
@@ -465,39 +468,40 @@
             }
         }
 
-        async function saveStateToFirebase() {
+        async function saveUserStateToFirebase() {
             if (!userId) return;
             const userDocRef = doc(db, 'users', userId);
             try {
+                // Only save user-specific data here
                 await setDoc(userDocRef, {
                     checklistData,
                     currentStudent,
                     currentSpecialty,
                     hideStudyTime,
                     currentWeekOrRodizio,
-                    onCallClaimData // Save on-call data
-                });
-                showToast("Sincronizado com sucesso!");
+                }, { merge: true });
+                showToast("Dados pessoais sincronizados!");
             } catch (error) {
-                console.error("Error saving state: ", error);
-                showToast("Erro ao sincronizar.");
+                console.error("Error saving user state: ", error);
+                showToast("Erro ao sincronizar dados pessoais.");
             }
         }
 
-        function setupFirestoreListener(uid) {
+        function setupUserListener(uid) {
             userId = uid;
             userIdDisplayMobile.value = uid;
             userIdDisplayModal.value = uid;
             const userDocRef = doc(db, 'users', userId);
 
-            if (unsubscribe) unsubscribe();
+            if (unsubscribeUser) unsubscribeUser();
 
-            unsubscribe = onSnapshot(userDocRef, (docSnap) => {
+            unsubscribeUser = onSnapshot(userDocRef, (docSnap) => {
                 const oldSpecialty = currentSpecialty;
                 let stateChanged = false;
 
                 if (docSnap.exists()) {
                     const data = docSnap.data();
+                    // Only update user-specific state from this listener
                     if (JSON.stringify(checklistData) !== JSON.stringify(data.checklistData || {})) {
                         checklistData = data.checklistData || {};
                         stateChanged = true;
@@ -518,12 +522,8 @@
                         currentWeekOrRodizio = data.currentWeekOrRodizio || '1';
                         stateChanged = true;
                     }
-                    if (JSON.stringify(onCallClaimData) !== JSON.stringify(data.onCallClaimData || {})) {
-                        onCallClaimData = data.onCallClaimData || {};
-                        stateChanged = true;
-                    }
                 } else {
-                    saveStateToFirebase(); 
+                    saveUserStateToFirebase(); 
                     return; 
                 }
                 
@@ -546,8 +546,23 @@
                 
                 updateView();
             }, (error) => {
-                console.error("Error in snapshot listener:", error);
-                mainContent.innerHTML = `<p class="text-red-400 text-center">Erro de permissão ao sincronizar. Verifique as regras de segurança do Firestore.</p>`;
+                console.error("Error in user snapshot listener:", error);
+            });
+        }
+        
+        function setupSharedOnCallListener() {
+            const onCallDocRef = doc(db, 'schedules', 'onCallClaims');
+            if (unsubscribeShared) unsubscribeShared();
+            
+            unsubscribeShared = onSnapshot(onCallDocRef, (docSnap) => {
+                const newData = docSnap.exists() ? docSnap.data().claims || {} : {};
+                if (JSON.stringify(onCallClaimData) !== JSON.stringify(newData)) {
+                    onCallClaimData = newData;
+                    // Only re-render if the data actually changed to prevent loops
+                    renderSchedule();
+                }
+            }, (error) => {
+                console.error("Error in shared snapshot listener:", error);
             });
         }
         
@@ -564,7 +579,7 @@
             currentSpecialty = 'cirurgia';
             currentStudent = 'all';
             hideStudyTime = false;
-            onCallClaimData = {};
+            // Do not reset onCallClaimData as it's shared
             const data = allData[currentSpecialty];
             currentWeekOrRodizio = (data?.weeks?.[0]?.id) || '1';
         }
@@ -582,10 +597,19 @@
             currentSpecialty = newSpecialty;
             const data = allData[currentSpecialty];
             currentWeekOrRodizio = (data?.weeks?.[0]?.id) || '1';
+            
+            // BUG FIX: Reset student based on new specialty
+            if (newSpecialty === 'pediatria') {
+                currentStudent = data?.students?.[0]?.id || 'p1';
+            } else {
+                currentStudent = 'all';
+            }
+
             updateActiveSpecialtyButtons();
             updateUILayout();
             populateSelectors();
             updateView();
+            saveUserStateToFirebase();
         }
 
         function populateSelectors() {
@@ -624,7 +648,9 @@
         function updateUILayout() {
             const isCirurgia = currentSpecialty === 'cirurgia';
             
-            studentContainerDesktop.style.display = 'block'; // Always show student selector
+            // BUG FIX: Show student selector only for Cirurgia
+            studentContainerDesktop.style.display = isCirurgia ? 'block' : 'none';
+            studentContainerMobile.style.display = isCirurgia ? 'block' : 'none';
             
             const weekLabel = isCirurgia ? 'Selecione a Semana' : 'Selecione o Rodízio';
             document.getElementById('week-label-desktop').textContent = weekLabel;
@@ -639,7 +665,8 @@
             
             scheduleSubtitleDesktop.textContent = subtitleText;
             scheduleSubtitleMain.textContent = subtitleText;
-
+            
+            // This logic now correctly handles both specialties
             const selectedStudent = data.students.find(s => s.id == currentStudent);
             if (selectedStudent) {
                 studentImageMobile.src = selectedStudent.imageUrl || 'https://i.imgur.com/5AW2oEL.png';
@@ -683,9 +710,8 @@
                 const dayHeader = document.createElement('h2');
                 dayHeader.className = 'text-xl font-bold text-center p-3 bg-[#2D2D2D] rounded-lg shadow-sm sticky top-0 z-10';
                 
-                // ALTERATION 1: Add date to day header
                 if (weekInfo && weekInfo.start) {
-                    const startDate = new Date(weekInfo.start + 'T00:00:00'); // Avoid timezone issues
+                    const startDate = new Date(weekInfo.start + 'T00:00:00');
                     const dayIndex = daysOfWeek.indexOf(day);
                     if (dayIndex !== -1) {
                         const currentDate = new Date(startDate);
@@ -725,18 +751,17 @@
                         card.classList.add('current-activity');
                     }
 
-                    // ALTERATION 2: On-Call Claim System
-                    if (item.activity.toUpperCase().includes('PA PLANTÃO')) {
+                    // BUG FIX: Broaden the check for on-call activities
+                    const activityUpper = item.activity.toUpperCase();
+                    if (activityUpper.includes('PLANTÃO') || activityUpper.includes('PA PEDIATRIA')) {
                         const onCallId = activityId;
                         const totalSlots = item.slots || 2;
                         
-                        if (!onCallClaimData[onCallId]) {
-                            onCallClaimData[onCallId] = new Array(totalSlots).fill(null);
-                        }
-                        const slots = onCallClaimData[onCallId];
+                        // Use the shared state
+                        const slots = onCallClaimData[onCallId] || new Array(totalSlots).fill(null);
                         
                         const currentStudentData = allData[currentSpecialty].students.find(s => s.id == currentStudent);
-                        const currentUserSlot = slots.find(slot => slot && slot.id == currentStudent);
+                        const currentUserSlot = slots.find(slot => slot && currentStudentData && slot.id == currentStudentData.id);
                         const hasEmptySlot = slots.some(slot => slot === null);
 
                         let slotsHtml = '<ul class="mt-3 border-t border-gray-700 pt-3 text-sm space-y-1">';
@@ -749,7 +774,7 @@
                         slotsHtml += '</ul>';
 
                         let buttonHtml = '';
-                        const isDisabled = currentStudent === 'all';
+                        const isDisabled = currentSpecialty === 'cirurgia' && currentStudent === 'all';
                         if (currentUserSlot) {
                             buttonHtml = `<button data-action="leave" class="w-full mt-4 p-2 bg-yellow-600 hover:bg-yellow-700 rounded-md font-semibold transition-colors text-white text-sm">Sair do Plantão</button>`;
                         } else if (hasEmptySlot) {
@@ -772,7 +797,7 @@
                         
                         const actionButton = card.querySelector('button[data-action]');
                         if (actionButton) {
-                            actionButton.addEventListener('click', () => handleOnCallAction(onCallId, actionButton.dataset.action));
+                            actionButton.addEventListener('click', () => handleOnCallAction(onCallId, actionButton.dataset.action, totalSlots));
                         }
                         card.querySelector(`#${activityId}`).addEventListener('change', handleChecklistChange);
 
@@ -845,15 +870,25 @@
             renderSchedule();
         }
 
-        function handleOnCallAction(onCallId, action) {
-            if (currentStudent === 'all') {
+        async function handleOnCallAction(onCallId, action, totalSlots) {
+            if (currentSpecialty === 'cirurgia' && currentStudent === 'all') {
                 showToast("Por favor, selecione um aluno para reivindicar uma vaga.");
                 return;
             }
 
-            const slots = onCallClaimData[onCallId];
+            // Create a deep copy to avoid modifying the global state directly before saving
+            const updatedOnCallData = JSON.parse(JSON.stringify(onCallClaimData));
+            if (!updatedOnCallData[onCallId]) {
+                updatedOnCallData[onCallId] = new Array(totalSlots).fill(null);
+            }
+            const slots = updatedOnCallData[onCallId];
             const currentStudentData = allData[currentSpecialty].students.find(s => s.id == currentStudent);
             
+            if (!currentStudentData) {
+                showToast("Aluno não encontrado. Tente novamente.");
+                return;
+            }
+
             if (action === 'claim') {
                 const emptySlotIndex = slots.findIndex(slot => slot === null);
                 if (emptySlotIndex !== -1) {
@@ -863,15 +898,21 @@
                     return;
                 }
             } else if (action === 'leave') {
-                const userSlotIndex = slots.findIndex(slot => slot && slot.id == currentStudent);
+                const userSlotIndex = slots.findIndex(slot => slot && slot.id == currentStudentData.id);
                 if (userSlotIndex !== -1) {
                     slots[userSlotIndex] = null;
                 }
             }
             
-            onCallClaimData[onCallId] = slots;
-            saveStateToFirebase();
-            renderSchedule(); // Re-render to update UI
+            // Save the entire updated object to Firestore
+            const onCallDocRef = doc(db, 'schedules', 'onCallClaims');
+            try {
+                await setDoc(onCallDocRef, { claims: updatedOnCallData });
+                // The listener will automatically update the UI
+            } catch (error) {
+                console.error("Error updating on-call data:", error);
+                showToast("Erro ao atualizar vaga.");
+            }
         }
 
         function clearWeekData() {
@@ -893,7 +934,7 @@
                 
                 checklistData = newChecklistData;
 
-                saveStateToFirebase();
+                saveUserStateToFirebase();
                 renderSchedule();
                 showToast("Marcações da semana limpas!");
             });
@@ -908,12 +949,12 @@
         function handleLoadId(inputElement) {
             const newId = inputElement.value.trim();
             if (newId && newId !== userId) {
-                showConfirm(`Carregar dados do ID ${newId}? Seus dados atuais serão sobrescritos.`, () => {
-                    if (unsubscribe) unsubscribe();
-                    localStorage.setItem('loadedUserId', newId); // Save the new ID
+                showConfirm(`Carregar dados do ID ${newId}? Suas configurações atuais serão sobrescritas.`, () => {
+                    if (unsubscribeUser) unsubscribeUser();
+                    localStorage.setItem('loadedUserId', newId);
                     resetLocalState();
                     initializeUI(); 
-                    setupFirestoreListener(newId);
+                    setupUserListener(newId);
                 });
             }
         }
@@ -947,8 +988,8 @@
         hideStudyMobile.addEventListener('change', handleHideStudyChange);
         hideStudyDesktop.addEventListener('change', handleHideStudyChange);
         
-        syncButtonMobile.addEventListener('click', saveStateToFirebase);
-        syncButtonModal.addEventListener('click', saveStateToFirebase);
+        syncButtonMobile.addEventListener('click', saveUserStateToFirebase);
+        syncButtonModal.addEventListener('click', saveUserStateToFirebase);
         
         syncModalOpenBtn.addEventListener('click', toggleSyncModal);
         syncModalCloseBtn.addEventListener('click', toggleSyncModal);
@@ -990,23 +1031,19 @@
         // --- Initialization ---
 
         setInterval(() => {
-            // This is just to update the 'current-activity' highlight
             renderSchedule();
         }, 60000);
 
-        // Debounce saving to Firebase to avoid too many writes
         let saveTimeout;
         window.addEventListener('beforeunload', () => {
-           if (userId) saveStateToFirebase(); // Save one last time before leaving
+           if (userId) saveUserStateToFirebase();
         });
 
-        // Auto-save periodically and on major changes
         function debouncedSave() {
             clearTimeout(saveTimeout);
-            saveTimeout = setTimeout(saveStateToFirebase, 2000); // Save 2 seconds after the last change
+            saveTimeout = setTimeout(saveUserStateToFirebase, 2000);
         }
 
-        // Add event listeners that trigger a save
         scheduleGrid.addEventListener('change', debouncedSave);
         weekSelectorMain.addEventListener('change', debouncedSave);
         weekSelectorDesktop.addEventListener('change', debouncedSave);
@@ -1014,7 +1051,6 @@
         studentSelectorDesktop.addEventListener('change', debouncedSave);
         hideStudyMobile.addEventListener('change', debouncedSave);
         hideStudyDesktop.addEventListener('change', debouncedSave);
-        // Add more triggers if needed
 
         fetchData();
     </script>
