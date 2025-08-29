@@ -104,19 +104,19 @@
     <!-- Retractable Specialty Sidebar -->
     <aside class="fixed top-0 left-0 h-screen z-30 bg-[#2B2B2B] border-r border-gray-700 w-20 hover:w-56 transition-all duration-300 ease-in-out group hidden lg:flex flex-col">
         <div class="flex items-center justify-center h-20 border-b border-gray-700">
-             <svg class="h-8 w-8 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+            <svg class="h-8 w-8 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
             </svg>
         </div>
         <nav class="flex-grow flex flex-col justify-center space-y-2">
             <a href="#" id="btn-cirurgia" class="specialty-btn flex items-center py-3 px-6 justify-center group-hover:justify-start text-gray-300 hover:bg-gray-700 hover:text-white rounded-r-lg">
                 <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                   <path stroke-linecap="round" stroke-linejoin="round" d="M9.53 16.122a3 3 0 00-5.78 1.128 2.25 2.25 0 01-2.4 2.245 4.5 4.5 0 008.4-2.245c0-.399-.078-.78-.22-1.128zm0 0a15.998 15.998 0 003.388-1.62m-5.043-.025a15.998 15.998 0 011.622-3.385m5.043.025a15.998 15.998 0 001.622-3.385m3.388 1.62a15.998 15.998 0 00-1.62-3.385m-1.622 3.385a15.998 15.998 0 01-3.388 1.62m5.043-.025a15.998 15.998 0 01-1.622 3.385m-5.043.025a15.998 15.998 0 00-1.622 3.385m-1.62-3.385a15.998 15.998 0 00-3.388-1.62m11.622 5.043a15.998 15.998 0 003.388-1.62" />
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9.53 16.122a3 3 0 00-5.78 1.128 2.25 2.25 0 01-2.4 2.245 4.5 4.5 0 008.4-2.245c0-.399-.078-.78-.22-1.128zm0 0a15.998 15.998 0 003.388-1.62m-5.043-.025a15.998 15.998 0 011.622-3.385m5.043.025a15.998 15.998 0 001.622-3.385m3.388 1.62a15.998 15.998 0 00-1.62-3.385m-1.622 3.385a15.998 15.998 0 01-3.388 1.62m5.043-.025a15.998 15.998 0 01-1.622 3.385m-5.043.025a15.998 15.998 0 00-1.622 3.385m-1.62-3.385a15.998 15.998 0 00-3.388-1.62m11.622 5.043a15.998 15.998 0 003.388-1.62" />
                 </svg>
                 <span class="font-semibold whitespace-nowrap opacity-0 w-0 group-hover:ml-4 group-hover:opacity-100 group-hover:w-auto transition-all duration-300 ease-in-out">Cirurgia</span>
             </a>
             <a href="#" id="btn-pediatria" class="specialty-btn flex items-center py-3 px-6 justify-center group-hover:justify-start text-gray-300 hover:bg-gray-700 hover:text-white rounded-r-lg">
-                 <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
                 </svg>
                 <span class="font-semibold whitespace-nowrap opacity-0 w-0 group-hover:ml-4 group-hover:opacity-100 group-hover:w-auto transition-all duration-300 ease-in-out">Pediatria</span>
@@ -143,24 +143,24 @@
         <div id="content-wrapper" class="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-8 p-4 md:p-8 overflow-hidden h-screen">
             <!-- Sidebar for desktop -->
             <aside id="sidebar-desktop" class="hidden lg:flex lg:col-span-3 flex-col gap-8 overflow-y-auto">
-                 <div id="week-selector-container-desktop" class="p-6 bg-[#2B2B2B] rounded-lg shadow-lg flex-col gap-2">
-                     <label id="week-label-desktop" for="week-selector-desktop" class="block text-sm font-medium text-center mb-2">Selecione a Semana</label>
-                     <select id="week-selector-desktop" class="w-full p-3 bg-[#2D2D2D] border border-gray-600 rounded-md shadow-sm focus:ring-[#2899F5] focus:border-[#2899F5]"></select>
-                     <p id="schedule-subtitle-desktop" class="text-sm text-gray-400 mt-2 text-center"></p>
-                 </div>
-                 <div id="student-selector-container-desktop" class="bg-[#2B2B2B] p-6 rounded-lg shadow-lg text-center">
-                     <h3 class="text-lg font-semibold mb-4">Selecione o Aluno</h3>
-                     <img id="student-image-desktop" src="https://i.imgur.com/5AW2oEL.png" alt="Foto do Grupo" class="w-full h-auto mx-auto rounded-lg object-cover border-4 border-gray-600 mb-4">
-                     <select id="student-selector-desktop" class="w-full p-3 bg-[#2D2D2D] border border-gray-600 rounded-md shadow-sm focus:ring-[#2899F5] focus:border-[#2899F5]"></select>
-                 </div>
-                  <div class="bg-[#2B2B2B] p-6 rounded-lg shadow-lg text-center">
-                     <h3 class="text-lg font-semibold mb-4">Opções</h3>
-                     <div class="flex items-center justify-center gap-2 text-sm">
-                         <input type="checkbox" id="hide-study-desktop" class="h-4 w-4 rounded bg-gray-700 border-gray-600 text-blue-500 focus:ring-blue-600">
-                         <label for="hide-study-desktop">Ocultar horários de estudo</label>
-                     </div>
-                     <button id="clearWeekButton-desktop" class="w-full mt-4 p-2 bg-red-600 hover:bg-red-700 rounded-md font-semibold transition-colors text-white text-sm">Limpar marcações</button>
-                 </div>
+                <div id="week-selector-container-desktop" class="p-6 bg-[#2B2B2B] rounded-lg shadow-lg flex-col gap-2">
+                    <label id="week-label-desktop" for="week-selector-desktop" class="block text-sm font-medium text-center mb-2">Selecione a Semana</label>
+                    <select id="week-selector-desktop" class="w-full p-3 bg-[#2D2D2D] border border-gray-600 rounded-md shadow-sm focus:ring-[#2899F5] focus:border-[#2899F5]"></select>
+                    <p id="schedule-subtitle-desktop" class="text-sm text-gray-400 mt-2 text-center"></p>
+                </div>
+                <div id="student-selector-container-desktop" class="bg-[#2B2B2B] p-6 rounded-lg shadow-lg text-center">
+                    <h3 class="text-lg font-semibold mb-4">Selecione o Aluno</h3>
+                    <img id="student-image-desktop" src="https://i.imgur.com/5AW2oEL.png" alt="Foto do Grupo" class="w-full h-auto mx-auto rounded-lg object-cover border-4 border-gray-600 mb-4">
+                    <select id="student-selector-desktop" class="w-full p-3 bg-[#2D2D2D] border border-gray-600 rounded-md shadow-sm focus:ring-[#2899F5] focus:border-[#2899F5]"></select>
+                </div>
+                 <div class="bg-[#2B2B2B] p-6 rounded-lg shadow-lg text-center">
+                    <h3 class="text-lg font-semibold mb-4">Opções</h3>
+                    <div class="flex items-center justify-center gap-2 text-sm">
+                        <input type="checkbox" id="hide-study-desktop" class="h-4 w-4 rounded bg-gray-700 border-gray-600 text-blue-500 focus:ring-blue-600">
+                        <label for="hide-study-desktop">Ocultar horários de estudo</label>
+                    </div>
+                    <button id="clearWeekButton-desktop" class="w-full mt-4 p-2 bg-red-600 hover:bg-red-700 rounded-md font-semibold transition-colors text-white text-sm">Limpar marcações</button>
+                </div>
             </aside>
 
             <main id="main-content" class="col-span-12 lg:col-span-9 overflow-y-auto">
@@ -178,13 +178,13 @@
     <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-70 z-40 flex items-center justify-center p-4">
         <aside id="sidebar-mobile" class="relative w-full max-w-sm bg-[#2B2B2B] rounded-2xl shadow-2xl flex flex-col gap-8 p-6 overflow-y-auto max-h-[90vh]">
             <button id="sidebar-close" class="absolute top-4 right-4 p-2 rounded-full hover:bg-gray-700">
-                 <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                     <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                 </svg>
+                <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
             </button>
             <div id="specialty-selector-container-mobile" class="flex items-center gap-2 bg-[#1B1B1B] p-1 rounded-lg">
-                 <button id="btn-cirurgia-mobile" class="specialty-btn flex-1 px-4 py-2 text-sm font-semibold rounded-md">Cirurgia</button>
-                 <button id="btn-pediatria-mobile" class="specialty-btn flex-1 px-4 py-2 text-sm font-semibold rounded-md">Pediatria</button>
+                <button id="btn-cirurgia-mobile" class="specialty-btn flex-1 px-4 py-2 text-sm font-semibold rounded-md">Cirurgia</button>
+                <button id="btn-pediatria-mobile" class="specialty-btn flex-1 px-4 py-2 text-sm font-semibold rounded-md">Pediatria</button>
             </div>
             <div id="student-selector-container-mobile" class="bg-[#2B2B2B] rounded-lg text-center">
                 <h3 class="text-lg font-semibold mb-4">Selecione o Aluno</h3>
@@ -214,10 +214,10 @@
     <!-- Sync Modal -->
     <div id="sync-modal-overlay" class="fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center p-4">
         <div id="sync-modal" class="relative w-full max-w-sm bg-[#2B2B2B] rounded-2xl shadow-2xl p-6">
-             <button id="sync-modal-close-btn" class="absolute top-4 right-4 p-2 rounded-full hover:bg-gray-700">
-                 <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                     <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                 </svg>
+            <button id="sync-modal-close-btn" class="absolute top-4 right-4 p-2 rounded-full hover:bg-gray-700">
+                <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
             </button>
             <div class="bg-[#2B2B2B] p-6 rounded-lg shadow-lg text-center">
                 <h3 class="text-lg font-semibold mb-4">Sincronização</h3>
@@ -285,7 +285,7 @@
         let currentStudent = 'all';
         let checklistData = {}; // To store the checked state of activities
         let hideStudyTime = false;
-        let pediaOnCallData = {}; // NEW: To store pediatrics on-call dates
+        let onCallClaimData = {}; // NEW: To store on-call claimed slots data
 
         // --- DOM Element References ---
         const scheduleGrid = document.getElementById('schedule-grid');
@@ -339,7 +339,6 @@
         const userIdInputModal = document.getElementById('userIdInput-modal');
         const loadUserIdModal = document.getElementById('loadUserId-modal');
         
-
         const syncButtonMobile = document.getElementById('sync-button-mobile');
 
         const toast = document.getElementById('toast-notification');
@@ -405,7 +404,7 @@
                     schedule: [
                         { week: '1', day: 'SEGUNDA', time: '08:00 - 12:00', activity: 'Ambulatório Mock', professor: 'Dr. Exemplo', location: 'Hospital de Testes', studentId: [1] },
                         { week: '1', day: 'TERÇA', time: '13:00 - 17:00', activity: 'Centro Cirúrgico Mock', professor: 'Dra. Simulada', location: 'Hospital de Testes', studentId: [2] },
-                        { week: '2', day: 'QUARTA', time: '09:00 - 11:00', activity: 'PA PLANTÃO', professor: 'Dr. Exemplo', location: 'Sala de Conferências', studentId: [1, 2] }
+                        { week: '2', day: 'QUARTA', time: '09:00 - 11:00', activity: 'PA PLANTÃO', professor: 'Dr. Exemplo', location: 'Sala de Conferências', studentId: [1, 2], slots: 2 }
                     ]
                 },
                 pediatria: {
@@ -420,7 +419,7 @@
                     ],
                     schedule: [
                         { week: '1', day: 'QUINTA', time: '10:00 - 12:00', activity: 'Enfermaria Pediátrica (Mock)', professor: 'Dra. Criança', location: 'Hospital Infantil de Teste' },
-                        { week: '2', day: 'SEXTA', time: '14:00 - 16:00', activity: 'PA PLANTÃO', professor: 'Dr. Bebê', location: 'Hospital Infantil de Teste' }
+                        { week: '2', day: 'SEXTA', time: '14:00 - 16:00', activity: 'PA PLANTÃO', professor: 'Dr. Bebê', location: 'Hospital Infantil de Teste', slots: 3 }
                     ]
                 }
             };
@@ -468,7 +467,6 @@
 
         async function saveStateToFirebase() {
             if (!userId) return;
-            // Corrected path to match standard Firestore structure for user data
             const userDocRef = doc(db, 'users', userId);
             try {
                 await setDoc(userDocRef, {
@@ -477,7 +475,7 @@
                     currentSpecialty,
                     hideStudyTime,
                     currentWeekOrRodizio,
-                    pediaOnCallData // Save on-call data
+                    onCallClaimData // Save on-call data
                 });
                 showToast("Sincronizado com sucesso!");
             } catch (error) {
@@ -490,7 +488,6 @@
             userId = uid;
             userIdDisplayMobile.value = uid;
             userIdDisplayModal.value = uid;
-            // Corrected path to match standard Firestore structure for user data
             const userDocRef = doc(db, 'users', userId);
 
             if (unsubscribe) unsubscribe();
@@ -521,8 +518,8 @@
                         currentWeekOrRodizio = data.currentWeekOrRodizio || '1';
                         stateChanged = true;
                     }
-                    if (JSON.stringify(pediaOnCallData) !== JSON.stringify(data.pediaOnCallData || {})) {
-                        pediaOnCallData = data.pediaOnCallData || {};
+                    if (JSON.stringify(onCallClaimData) !== JSON.stringify(data.onCallClaimData || {})) {
+                        onCallClaimData = data.onCallClaimData || {};
                         stateChanged = true;
                     }
                 } else {
@@ -567,7 +564,7 @@
             currentSpecialty = 'cirurgia';
             currentStudent = 'all';
             hideStudyTime = false;
-            pediaOnCallData = {};
+            onCallClaimData = {};
             const data = allData[currentSpecialty];
             currentWeekOrRodizio = (data?.weeks?.[0]?.id) || '1';
         }
@@ -675,6 +672,8 @@
 
             const orderedDays = daysOfWeek.filter(day => groupedByDay[day]);
 
+            const weekInfo = data.weeks.find(w => w.id == currentWeekOrRodizio);
+
             orderedDays.forEach(day => {
                 const activitiesForDay = groupedByDay[day].sort((a, b) => a.time.localeCompare(b.time));
                 const dayColumn = document.createElement('div');
@@ -683,7 +682,26 @@
 
                 const dayHeader = document.createElement('h2');
                 dayHeader.className = 'text-xl font-bold text-center p-3 bg-[#2D2D2D] rounded-lg shadow-sm sticky top-0 z-10';
-                dayHeader.textContent = day.charAt(0) + day.slice(1).toLowerCase();
+                
+                // ALTERATION 1: Add date to day header
+                if (weekInfo && weekInfo.start) {
+                    const startDate = new Date(weekInfo.start + 'T00:00:00'); // Avoid timezone issues
+                    const dayIndex = daysOfWeek.indexOf(day);
+                    if (dayIndex !== -1) {
+                        const currentDate = new Date(startDate);
+                        currentDate.setDate(startDate.getDate() + dayIndex);
+                        const formattedDate = `${String(currentDate.getDate()).padStart(2, '0')}/${String(currentDate.getMonth() + 1).padStart(2, '0')}`;
+                        dayHeader.innerHTML = `
+                            ${day.charAt(0) + day.slice(1).toLowerCase()}
+                            <span class="block text-sm font-normal text-gray-400 mt-1">${formattedDate}</span>
+                        `;
+                    } else {
+                         dayHeader.textContent = day.charAt(0) + day.slice(1).toLowerCase();
+                    }
+                } else {
+                    dayHeader.textContent = day.charAt(0) + day.slice(1).toLowerCase();
+                }
+
                 dayColumn.appendChild(dayHeader);
 
                 activitiesForDay.forEach((item) => {
@@ -691,8 +709,9 @@
                     const isChecked = checklistData[activityId] || false;
                     
                     const card = document.createElement('div');
-                    card.className = `activity-card rounded-lg p-4 border-l-4 shadow-md bg-[#2D2D2D] border-[#2899F5] ${isChecked ? 'checked' : ''}`;
-                    
+                    card.className = `activity-card rounded-lg p-4 border-l-4 shadow-md bg-[#2D2D2D] border-[#2899F5]`;
+                     if (isChecked) card.classList.add('checked');
+
                     const now = new Date();
                     const currentTime = now.getHours() * 100 + now.getMinutes();
                     const [startTimeStr, endTimeStr] = item.time.split(' - ');
@@ -700,40 +719,93 @@
                     const endTime = parseInt(endTimeStr.replace(':', ''), 10);
                     
                     const today = now.toLocaleDateString('pt-BR', { weekday: 'long' }).toUpperCase();
-                    const weekInfo = data.weeks.find(w => w.id == currentWeekOrRodizio);
                     const isTodayInWeek = weekInfo && new Date() >= new Date(weekInfo.start) && new Date() <= new Date(weekInfo.end + 'T23:59:59');
 
                     if (isTodayInWeek && day === today && currentTime >= startTime && currentTime <= endTime) {
                         card.classList.add('current-activity');
                     }
 
-                    let studentHtml = '';
-                    if (currentSpecialty === 'cirurgia' && item.studentId) {
-                        const involvedStudents = allData.cirurgia.students
-                            .filter(s => s.id !== 'all' && item.studentId.includes(s.id))
-                            .map(s => s.name.split(' ')[0])
-                            .join(', ');
-                          studentHtml = `<p class="mt-2 text-xs text-gray-500"><strong>Alunos:</strong> ${involvedStudents}</p>`;
+                    // ALTERATION 2: On-Call Claim System
+                    if (item.activity.toUpperCase().includes('PA PLANTÃO')) {
+                        const onCallId = activityId;
+                        const totalSlots = item.slots || 2;
+                        
+                        if (!onCallClaimData[onCallId]) {
+                            onCallClaimData[onCallId] = new Array(totalSlots).fill(null);
+                        }
+                        const slots = onCallClaimData[onCallId];
+                        
+                        const currentStudentData = allData[currentSpecialty].students.find(s => s.id == currentStudent);
+                        const currentUserSlot = slots.find(slot => slot && slot.id == currentStudent);
+                        const hasEmptySlot = slots.some(slot => slot === null);
+
+                        let slotsHtml = '<ul class="mt-3 border-t border-gray-700 pt-3 text-sm space-y-1">';
+                        slots.forEach((slot, index) => {
+                            slotsHtml += `<li class="flex items-center gap-2 ${slot ? 'text-green-400' : 'text-gray-500'}">
+                                <span class="font-semibold">${index + 1}.</span>
+                                <span>${slot ? slot.name : 'Vaga disponível'}</span>
+                            </li>`;
+                        });
+                        slotsHtml += '</ul>';
+
+                        let buttonHtml = '';
+                        const isDisabled = currentStudent === 'all';
+                        if (currentUserSlot) {
+                            buttonHtml = `<button data-action="leave" class="w-full mt-4 p-2 bg-yellow-600 hover:bg-yellow-700 rounded-md font-semibold transition-colors text-white text-sm">Sair do Plantão</button>`;
+                        } else if (hasEmptySlot) {
+                            buttonHtml = `<button data-action="claim" class="w-full mt-4 p-2 bg-blue-600 hover:bg-blue-700 rounded-md font-semibold transition-colors text-white text-sm ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}" ${isDisabled ? 'disabled' : ''}>Reivindicar Vaga</button>`;
+                        } else {
+                            buttonHtml = `<p class="text-center text-xs text-gray-400 mt-4">Todas as vagas preenchidas.</p>`;
+                        }
+                        
+                        card.innerHTML = `
+                            <div class="flex items-start justify-between">
+                                <div class="flex-1">
+                                    <p class="font-bold text-md activity-title">${item.activity}</p>
+                                    <p class="text-sm text-gray-400 font-medium mt-1">${item.time}</p>
+                                </div>
+                                <input type="checkbox" id="${activityId}" class="ml-4 mt-1 h-5 w-5 rounded bg-gray-700 border-gray-600 text-blue-500 focus:ring-blue-600" ${isChecked ? 'checked' : ''}>
+                            </div>
+                            ${slotsHtml}
+                            ${buttonHtml}
+                        `;
+                        
+                        const actionButton = card.querySelector('button[data-action]');
+                        if (actionButton) {
+                            actionButton.addEventListener('click', () => handleOnCallAction(onCallId, actionButton.dataset.action));
+                        }
+                        card.querySelector(`#${activityId}`).addEventListener('change', handleChecklistChange);
+
+                    } else { // Regular activity card
+                        let studentHtml = '';
+                        if (currentSpecialty === 'cirurgia' && item.studentId) {
+                            const involvedStudents = allData.cirurgia.students
+                                .filter(s => s.id !== 'all' && item.studentId.includes(s.id))
+                                .map(s => s.name.split(' ')[0])
+                                .join(', ');
+                                studentHtml = `<p class="mt-2 text-xs text-gray-500"><strong>Alunos:</strong> ${involvedStudents}</p>`;
+                        }
+                        
+                        const locationUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.location + ', Curitiba, Brazil')}`;
+
+                        card.innerHTML = `
+                            <div class="flex items-start justify-between">
+                                <div class="flex-1">
+                                    <p class="font-bold text-md activity-title">${item.activity}</p>
+                                    <p class="text-sm text-gray-400 font-medium mt-1">${item.time}</p>
+                                </div>
+                                <input type="checkbox" id="${activityId}" class="ml-4 mt-1 h-5 w-5 rounded bg-gray-700 border-gray-600 text-blue-500 focus:ring-blue-600" ${isChecked ? 'checked' : ''}>
+                            </div>
+                            <div class="mt-3 border-t border-gray-700 pt-3 text-sm">
+                                <p><strong>Professor:</strong> ${item.professor}</p>
+                                <p><strong>Local:</strong> <a href="${locationUrl}" target="_blank" class="text-blue-400 hover:underline">${item.location}</a></p>
+                                ${studentHtml}
+                            </div>
+                        `;
+                        card.querySelector(`#${activityId}`).addEventListener('change', handleChecklistChange);
                     }
                     
-                    const locationUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.location + ', Curitiba, Brazil')}`;
-
-                    card.innerHTML = `
-                        <div class="flex items-start justify-between">
-                            <div class="flex-1">
-                                <p class="font-bold text-md activity-title">${item.activity}</p>
-                                <p class="text-sm text-gray-400 font-medium mt-1">${item.time}</p>
-                            </div>
-                            <input type="checkbox" id="${activityId}" class="ml-4 mt-1 h-5 w-5 rounded bg-gray-700 border-gray-600 text-blue-500 focus:ring-blue-600" ${isChecked ? 'checked' : ''}>
-                        </div>
-                        <div class="mt-3 border-t border-gray-700 pt-3 text-sm">
-                            <p><strong>Professor:</strong> ${item.professor}</p>
-                            <p><strong>Local:</strong> <a href="${locationUrl}" target="_blank" class="text-blue-400 hover:underline">${item.location}</a></p>
-                            ${studentHtml}
-                        </div>
-                    `;
                     dayColumn.appendChild(card);
-                    card.querySelector(`#${activityId}`).addEventListener('change', handleChecklistChange);
                 });
                 fragment.appendChild(dayColumn);
             });
@@ -765,13 +837,41 @@
             const activityId = checkbox.id;
             checklistData[activityId] = checkbox.checked;
             
-            // Optimistic UI update
             checkbox.closest('.activity-card').classList.toggle('checked', checkbox.checked);
         }
 
         function handleHideStudyChange(e) {
             hideStudyTime = e.target.checked;
-            renderSchedule(); // Optimistic UI update
+            renderSchedule();
+        }
+
+        function handleOnCallAction(onCallId, action) {
+            if (currentStudent === 'all') {
+                showToast("Por favor, selecione um aluno para reivindicar uma vaga.");
+                return;
+            }
+
+            const slots = onCallClaimData[onCallId];
+            const currentStudentData = allData[currentSpecialty].students.find(s => s.id == currentStudent);
+            
+            if (action === 'claim') {
+                const emptySlotIndex = slots.findIndex(slot => slot === null);
+                if (emptySlotIndex !== -1) {
+                    slots[emptySlotIndex] = { id: currentStudentData.id, name: currentStudentData.name };
+                } else {
+                    showToast("Não há vagas disponíveis.");
+                    return;
+                }
+            } else if (action === 'leave') {
+                const userSlotIndex = slots.findIndex(slot => slot && slot.id == currentStudent);
+                if (userSlotIndex !== -1) {
+                    slots[userSlotIndex] = null;
+                }
+            }
+            
+            onCallClaimData[onCallId] = slots;
+            saveStateToFirebase();
+            renderSchedule(); // Re-render to update UI
         }
 
         function clearWeekData() {
@@ -793,8 +893,8 @@
                 
                 checklistData = newChecklistData;
 
-                saveStateToFirebase(); // Save immediately for this action
-                renderSchedule(); // Optimistic UI update
+                saveStateToFirebase();
+                renderSchedule();
                 showToast("Marcações da semana limpas!");
             });
         }
@@ -866,6 +966,8 @@
 
             if (currentWeekInfo) {
                 currentWeekOrRodizio = currentWeekInfo.id;
+                weekSelectorDesktop.value = currentWeekInfo.id;
+                weekSelectorMain.value = currentWeekInfo.id;
                 updateView();
                 
                 setTimeout(() => {
@@ -891,6 +993,28 @@
             // This is just to update the 'current-activity' highlight
             renderSchedule();
         }, 60000);
+
+        // Debounce saving to Firebase to avoid too many writes
+        let saveTimeout;
+        window.addEventListener('beforeunload', () => {
+           if (userId) saveStateToFirebase(); // Save one last time before leaving
+        });
+
+        // Auto-save periodically and on major changes
+        function debouncedSave() {
+            clearTimeout(saveTimeout);
+            saveTimeout = setTimeout(saveStateToFirebase, 2000); // Save 2 seconds after the last change
+        }
+
+        // Add event listeners that trigger a save
+        scheduleGrid.addEventListener('change', debouncedSave);
+        weekSelectorMain.addEventListener('change', debouncedSave);
+        weekSelectorDesktop.addEventListener('change', debouncedSave);
+        studentSelectorMobile.addEventListener('change', debouncedSave);
+        studentSelectorDesktop.addEventListener('change', debouncedSave);
+        hideStudyMobile.addEventListener('change', debouncedSave);
+        hideStudyDesktop.addEventListener('change', debouncedSave);
+        // Add more triggers if needed
 
         fetchData();
     </script>
