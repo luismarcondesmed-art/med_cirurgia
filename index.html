@@ -345,7 +345,6 @@
                 allData.cirurgia = results[0].status === 'fulfilled' ? results[0].value : defaultSchedule;
                 allData.pediatria = results[1].status === 'fulfilled' ? results[1].value : defaultSchedule;
                 
-                // Render the initial UI skeleton immediately after fetching data
                 initializeUI();
 
                 onAuthStateChanged(auth, (user) => {
@@ -360,7 +359,7 @@
                 console.error("Error during initial data fetch:", error);
                 allData.cirurgia = defaultSchedule;
                 allData.pediatria = defaultSchedule;
-                initializeUI(); // Initialize with empty data even on failure
+                initializeUI();
             }
         }
 
@@ -394,7 +393,6 @@
 
                 if (docSnap.exists()) {
                     const data = docSnap.data();
-                    // Check if state actually changed to prevent unnecessary re-renders
                     if (JSON.stringify(checklistData) !== JSON.stringify(data.checklistData || {})) {
                         checklistData = data.checklistData || {};
                         stateChanged = true;
@@ -448,15 +446,21 @@
             populateSelectors();
             updateView();
         }
+        
+        function resetLocalState() {
+            checklistData = {};
+            currentSpecialty = 'cirurgia';
+            currentStudent = 'all';
+            hideStudyTime = false;
+            const data = allData[currentSpecialty];
+            currentWeekOrRodizio = (data?.weeks?.[0]?.id) || '1';
+        }
 
         function switchSpecialty(newSpecialty) {
             if (newSpecialty === currentSpecialty) return;
-
             currentSpecialty = newSpecialty;
-            
             const data = allData[currentSpecialty];
             currentWeekOrRodizio = (data?.weeks?.[0]?.id) || '1';
-
             saveStateToFirebase();
         }
 
@@ -687,7 +691,9 @@
             const newId = inputElement.value.trim();
             if (newId && newId !== userId) {
                 showConfirm(`Carregar dados do ID ${newId}? Seus dados atuais serão sobrescritos.`, () => {
-                    setupFirestoreListener(newId);
+                    if (unsubscribe) unsubscribe(); // Detach old listener
+                    resetLocalState(); // Reset local state completely
+                    setupFirestoreListener(newId); // Attach to new user
                 });
             }
         }
