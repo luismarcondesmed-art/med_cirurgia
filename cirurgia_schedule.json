@@ -39,7 +39,7 @@
         { "week": 1, "studentId": [1,2,3,4,5], "day": "QUINTA", "time": "13:30 - 16:00", "activity": "AULA PRÁTICA POCUS", "professor": "PROF. ANDRÉ (OD)", "location": "AUDITÓRIO 13º ANDAR" },
         { "week": 1, "studentId": [3,5], "day": "QUINTA", "time": "16:00 - 18:00", "activity": "CENTRO CIRÚRGICO", "professor": "DRA ISABELA E/OU DRA KARIN/ PROF. CAMILA (OSD)", "location": "" },
         { "week": 1, "studentId": [1,2,3,4,5], "day": "SEXTA", "time": "07:30 - 09:00", "activity": "REUNIÃO CIPE", "professor": "DR. ANDRÉ - PROF. CAMILA (OSD)", "location": "13º ANDAR" },
-        { "week": 1, "studentId": [4,5], "day": "SEXTA", "time": "09:00 - 12:00", "activity": "AMBULATÓRIO SAM1", "professor": "DRA MARIA HELENA/DRA MARIAH - PROF. CAMILA (OSD)", "location": "" },
+        { "week": 1, "studentId": [1,2,3,4,5], "day": "SEXTA", "time": "09:00 - 12:00", "activity": "AMBULATÓRIO SAM1", "professor": "DRA MARIA HELENA/DRA MARIAH - PROF. CAMILA (OSD)", "location": "" },
         { "week": 1, "studentId": [1,2], "day": "SEXTA", "time": "13:00 - 19:00", "activity": "CENTRO CIRÚRGICO", "professor": "DR GUSTAVO - PROF. STEGANI (OSD)", "location": "" },
         { "week": 2, "studentId": [1,2,3,4,5], "day": "SEGUNDA", "time": "07:30 - 12:00", "activity": "Neurocirurgia e Reunião/Discussão de Casos Clínicos", "professor": "Prof. Sprengel", "location": "HC - 8º Andar" },
         { "week": 2, "studentId": [1,2,3,4,5], "day": "SEGUNDA", "time": "13:00 - 18:00", "activity": "Lab Microcirurgia", "professor": "Prof. Sérgio Sprengel", "location": "Hospital da Reabilitação" },
@@ -223,6 +223,7 @@
         { "week": 10, "studentId": [4,5], "day": "DOMINGO", "time": "07:30 - 10:30", "activity": "Enfermaria", "professor": "Médico da escala", "location": "9º Andar" }
     ]
 }
+
 
 
 
