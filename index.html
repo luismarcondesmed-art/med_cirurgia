@@ -333,6 +333,16 @@
             sidebarOverlay.classList.toggle('is-open');
         }
 
+        // --- Debounce Utility ---
+        function debounce(func, delay) {
+            let timeout;
+            return function(...args) {
+                const context = this;
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func.apply(context, args), delay);
+            };
+        }
+
         // --- Data Handling and Firebase ---
 
         async function fetchData() {
@@ -396,7 +406,6 @@
 
             try {
                 // When using a custom firebaseConfig, always sign in anonymously.
-                // The __initial_auth_token is for the environment's internal database.
                 await signInAnonymously(auth);
             } catch (error) {
                 console.error("Authentication failed:", error);
@@ -404,6 +413,7 @@
             }
         }
 
+        const debouncedSaveState = debounce(saveStateToFirebase, 2000);
 
         async function saveStateToFirebase() {
             if (!userId) return;
@@ -508,7 +518,10 @@
             currentSpecialty = newSpecialty;
             const data = allData[currentSpecialty];
             currentWeekOrRodizio = (data?.weeks?.[0]?.id) || '1';
-            saveStateToFirebase();
+            updateUILayout();
+            populateSelectors();
+            updateView();
+            debouncedSaveState();
         }
 
         function populateSelectors() {
@@ -614,7 +627,7 @@
             
             let filteredData = hideStudyTime ? weekData.filter(item => !item.activity.toLowerCase().includes('horário estudo')) : weekData;
 
-            scheduleGrid.innerHTML = '';
+            const fragment = document.createDocumentFragment();
 
             const groupedByDay = filteredData.reduce((acc, item) => {
                 if (!acc[item.day]) acc[item.day] = [];
@@ -684,8 +697,11 @@
                     dayColumn.appendChild(card);
                     card.querySelector(`#${activityId}`).addEventListener('change', handleChecklistChange);
                 });
-                scheduleGrid.appendChild(dayColumn);
+                fragment.appendChild(dayColumn);
             });
+
+            scheduleGrid.innerHTML = '';
+            scheduleGrid.appendChild(fragment);
         }
         
         // --- Event Handlers ---
@@ -693,13 +709,15 @@
         function handleWeekChange(e) {
             currentWeekOrRodizio = e.target.value;
             syncSelectors(e.target, e.target.id.includes('desktop') ? weekSelectorMain : weekSelectorDesktop);
-            saveStateToFirebase();
+            updateView();
+            debouncedSaveState();
         }
 
         function handleStudentChange(e) {
             currentStudent = e.target.value;
             syncSelectors(e.target, e.target.id.includes('mobile') ? studentSelectorDesktop : studentSelectorMobile);
-            saveStateToFirebase();
+            updateView();
+            debouncedSaveState();
             
             if (e.target.id.includes('mobile')) {
                 setTimeout(() => toggleSidebar(), 300);
@@ -710,12 +728,17 @@
             const checkbox = event.target;
             const activityId = checkbox.id;
             checklistData[activityId] = checkbox.checked;
-            saveStateToFirebase();
+            
+            // Optimistic UI update
+            checkbox.closest('.activity-card').classList.toggle('checked', checkbox.checked);
+
+            debouncedSaveState();
         }
 
         function handleHideStudyChange(e) {
             hideStudyTime = e.target.checked;
-            saveStateToFirebase();
+            renderSchedule(); // Optimistic UI update
+            debouncedSaveState();
         }
 
         function clearWeekData() {
@@ -728,7 +751,6 @@
                     return;
                 }
                 
-                // Create a new object without the deleted keys
                 const newChecklistData = {};
                 for (const key in checklistData) {
                     if (!key.startsWith(weekPrefix)) {
@@ -736,11 +758,9 @@
                     }
                 }
                 
-                // Update the global state variable
                 checklistData = newChecklistData;
 
-                // Save the new state and then update the UI
-                saveStateToFirebase();
+                saveStateToFirebase(); // Save immediately for this action
                 renderSchedule(); // Optimistic UI update
                 showToast("Marcações da semana limpas!");
             });
@@ -803,7 +823,8 @@
 
             if (currentWeekInfo) {
                 currentWeekOrRodizio = currentWeekInfo.id;
-                saveStateToFirebase();
+                updateView();
+                debouncedSaveState();
                 
                 setTimeout(() => {
                     const dayCol = document.getElementById(`day-col-${todayDay}`);
