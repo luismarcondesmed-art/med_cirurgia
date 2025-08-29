@@ -214,12 +214,9 @@
     <script type="module">
         // Import necessary Firebase functions
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
         import { getFirestore, doc, onSnapshot, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-        // --- Firebase and Canvas Environment Setup ---
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        
         // Your web app's Firebase configuration
         const firebaseConfig = {
           apiKey: "AIzaSyDyfgOvzTYd6si3g-mPQyInbfiFG1hoVAU",
@@ -410,7 +407,8 @@
 
         async function saveStateToFirebase() {
             if (!userId) return;
-            const userDocRef = doc(db, 'artifacts', appId, 'users', userId, 'schedules', 'userState');
+            // Corrected path to match standard Firestore structure for user data
+            const userDocRef = doc(db, 'users', userId);
             try {
                 await setDoc(userDocRef, {
                     checklistData,
@@ -428,7 +426,8 @@
             userId = uid;
             userIdDisplayMobile.value = uid;
             userIdDisplayDesktop.value = uid;
-            const userDocRef = doc(db, 'artifacts', appId, 'users', userId, 'schedules', 'userState');
+            // Corrected path to match standard Firestore structure for user data
+            const userDocRef = doc(db, 'users', userId);
 
             if (unsubscribe) unsubscribe();
 
