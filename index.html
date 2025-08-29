@@ -471,14 +471,18 @@
         
         async function initializeAuth() {
             onAuthStateChanged(auth, (user) => {
-                if (user && !userId) { // Only setup listener on initial auth
-                    setupFirestoreListener(user.uid);
+                if (user) {
+                    const activeUserId = localStorage.getItem('loadedUserId') || user.uid;
+                    if (!userId || userId !== activeUserId) {
+                        setupFirestoreListener(activeUserId);
+                    }
                 }
             });
 
             try {
-                // When using a custom firebaseConfig, always sign in anonymously.
-                await signInAnonymously(auth);
+                if (!auth.currentUser) {
+                    await signInAnonymously(auth);
+                }
             } catch (error) {
                 console.error("Authentication failed:", error);
                 mainContent.innerHTML = `<p class="text-red-400 text-center">Falha na autenticação. A sincronização não funcionará.</p>`;
@@ -944,9 +948,8 @@
             if (newId && newId !== userId) {
                 showConfirm(`Carregar dados do ID ${newId}? Seus dados atuais serão sobrescritos.`, () => {
                     if (unsubscribe) unsubscribe();
+                    localStorage.setItem('loadedUserId', newId); // Save the new ID
                     resetLocalState();
-                    // Force a full UI reset to a known good state
-                    // before the new data comes in from the listener.
                     initializeUI(); 
                     setupFirestoreListener(newId);
                 });
