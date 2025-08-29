@@ -480,6 +480,9 @@
                 weekSelectorMain.value = currentWeekOrRodizio;
                 
                 updateView();
+            }, (error) => {
+                console.error("Error in snapshot listener:", error);
+                mainContent.innerHTML = `<p class="text-red-400 text-center">Erro de permissão ao sincronizar. Verifique as regras de segurança do Firestore.</p>`;
             });
         }
         
@@ -717,10 +720,28 @@
 
         function clearWeekData() {
             showConfirm("Tem certeza que deseja limpar todas as marcações desta semana?", () => {
-                Object.keys(checklistData)
-                    .filter(key => key.startsWith(`${currentSpecialty}-week${currentWeekOrRodizio}`))
-                    .forEach(key => delete checklistData[key]);
+                const weekPrefix = `${currentSpecialty}-week${currentWeekOrRodizio}`;
+                const keysToDelete = Object.keys(checklistData).filter(key => key.startsWith(weekPrefix));
+
+                if (keysToDelete.length === 0) {
+                    showToast("Nenhuma marcação para limpar nesta semana.");
+                    return;
+                }
+                
+                // Create a new object without the deleted keys
+                const newChecklistData = {};
+                for (const key in checklistData) {
+                    if (!key.startsWith(weekPrefix)) {
+                        newChecklistData[key] = checklistData[key];
+                    }
+                }
+                
+                // Update the global state variable
+                checklistData = newChecklistData;
+
+                // Save the new state and then update the UI
                 saveStateToFirebase();
+                renderSchedule(); // Optimistic UI update
                 showToast("Marcações da semana limpas!");
             });
         }
@@ -735,9 +756,12 @@
             const newId = inputElement.value.trim();
             if (newId && newId !== userId) {
                 showConfirm(`Carregar dados do ID ${newId}? Seus dados atuais serão sobrescritos.`, () => {
-                    if (unsubscribe) unsubscribe(); // Detach old listener
-                    resetLocalState(); // Reset local state completely
-                    setupFirestoreListener(newId); // Attach to new user
+                    if (unsubscribe) unsubscribe();
+                    resetLocalState();
+                    // Force a full UI reset to a known good state
+                    // before the new data comes in from the listener.
+                    initializeUI(); 
+                    setupFirestoreListener(newId);
                 });
             }
         }
