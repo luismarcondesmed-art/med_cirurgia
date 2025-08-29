@@ -158,20 +158,6 @@
                      <img id="student-image-desktop" src="https://i.imgur.com/5AW2oEL.png" alt="Foto do Grupo" class="w-full h-auto mx-auto rounded-lg object-cover border-4 border-gray-600 mb-4">
                      <select id="student-selector-desktop" class="w-full p-3 bg-[#2D2D2D] border border-gray-600 rounded-md shadow-sm focus:ring-[#2899F5] focus:border-[#2899F5]"></select>
                  </div>
-                 <div id="pedia-oncall-container-desktop" class="bg-[#2B2B2B] p-6 rounded-lg shadow-lg text-center hidden">
-                    <h3 class="text-lg font-semibold mb-4">Plantões PA</h3>
-                    <select id="student-selector-pedia-desktop" class="w-full p-3 bg-[#2D2D2D] border border-gray-600 rounded-md shadow-sm focus:ring-[#2899F5] focus:border-[#2899F5] mb-4"></select>
-                    <div class="flex gap-2 mb-4">
-                        <input type="date" id="oncall-date-desktop" class="w-full p-3 bg-[#2D2D2D] border border-gray-600 rounded-md shadow-sm focus:ring-[#2899F5] focus:border-[#2899F5]">
-                        <button id="add-oncall-btn-desktop" class="p-3 bg-green-600 hover:bg-green-700 rounded-md font-semibold transition-colors text-white text-sm">Add</button>
-                    </div>
-                    <h4 class="text-md font-semibold mb-2 border-t border-gray-700 pt-4">Plantões Agendados</h4>
-                    <ul id="oncall-list-desktop" class="text-left space-y-2 text-sm"></ul>
-                 </div>
-                 <div id="locations-container-desktop" class="bg-[#2B2B2B] p-6 rounded-lg shadow-lg text-center hidden">
-                     <h3 class="text-lg font-semibold mb-4">Locais do Rodízio</h3>
-                     <ul id="locations-list-desktop" class="text-left space-y-2 text-sm"></ul>
-                 </div>
                   <div class="bg-[#2B2B2B] p-6 rounded-lg shadow-lg text-center">
                      <h3 class="text-lg font-semibold mb-4">Opções</h3>
                      <div class="flex items-center justify-center gap-2 text-sm">
@@ -219,16 +205,6 @@
                 <img id="student-image-mobile" src="https://i.imgur.com/5AW2oEL.png" alt="Foto do Grupo" class="w-full h-auto mx-auto rounded-lg object-cover border-4 border-gray-600 mb-4">
                 <select id="student-selector-mobile" class="w-full p-3 bg-[#2D2D2D] border border-gray-600 rounded-md shadow-sm focus:ring-[#2899F5] focus:border-[#2899F5]"></select>
             </div>
-             <div id="pedia-oncall-container-mobile" class="bg-[#2B2B2B] p-6 rounded-lg shadow-lg text-center hidden">
-                <h3 class="text-lg font-semibold mb-4">Plantões PA</h3>
-                <select id="student-selector-pedia-mobile" class="w-full p-3 bg-[#2D2D2D] border border-gray-600 rounded-md shadow-sm focus:ring-[#2899F5] focus:border-[#2899F5] mb-4"></select>
-                <div class="flex gap-2 mb-4">
-                    <input type="date" id="oncall-date-mobile" class="w-full p-3 bg-[#2D2D2D] border border-gray-600 rounded-md shadow-sm focus:ring-[#2899F5] focus:border-[#2899F5]">
-                    <button id="add-oncall-btn-mobile" class="p-3 bg-green-600 hover:bg-green-700 rounded-md font-semibold transition-colors text-white text-sm">Add</button>
-                </div>
-                <h4 class="text-md font-semibold mb-2 border-t border-gray-700 pt-4">Plantões Agendados</h4>
-                <ul id="oncall-list-mobile" class="text-left space-y-2 text-sm"></ul>
-             </div>
              <div class="bg-[#2B2B2B] p-6 rounded-lg shadow-lg text-center">
                 <h3 class="text-lg font-semibold mb-4">Sincronização</h3>
                 <button id="sync-button-mobile" class="w-full p-2 bg-blue-600 hover:bg-blue-700 rounded-md font-semibold transition-colors text-white text-sm mb-4">Sincronizar</button>
@@ -326,21 +302,7 @@
         const studentImageDesktop = document.getElementById('student-image-desktop');
         const clearWeekButtonDesktop = document.getElementById('clearWeekButton-desktop');
         const studentContainerDesktop = document.getElementById('student-selector-container-desktop');
-        const locationsContainerDesktop = document.getElementById('locations-container-desktop');
-        const locationsListDesktop = document.getElementById('locations-list-desktop');
         
-        const pediaOnCallContainerDesktop = document.getElementById('pedia-oncall-container-desktop');
-        const studentSelectorPediaDesktop = document.getElementById('student-selector-pedia-desktop');
-        const onCallDateDesktop = document.getElementById('oncall-date-desktop');
-        const onCallListDesktop = document.getElementById('oncall-list-desktop');
-        const addOnCallBtnDesktop = document.getElementById('add-oncall-btn-desktop');
-        
-        const pediaOnCallContainerMobile = document.getElementById('pedia-oncall-container-mobile');
-        const studentSelectorPediaMobile = document.getElementById('student-selector-pedia-mobile');
-        const onCallDateMobile = document.getElementById('oncall-date-mobile');
-        const onCallListMobile = document.getElementById('oncall-list-mobile');
-        const addOnCallBtnMobile = document.getElementById('add-oncall-btn-mobile');
-
         const daysOfWeek = ['SEGUNDA', 'TERÇA', 'QUARTA', 'QUINTA', 'SEXTA', 'SÁBADO', 'DOMINGO'];
         
         const sidebarOverlay = document.getElementById('sidebar-overlay');
@@ -428,7 +390,7 @@
                     schedule: [
                         { week: '1', day: 'SEGUNDA', time: '08:00 - 12:00', activity: 'Ambulatório Mock', professor: 'Dr. Exemplo', location: 'Hospital de Testes', studentId: [1] },
                         { week: '1', day: 'TERÇA', time: '13:00 - 17:00', activity: 'Centro Cirúrgico Mock', professor: 'Dra. Simulada', location: 'Hospital de Testes', studentId: [2] },
-                        { week: '2', day: 'QUARTA', time: '09:00 - 11:00', activity: 'Discussão de Casos (Mock)', professor: 'Dr. Exemplo', location: 'Sala de Conferências', studentId: [1, 2] }
+                        { week: '2', day: 'QUARTA', time: '09:00 - 11:00', activity: 'PA PLANTÃO', professor: 'Dr. Exemplo', location: 'Sala de Conferências', studentId: [1, 2] }
                     ]
                 },
                 pediatria: {
@@ -443,7 +405,7 @@
                     ],
                     schedule: [
                         { week: '1', day: 'QUINTA', time: '10:00 - 12:00', activity: 'Enfermaria Pediátrica (Mock)', professor: 'Dra. Criança', location: 'Hospital Infantil de Teste' },
-                        { week: '2', day: 'SEXTA', time: '14:00 - 16:00', activity: 'UTI Neonatal (Mock)', professor: 'Dr. Bebê', location: 'Hospital Infantil de Teste' }
+                        { week: '2', day: 'SEXTA', time: '14:00 - 16:00', activity: 'PA PLANTÃO', professor: 'Dr. Bebê', location: 'Hospital Infantil de Teste' }
                     ]
                 }
             };
@@ -627,10 +589,7 @@
             mobileSelector.innerHTML = '';
             studentSelectorDesktop.innerHTML = '';
             studentSelectorMobile.innerHTML = '';
-            studentSelectorPediaDesktop.innerHTML = '';
-            studentSelectorPediaMobile.innerHTML = '';
             
-
             weeks.forEach(week => {
                 const option = document.createElement('option');
                 option.value = week.id;
@@ -639,7 +598,7 @@
                 mobileSelector.appendChild(option.cloneNode(true));
             });
 
-            if (currentSpecialty === 'cirurgia' && students) {
+            if (students) {
                 students.forEach(student => {
                     const option = document.createElement('option');
                     option.value = student.id;
@@ -647,92 +606,18 @@
                     studentSelectorDesktop.appendChild(option.cloneNode(true));
                     studentSelectorMobile.appendChild(option.cloneNode(true));
                 });
-            } else if (currentSpecialty === 'pediatria' && students) {
-                 students.forEach(student => {
-                    const option = document.createElement('option');
-                    option.value = student.id;
-                    option.textContent = student.name;
-                    studentSelectorPediaDesktop.appendChild(option.cloneNode(true));
-                    studentSelectorPediaMobile.appendChild(option.cloneNode(true));
-                });
             }
         }
         
         function updateUILayout() {
             const isCirurgia = currentSpecialty === 'cirurgia';
             
-            studentContainerDesktop.style.display = isCirurgia ? 'block' : 'none';
-            pediaOnCallContainerDesktop.style.display = isCirurgia ? 'none' : 'block';
-            locationsContainerDesktop.style.display = isCirurgia ? 'none' : 'block';
-            
-            studentContainerMobile.style.display = isCirurgia ? 'block' : 'none';
-            pediaOnCallContainerMobile.style.display = isCirurgia ? 'none' : 'block';
+            studentContainerDesktop.style.display = 'block'; // Always show student selector
             
             const weekLabel = isCirurgia ? 'Selecione a Semana' : 'Selecione o Rodízio';
             document.getElementById('week-label-desktop').textContent = weekLabel;
             weekLabelMain.textContent = weekLabel;
         }
-
-        function populateLocationsList() {
-            if (currentSpecialty !== 'pediatria' || !allData.pediatria) return;
-            
-            const weekData = allData.pediatria.schedule.filter(item => item.week == currentWeekOrRodizio);
-            const locations = [...new Set(weekData.map(item => item.location))].filter(loc => loc && loc !== '-');
-            
-            locationsListDesktop.innerHTML = '';
-            if (locations.length > 0) {
-                locations.forEach(loc => {
-                    const li = document.createElement('li');
-                    const a = document.createElement('a');
-                    a.href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(loc + ', Curitiba, Brazil')}`;
-                    a.target = '_blank';
-                    a.className = 'text-blue-400 hover:underline';
-                    a.textContent = loc;
-                    li.appendChild(a);
-                    locationsListDesktop.appendChild(li);
-                });
-            } else {
-                locationsListDesktop.innerHTML = `<li class="text-gray-500">Nenhum local específico neste rodízio.</li>`;
-            }
-        }
-        
-        function renderOnCallList() {
-            onCallListDesktop.innerHTML = '';
-            onCallListMobile.innerHTML = '';
-            const students = allData.pediatria?.students || [];
-            if (students.length === 0) return;
-
-            const sortedEntries = Object.entries(pediaOnCallData)
-                .filter(([_, dates]) => dates && dates.length > 0)
-                .sort((a, b) => {
-                    const studentA = students.find(s => s.id === a[0]);
-                    const studentB = students.find(s => s.id === b[0]);
-                    return studentA.name.localeCompare(studentB.name);
-                });
-
-            if (sortedEntries.length === 0) {
-                const li = document.createElement('li');
-                li.textContent = 'Nenhum plantão agendado.';
-                li.className = 'text-gray-500';
-                onCallListDesktop.appendChild(li.cloneNode(true));
-                onCallListMobile.appendChild(li);
-                return;
-            }
-
-            for (const [studentId, dates] of sortedEntries) {
-                const student = students.find(s => s.id === studentId);
-                if (student) {
-                    const li = document.createElement('li');
-                    const formattedDates = dates
-                        .map(date => new Date(date + 'T00:00:00').toLocaleDateString('pt-BR'))
-                        .join(', ');
-                    li.innerHTML = `<strong>${student.name}:</strong> ${formattedDates}`;
-                    onCallListDesktop.appendChild(li.cloneNode(true));
-                    onCallListMobile.appendChild(li);
-                }
-            }
-        }
-
 
         function updateView() {
             const data = allData[currentSpecialty];
@@ -743,18 +628,14 @@
             scheduleSubtitleDesktop.textContent = subtitleText;
             scheduleSubtitleMain.textContent = subtitleText;
 
-            if (currentSpecialty === 'cirurgia') {
-                const selectedStudent = data.students.find(s => s.id == currentStudent);
-                if (selectedStudent) {
-                    studentImageMobile.src = selectedStudent.imageUrl;
-                    studentImageDesktop.src = selectedStudent.imageUrl;
-                    studentSelectorMobile.value = currentStudent;
-                    studentSelectorDesktop.value = currentStudent;
-                }
-            } else {
-                populateLocationsList();
-                renderOnCallList();
+            const selectedStudent = data.students.find(s => s.id == currentStudent);
+            if (selectedStudent) {
+                studentImageMobile.src = selectedStudent.imageUrl || 'https://i.imgur.com/5AW2oEL.png';
+                studentImageDesktop.src = selectedStudent.imageUrl || 'https://i.imgur.com/5AW2oEL.png';
+                studentSelectorMobile.value = currentStudent;
+                studentSelectorDesktop.value = currentStudent;
             }
+            
             renderSchedule();
         }
 
@@ -863,40 +744,6 @@
                 setTimeout(() => toggleSidebar(), 300);
             }
         }
-        
-        function handleAddOnCall(e) {
-            const isDesktop = e.target.id.includes('desktop');
-            const studentSelector = isDesktop ? studentSelectorPediaDesktop : studentSelectorPediaMobile;
-            const dateInput = isDesktop ? onCallDateDesktop : onCallDateMobile;
-            
-            const studentId = studentSelector.value;
-            const date = dateInput.value;
-
-            if (!studentId || !date) {
-                showToast("Selecione um aluno e uma data.");
-                return;
-            }
-
-            if (!pediaOnCallData[studentId]) {
-                pediaOnCallData[studentId] = [];
-            }
-
-            if (pediaOnCallData[studentId].length >= 5) {
-                showToast("Este aluno já atingiu o limite de 5 plantões.");
-                return;
-            }
-            
-            if (pediaOnCallData[studentId].includes(date)) {
-                 showToast("Esta data já foi adicionada para este aluno.");
-                return;
-            }
-
-            pediaOnCallData[studentId].push(date);
-            pediaOnCallData[studentId].sort(); // Keep dates sorted
-            renderOnCallList();
-            dateInput.value = ''; // Clear input after adding
-        }
-
 
         function handleChecklistChange(event) {
             const checkbox = event.target;
@@ -978,9 +825,6 @@
 
         studentSelectorMobile.addEventListener('change', handleStudentChange);
         studentSelectorDesktop.addEventListener('change', handleStudentChange);
-        
-        addOnCallBtnDesktop.addEventListener('click', handleAddOnCall);
-        addOnCallBtnMobile.addEventListener('click', handleAddOnCall);
 
         clearWeekButtonMobile.addEventListener('click', clearWeekData);
         clearWeekButtonDesktop.addEventListener('click', clearWeekData);
