@@ -1,12 +1,12 @@
 {
     "cycle_start_date": "2025-08-25",
     "students": [
-        { "id": "all", "name": "Todos os Ratos", "imageUrl": "[https://i.imgur.com/5AW2oEL.png](https://i.imgur.com/5AW2oEL.png)" },
-        { "id": 1, "name": "Big", "imageUrl": "[https://i.imgur.com/RaVjIKr.png](https://i.imgur.com/RaVjIKr.png)" },
-        { "id": 2, "name": "Jerso", "imageUrl": "[https://i.imgur.com/Rc1FxGy.png](https://i.imgur.com/Rc1FxGy.png)" },
-        { "id": 3, "name": "Negão", "imageUrl": "[https://i.imgur.com/3jRzf17.png](https://i.imgur.com/3jRzf17.png)" },
-        { "id": 4, "name": "Marcondes", "imageUrl": "[https://i.imgur.com/Yy1mHjs.png](https://i.imgur.com/Yy1mHjs.png)" },
-        { "id": 5, "name": "Lyan", "imageUrl": "[https://i.imgur.com/BftVHjo.png](https://i.imgur.com/BftVHjo.png)" }
+        { "id": "all", "name": "Todos os Ratos", "imageUrl": "https://i.imgur.com/5AW2oEL.png" },
+        { "id": 1, "name": "Big", "imageUrl": "https://i.imgur.com/RaVjIKr.png" },
+        { "id": 2, "name": "Jerso", "imageUrl": "https://i.imgur.com/Rc1FxGy.png" },
+        { "id": 3, "name": "Negão", "imageUrl": "https://i.imgur.com/3jRzf17.png },
+        { "id": 4, "name": "Marcondes", "imageUrl": "https://i.imgur.com/Yy1mHjs.png" },
+        { "id": 5, "name": "Lyan", "imageUrl": "https://i.imgur.com/BftVHjo.png" }
     ],
     "weeks": [
         { "id": 1, "title": "CIPE", "dates": "25/08/25 a 31/08/25", "start": "2025-08-25", "end": "2025-08-31" },
@@ -223,4 +223,5 @@
         { "week": 10, "studentId": [4,5], "day": "DOMINGO", "time": "07:30 - 10:30", "activity": "Enfermaria", "professor": "Médico da escala", "location": "9º Andar" }
     ]
 }
+
 
