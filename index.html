@@ -214,19 +214,23 @@
     <script type="module">
         // Import necessary Firebase functions
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
         import { getFirestore, doc, onSnapshot, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
+        // --- Firebase and Canvas Environment Setup ---
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        
         // Your web app's Firebase configuration
         const firebaseConfig = {
-            apiKey: "AIzaSyCJ3QH3rGpS9ReSVQ4WolBRrjcjZAyxeLw",
-            authDomain: "medcirurgia-fb447.firebaseapp.com",
-            projectId: "medcirurgia-fb447",
-            storageBucket: "medcirurgia-fb447.appspot.com",
-            messagingSenderId: "718579142603",
-            appId: "1:718579142603:web:5b75422f64c2a4b190f04e",
-            measurementId: "G-J3K8Q4PWFW"
+          apiKey: "AIzaSyDyfgOvzTYd6si3g-mPQyInbfiFG1hoVAU",
+          authDomain: "cronograma-medufpr.firebaseapp.com",
+          projectId: "cronograma-medufpr",
+          storageBucket: "cronograma-medufpr.appspot.com",
+          messagingSenderId: "68632769127",
+          appId: "1:68632769127:web:1144e190a83a3581be1ac2",
+          measurementId: "G-6RNMK13MMK"
         };
+
 
         // Initialize Firebase
         const app = initializeApp(firebaseConfig);
@@ -335,37 +339,78 @@
         // --- Data Handling and Firebase ---
 
         async function fetchData() {
-            const defaultSchedule = { weeks: [], students: [], schedule: [] };
+            const mockSchedule = {
+                cirurgia: {
+                    weeks: [
+                        { id: '1', title: 'Cirurgia Geral (Teste)', dates: '25/08 - 31/08', start: '2025-08-25', end: '2025-08-31' },
+                        { id: '2', title: 'Cirurgia Vascular (Teste)', dates: '01/09 - 07/09', start: '2025-09-01', end: '2025-09-07' }
+                    ],
+                    students: [
+                        { id: 'all', name: 'Todos os Alunos', imageUrl: 'https://i.imgur.com/5AW2oEL.png' },
+                        { id: 1, name: 'Aluno Teste 1', imageUrl: 'https://placehold.co/400x400/EBF4FF/76A9EA?text=A1' },
+                        { id: 2, name: 'Aluno Teste 2', imageUrl: 'https://placehold.co/400x400/EBF4FF/76A9EA?text=A2' }
+                    ],
+                    schedule: [
+                        { week: '1', day: 'SEGUNDA', time: '08:00 - 12:00', activity: 'Ambulatório Mock', professor: 'Dr. Exemplo', location: 'Hospital de Testes', studentId: [1] },
+                        { week: '1', day: 'TERÇA', time: '13:00 - 17:00', activity: 'Centro Cirúrgico Mock', professor: 'Dra. Simulada', location: 'Hospital de Testes', studentId: [2] },
+                        { week: '2', day: 'QUARTA', time: '09:00 - 11:00', activity: 'Discussão de Casos (Mock)', professor: 'Dr. Exemplo', location: 'Sala de Conferências', studentId: [1, 2] }
+                    ]
+                },
+                pediatria: {
+                    weeks: [
+                        { id: '1', title: 'Rodízio Pediatria 1 (Teste)', dates: '25/08 - 31/08', start: '2025-08-25', end: '2025-08-31' },
+                        { id: '2', title: 'Rodízio Pediatria 2 (Teste)', dates: '01/09 - 07/09', start: '2025-09-01', end: '2025-09-07' }
+                    ],
+                    students: [],
+                    schedule: [
+                        { week: '1', day: 'QUINTA', time: '10:00 - 12:00', activity: 'Enfermaria Pediátrica (Mock)', professor: 'Dra. Criança', location: 'Hospital Infantil de Teste' },
+                        { week: '2', day: 'SEXTA', time: '14:00 - 16:00', activity: 'UTI Neonatal (Mock)', professor: 'Dr. Bebê', location: 'Hospital Infantil de Teste' }
+                    ]
+                }
+            };
+
             try {
                 const results = await Promise.allSettled([
                     fetch('cirurgia_schedule.json').then(res => res.ok ? res.json() : Promise.reject()),
                     fetch('pediatria_schedule.json').then(res => res.ok ? res.json() : Promise.reject())
                 ]);
 
-                allData.cirurgia = results[0].status === 'fulfilled' ? results[0].value : defaultSchedule;
-                allData.pediatria = results[1].status === 'fulfilled' ? results[1].value : defaultSchedule;
+                allData.cirurgia = results[0].status === 'fulfilled' ? results[0].value : mockSchedule.cirurgia;
+                allData.pediatria = results[1].status === 'fulfilled' ? results[1].value : mockSchedule.pediatria;
                 
                 initializeUI();
-
-                onAuthStateChanged(auth, (user) => {
-                    if (user) {
-                        setupFirestoreListener(user.uid);
-                    } else {
-                        signInAnonymously(auth).catch((error) => console.error("Anonymous sign-in error:", error));
-                    }
-                });
+                initializeAuth();
 
             } catch (error) {
                 console.error("Error during initial data fetch:", error);
-                allData.cirurgia = defaultSchedule;
-                allData.pediatria = defaultSchedule;
+                allData.cirurgia = mockSchedule.cirurgia;
+                allData.pediatria = mockSchedule.pediatria;
                 initializeUI();
+                initializeAuth();
+            }
+        }
+        
+        async function initializeAuth() {
+            onAuthStateChanged(auth, (user) => {
+                if (user && !userId) { // Only setup listener on initial auth
+                    setupFirestoreListener(user.uid);
+                }
+            });
+
+            try {
+                // When using a custom firebaseConfig, always sign in anonymously.
+                // The __initial_auth_token is for the environment's internal database.
+                await signInAnonymously(auth);
+            } catch (error) {
+                console.error("Authentication failed:", error);
+                mainContent.innerHTML = `<p class="text-red-400 text-center">Falha na autenticação. A sincronização não funcionará.</p>`;
             }
         }
 
+
         async function saveStateToFirebase() {
             if (!userId) return;
-            const userDocRef = doc(db, 'users', userId);
+            const userDocRef = doc(db, 'artifacts', appId, 'users', userId, 'schedules', 'userState');
             try {
                 await setDoc(userDocRef, {
                     checklistData,
@@ -373,7 +418,7 @@
                     currentSpecialty,
                     hideStudyTime,
                     currentWeekOrRodizio
-                }, { merge: true });
+                });
             } catch (error) {
                 console.error("Error saving state: ", error);
             }
@@ -383,7 +428,7 @@
             userId = uid;
             userIdDisplayMobile.value = uid;
             userIdDisplayDesktop.value = uid;
-            const userDocRef = doc(db, 'users', userId);
+            const userDocRef = doc(db, 'artifacts', appId, 'users', userId, 'schedules', 'userState');
 
             if (unsubscribe) unsubscribe();
 
@@ -757,6 +802,7 @@
         // --- Initialization ---
 
         setInterval(() => {
+            // This is just to update the 'current-activity' highlight
             renderSchedule();
         }, 60000);
 
