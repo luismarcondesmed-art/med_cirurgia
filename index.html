@@ -63,21 +63,21 @@
             border-radius: 10px;
             border: 2px solid #2B2B2B;
         }
-        #sidebar-overlay, #confirm-modal-overlay, #sync-modal-overlay, #gemini-modal-overlay, #tips-modal-overlay, #suggestion-modal-overlay, #suggestions-view-modal-overlay {
+        #sidebar-overlay, .modal-overlay {
             transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
             visibility: hidden;
             opacity: 0;
         }
-        #sidebar-overlay.is-open, #confirm-modal-overlay.is-open, #sync-modal-overlay.is-open, #gemini-modal-overlay.is-open, #tips-modal-overlay.is-open, #suggestion-modal-overlay.is-open, #suggestions-view-modal-overlay.is-open {
+        #sidebar-overlay.is-open, .modal-overlay.is-open {
             visibility: visible;
             opacity: 1;
         }
-        #sidebar-mobile, #confirm-modal, #sync-modal, #gemini-modal, #tips-modal, #suggestion-modal, #suggestions-view-modal {
+        #sidebar-mobile, .modal-content {
             transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
             transform: scale(0.95);
             opacity: 0;
         }
-        #sidebar-overlay.is-open #sidebar-mobile, #confirm-modal-overlay.is-open #confirm-modal, #sync-modal-overlay.is-open #sync-modal, #gemini-modal-overlay.is-open #gemini-modal, #tips-modal-overlay.is-open #tips-modal, #suggestion-modal-overlay.is-open #suggestion-modal, #suggestions-view-modal-overlay.is-open #suggestions-view-modal {
+        #sidebar-overlay.is-open #sidebar-mobile, .modal-overlay.is-open .modal-content {
             transform: scale(1);
             opacity: 1;
         }
@@ -261,8 +261,8 @@
     </div>
     
     <!-- Sync Modal -->
-    <div id="sync-modal-overlay" class="fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center p-4">
-        <div id="sync-modal" class="relative w-full max-w-sm bg-[#2B2B2B] rounded-2xl shadow-2xl p-6">
+    <div id="sync-modal-overlay" class="fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center p-4 modal-overlay">
+        <div id="sync-modal" class="relative w-full max-w-sm bg-[#2B2B2B] rounded-2xl shadow-2xl p-6 modal-content">
             <button id="sync-modal-close-btn" class="absolute top-4 right-4 p-2 rounded-full hover:bg-gray-700">
                 <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -281,8 +281,8 @@
     </div>
 
     <!-- Gemini Modal -->
-    <div id="gemini-modal-overlay" class="fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center p-4">
-        <div id="gemini-modal" class="relative w-full max-w-2xl bg-[#2B2B2B] rounded-2xl shadow-2xl p-6 flex flex-col max-h-[90vh]">
+    <div id="gemini-modal-overlay" class="fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center p-4 modal-overlay">
+        <div id="gemini-modal" class="relative w-full max-w-2xl bg-[#2B2B2B] rounded-2xl shadow-2xl p-6 flex flex-col max-h-[90vh] modal-content">
             <div class="flex items-center justify-between mb-4 flex-shrink-0">
                  <h3 id="gemini-modal-title" class="text-xl font-semibold">✨ Assistente de Estudos</h3>
                  <button id="gemini-modal-close-btn" class="p-2 rounded-full hover:bg-gray-700">
@@ -301,8 +301,8 @@
     </div>
     
     <!-- Tips Modal -->
-    <div id="tips-modal-overlay" class="fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center p-4">
-        <div id="tips-modal" class="relative w-full max-w-lg bg-[#2B2B2B] rounded-2xl shadow-2xl p-6 flex flex-col max-h-[90vh]">
+    <div id="tips-modal-overlay" class="fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center p-4 modal-overlay">
+        <div id="tips-modal" class="relative w-full max-w-2xl bg-[#2B2B2B] rounded-2xl shadow-2xl p-6 flex flex-col max-h-[90vh] modal-content">
             <div class="flex items-center justify-between mb-4 flex-shrink-0">
                  <h3 id="tips-modal-title" class="text-xl font-semibold">🧠 Dicas da Turma</h3>
                  <button id="tips-modal-close-btn" class="p-2 rounded-full hover:bg-gray-700">
@@ -323,8 +323,8 @@
     </div>
 
     <!-- Suggestion Modal -->
-    <div id="suggestion-modal-overlay" class="fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center p-4">
-        <div id="suggestion-modal" class="relative w-full max-w-lg bg-[#2B2B2B] rounded-2xl shadow-2xl p-6 flex flex-col max-h-[90vh]">
+    <div id="suggestion-modal-overlay" class="fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center p-4 modal-overlay">
+        <div id="suggestion-modal" class="relative w-full max-w-lg bg-[#2B2B2B] rounded-2xl shadow-2xl p-6 flex flex-col max-h-[90vh] modal-content">
             <div class="flex items-center justify-between mb-4 flex-shrink-0">
                  <h3 id="suggestion-modal-title" class="text-xl font-semibold">🔧 Sugerir Alteração no Cronograma</h3>
                  <button id="suggestion-modal-close-btn" class="p-2 rounded-full hover:bg-gray-700">
@@ -345,8 +345,8 @@
     </div>
 
     <!-- Suggestions View Modal -->
-    <div id="suggestions-view-modal-overlay" class="fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center p-4">
-        <div id="suggestions-view-modal" class="relative w-full max-w-2xl bg-[#2B2B2B] rounded-2xl shadow-2xl p-6 flex flex-col max-h-[90vh]">
+    <div id="suggestions-view-modal-overlay" class="fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center p-4 modal-overlay">
+        <div id="suggestions-view-modal" class="relative w-full max-w-2xl bg-[#2B2B2B] rounded-2xl shadow-2xl p-6 flex flex-col max-h-[90vh] modal-content">
             <div class="flex items-center justify-between mb-4 flex-shrink-0">
                  <h3 class="text-xl font-semibold">📬 Sugestões dos Alunos</h3>
                  <button id="suggestions-view-modal-close-btn" class="p-2 rounded-full hover:bg-gray-700">
@@ -373,8 +373,8 @@
     </div>
 
     <!-- Confirm Modal -->
-    <div id="confirm-modal-overlay" class="fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center p-4">
-        <div id="confirm-modal" class="relative w-full max-w-sm bg-[#2B2B2B] rounded-2xl shadow-2xl p-6">
+    <div id="confirm-modal-overlay" class="fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center p-4 modal-overlay">
+        <div id="confirm-modal" class="relative w-full max-w-sm bg-[#2B2B2B] rounded-2xl shadow-2xl p-6 modal-content">
             <p id="confirm-message" class="text-center mb-6">Você tem certeza?</p>
             <div class="flex justify-center gap-4">
                 <button id="confirm-btn-yes" class="px-6 py-2 bg-green-600 hover:bg-green-700 rounded-md font-semibold transition-colors">Sim</button>
@@ -1178,7 +1178,7 @@
                 prompt += `**Atenção:** Leve em consideração as seguintes dicas e informações fornecidas por alunos mais experientes para todo o módulo de ${currentSpecialty}. Elas são CRUCIAIS e devem ser priorizadas na sua análise:\n"${userTips}"\n\n`;
             }
 
-            prompt += `Por favor, gere o plano seguindo estas diretrizes:\n1. **Análise e Foco:** Identifique os temas clínicos e cirúrgicos mais importantes da semana, usando as dicas dos veteranos como guia principal.\n2. **Estrutura Realista:** Organize as sugestões de estudo por ambiente (ex: Ambulatório, Enfermaria, Centro Cirúrgico), se a atividade permitir essa distinção.\n3. **Conteúdo Atualizado:** Baseie todas as recomendações em diretrizes e artigos publicados nos últimos 5 anos.\n4. **Recursos Adicionais:** Para cada tema principal, sugira uma bibliografia útil (capítulos de livros como Sabiston, Schwartz, Nelson, etc.) e, se possível, um link para um artigo de revisão de alta qualidade (ex: UpToDate, Medscape, NEJM, etc.).\n5. **Formato:** Use HTML simples para a resposta, com <h3> para os títulos, <ul> e <li> para listas, e <a> para links.`;
+            prompt += `Por favor, gere o plano seguindo estas diretrizes:\n1. **Análise e Foco:** Identifique os temas clínicos e cirúrgicos mais importantes da semana, usando as dicas dos veteranos como guia principal.\n2. **Estrutura Realista:** Organize as sugestões de estudo por ambiente (ex: Ambulatório, Enfermaria, Centro Cirúrgico), se a atividade permitir essa distinção.\n3. **Conteúdo Atualizado:** Baseie todas as recomendações em diretrizes e artigos publicados nos últimos 5 anos.\n4. **Recursos Adicionais:** Para cada tema principal, sugira uma bibliografia útil (capítulos de livros como Sabiston, Schwartz, Nelson, etc.) e, se possível, um link para um artigo de revisão de alta qualidade (ex: UpToDate, Medscape, NEJM, etc.).\n5. **Formato:** Use HTML para a resposta. O texto principal deve ser branco ou um cinza bem claro. Use <h3> para títulos, <ul> e <li> para listas, e <a> para links. Os links devem ser de uma cor azul clara para contrastar bem com o fundo escuro.`;
 
             const plan = await callGemini(prompt);
 
