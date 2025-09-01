@@ -63,21 +63,21 @@
             border-radius: 10px;
             border: 2px solid #2B2B2B;
         }
-        #sidebar-overlay, #confirm-modal-overlay, #sync-modal-overlay, #gemini-modal-overlay, #tips-modal-overlay, #suggestion-modal-overlay {
+        #sidebar-overlay, #confirm-modal-overlay, #sync-modal-overlay, #gemini-modal-overlay, #tips-modal-overlay, #suggestion-modal-overlay, #suggestions-view-modal-overlay {
             transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
             visibility: hidden;
             opacity: 0;
         }
-        #sidebar-overlay.is-open, #confirm-modal-overlay.is-open, #sync-modal-overlay.is-open, #gemini-modal-overlay.is-open, #tips-modal-overlay.is-open, #suggestion-modal-overlay.is-open {
+        #sidebar-overlay.is-open, #confirm-modal-overlay.is-open, #sync-modal-overlay.is-open, #gemini-modal-overlay.is-open, #tips-modal-overlay.is-open, #suggestion-modal-overlay.is-open, #suggestions-view-modal-overlay.is-open {
             visibility: visible;
             opacity: 1;
         }
-        #sidebar-mobile, #confirm-modal, #sync-modal, #gemini-modal, #tips-modal, #suggestion-modal {
+        #sidebar-mobile, #confirm-modal, #sync-modal, #gemini-modal, #tips-modal, #suggestion-modal, #suggestions-view-modal {
             transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
             transform: scale(0.95);
             opacity: 0;
         }
-        #sidebar-overlay.is-open #sidebar-mobile, #confirm-modal-overlay.is-open #confirm-modal, #sync-modal-overlay.is-open #sync-modal, #gemini-modal-overlay.is-open #gemini-modal, #tips-modal-overlay.is-open #tips-modal, #suggestion-modal-overlay.is-open #suggestion-modal {
+        #sidebar-overlay.is-open #sidebar-mobile, #confirm-modal-overlay.is-open #confirm-modal, #sync-modal-overlay.is-open #sync-modal, #gemini-modal-overlay.is-open #gemini-modal, #tips-modal-overlay.is-open #tips-modal, #suggestion-modal-overlay.is-open #suggestion-modal, #suggestions-view-modal-overlay.is-open #suggestions-view-modal {
             transform: scale(1);
             opacity: 1;
         }
@@ -174,7 +174,6 @@
                 <div class="bg-[#2B2B2B] p-6 rounded-lg shadow-lg text-center">
                     <h3 class="text-lg font-semibold mb-4">Assistente de IA</h3>
                     <button id="generate-study-plan-desktop" class="w-full p-2 bg-purple-600 hover:bg-purple-700 rounded-md font-semibold transition-colors text-white text-sm">✨ Gerar Plano de Estudo</button>
-                    <button id="add-tips-btn-desktop" class="w-full mt-4 p-2 bg-teal-600 hover:bg-teal-700 rounded-md font-semibold transition-colors text-white text-sm admin-only">🧠 Adicionar Dicas da Turma</button>
                 </div>
                  <div class="bg-[#2B2B2B] p-6 rounded-lg shadow-lg text-center">
                     <h3 class="text-lg font-semibold mb-4">Opções</h3>
@@ -184,6 +183,11 @@
                     </div>
                     <button id="suggest-change-btn-desktop" class="w-full mt-4 p-2 bg-gray-600 hover:bg-gray-700 rounded-md font-semibold transition-colors text-white text-sm">🔧 Sugerir Alteração</button>
                     <button id="clearWeekButton-desktop" class="w-full mt-4 p-2 bg-red-600 hover:bg-red-700 rounded-md font-semibold transition-colors text-white text-sm">Limpar marcações</button>
+                </div>
+                <div class="bg-[#2B2B2B] p-6 rounded-lg shadow-lg text-center admin-only">
+                    <h3 class="text-lg font-semibold mb-4">Administrador</h3>
+                    <button id="add-tips-btn-desktop" class="w-full p-2 bg-teal-600 hover:bg-teal-700 rounded-md font-semibold transition-colors text-white text-sm">🧠 Adicionar Dicas da Turma</button>
+                    <button id="view-suggestions-btn-desktop" class="w-full mt-4 p-2 bg-indigo-600 hover:bg-indigo-700 rounded-md font-semibold transition-colors text-white text-sm">📬 Ver Sugestões</button>
                 </div>
             </aside>
 
@@ -215,7 +219,7 @@
                 <img id="student-image-mobile" src="https://i.imgur.com/5AW2oEL.png" alt="Foto do Grupo" class="w-full h-auto mx-auto rounded-lg object-cover border-4 border-gray-600 mb-4">
                 <select id="student-selector-mobile" class="w-full p-3 bg-[#2D2D2D] border border-gray-600 rounded-md shadow-sm focus:ring-[#2899F5] focus:border-[#2899F5]"></select>
             </div>
-             <div class="bg-[#2B2B2B] p-6 rounded-lg shadow-lg text-center">
+            <div class="bg-[#2B2B2B] p-6 rounded-lg shadow-lg text-center">
                 <h3 class="text-lg font-semibold mb-4">Assistente de IA</h3>
                 <button id="generate-study-plan-mobile" class="w-full p-2 bg-purple-600 hover:bg-purple-700 rounded-md font-semibold transition-colors text-white text-sm">✨ Gerar Plano de Estudo</button>
                 <button id="add-tips-btn-mobile" class="w-full mt-4 p-2 bg-teal-600 hover:bg-teal-700 rounded-md font-semibold transition-colors text-white text-sm admin-only">🧠 Adicionar Dicas da Turma</button>
@@ -325,6 +329,23 @@
         </div>
     </div>
 
+    <!-- Suggestions View Modal -->
+    <div id="suggestions-view-modal-overlay" class="fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center p-4">
+        <div id="suggestions-view-modal" class="relative w-full max-w-2xl bg-[#2B2B2B] rounded-2xl shadow-2xl p-6 flex flex-col max-h-[90vh]">
+            <div class="flex items-center justify-between mb-4 flex-shrink-0">
+                 <h3 class="text-xl font-semibold">📬 Sugestões dos Alunos</h3>
+                 <button id="suggestions-view-modal-close-btn" class="p-2 rounded-full hover:bg-gray-700">
+                     <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                 </button>
+            </div>
+            <div id="suggestions-list" class="overflow-y-auto text-gray-300 pr-2 modal-scroll">
+                <!-- Suggestions will be listed here -->
+            </div>
+        </div>
+    </div>
+
 
     <!-- "Today" Button -->
     <button id="today-btn" class="fixed bottom-6 right-6 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-3 rounded-full shadow-lg z-30">
@@ -352,7 +373,7 @@
         // Import necessary Firebase functions
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-        import { getFirestore, doc, onSnapshot, setDoc, addDoc, collection, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { getFirestore, doc, onSnapshot, setDoc, addDoc, collection, serverTimestamp, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
         // Your web app's Firebase configuration
         const firebaseConfig = {
@@ -372,13 +393,14 @@
         const db = getFirestore(app);
         
         // --- Admin Configuration ---
-        const ADMIN_UID = "r5NLb0GqtcRuTmeVt3g3gRoGirl2"; // <-- IMPORTANTE: Troque esta string pelo seu ID de usuário do Firebase para ter acesso de admin
+        const ADMIN_UID = "COLE_SEU_ID_DE_ADMINISTRADOR_AQUI"; // <-- IMPORTANTE: Troque esta string pelo seu ID de usuário do Firebase para ter acesso de admin
         
         // --- Global State Variables ---
         let userId = null;
         let unsubscribeUser;
         let unsubscribeOnCall;
         let unsubscribeTips;
+        let unsubscribeSuggestions;
         let allData = {};
         let currentSpecialty = 'cirurgia';
         let currentWeekOrRodizio = '1';
@@ -387,6 +409,7 @@
         let hideStudyTime = false;
         let onCallClaimData = {}; 
         let sharedTipsData = {};
+        let suggestionsData = [];
 
         // --- DOM Element References ---
         const scheduleGrid = document.getElementById('schedule-grid');
@@ -482,6 +505,12 @@
         const suggestionSaveLoader = document.getElementById('suggestion-save-loader');
         const suggestionModalTitle = document.getElementById('suggestion-modal-title');
 
+        // Suggestion View Modal Elements
+        const suggestionsViewModalOverlay = document.getElementById('suggestions-view-modal-overlay');
+        const suggestionsViewModalCloseBtn = document.getElementById('suggestions-view-modal-close-btn');
+        const viewSuggestionsBtnDesktop = document.getElementById('view-suggestions-btn-desktop');
+        const suggestionsList = document.getElementById('suggestions-list');
+
 
         // --- UI Functions ---
 
@@ -543,10 +572,14 @@
             suggestionModalOverlay.classList.toggle('is-open', show);
         }
 
+        function toggleSuggestionViewModal(show = false) {
+            suggestionsViewModalOverlay.classList.toggle('is-open', show);
+        }
+
 
         // --- Gemini API Integration ---
         async function callGemini(prompt) {
-            const apiKey = "AIzaSyAHB_GyF9KrJQE9RvWPYX9Sac6UH3JkOEc"; // Canvas will provide this
+            const apiKey = ""; // Canvas will provide this
             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
 
             const payload = {
@@ -757,6 +790,18 @@
                     sharedTipsData = newData;
                 }
             }, (error) => console.error("Error in tips listener:", error));
+
+            const suggestionsColRef = collection(db, 'suggestions');
+            const q = query(suggestionsColRef, orderBy('createdAt', 'desc')); 
+            if (unsubscribeSuggestions) unsubscribeSuggestions();
+            unsubscribeSuggestions = onSnapshot(q, (querySnapshot) => {
+                suggestionsData = [];
+                querySnapshot.forEach((doc) => {
+                    suggestionsData.push({ id: doc.id, ...doc.data() });
+                });
+            }, (error) => {
+                console.error("Error fetching suggestions:", error);
+            });
         }
         
         
@@ -1215,6 +1260,27 @@
             }
         }
 
+        function handleViewSuggestionsClick() {
+            suggestionsList.innerHTML = ''; // Clear old list
+
+            if (suggestionsData.length === 0) {
+                suggestionsList.innerHTML = '<p>Nenhuma sugestão nova.</p>';
+            } else {
+                const listHtml = suggestionsData.map(sug => {
+                    const date = sug.createdAt?.toDate().toLocaleString('pt-BR') || 'Data indisponível';
+                    return `
+                        <div class="p-4 bg-[#1B1B1B] rounded-lg mb-4 border border-gray-700">
+                            <p class="text-base">${sug.suggestion}</p>
+                            <p class="text-xs text-gray-500 mt-2">Enviado por: ${sug.userId.substring(0, 8)}... em ${date}</p>
+                            <p class="text-xs text-gray-400 mt-1">Contexto: ${sug.specialty} - Semana ${sug.week}</p>
+                        </div>
+                    `;
+                }).join('');
+                suggestionsList.innerHTML = listHtml;
+            }
+            toggleSuggestionViewModal(true);
+        }
+
         function clearWeekData() {
             showConfirm("Tem certeza que deseja limpar todas as marcações desta semana?", () => {
                 const weekPrefix = `${currentSpecialty}-week${currentWeekOrRodizio}`;
@@ -1322,6 +1388,12 @@
         
         generateStudyPlanBtnDesktop.addEventListener('click', handleStudyPlanClick);
         generateStudyPlanBtnMobile.addEventListener('click', handleStudyPlanClick);
+
+        viewSuggestionsBtnDesktop.addEventListener('click', handleViewSuggestionsClick);
+        suggestionsViewModalCloseBtn.addEventListener('click', () => toggleSuggestionViewModal(false));
+        suggestionsViewModalOverlay.addEventListener('click', (e) => {
+            if(e.target === suggestionsViewModalOverlay) toggleSuggestionViewModal(false);
+        });
 
 
         todayBtn.addEventListener('click', () => {
