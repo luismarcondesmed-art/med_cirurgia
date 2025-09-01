@@ -52,32 +52,32 @@
             gap: 1rem;
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
         }
-        aside::-webkit-scrollbar, main::-webkit-scrollbar {
+        aside::-webkit-scrollbar, main::-webkit-scrollbar, .modal-body::-webkit-scrollbar {
             width: 8px;
         }
-        aside::-webkit-scrollbar-track, main::-webkit-scrollbar-track {
+        aside::-webkit-scrollbar-track, main::-webkit-scrollbar-track, .modal-body::-webkit-scrollbar-track {
             background: #2B2B2B;
         }
-        aside::-webkit-scrollbar-thumb, main::-webkit-scrollbar-thumb {
+        aside::-webkit-scrollbar-thumb, main::-webkit-scrollbar-thumb, .modal-body::-webkit-scrollbar-thumb {
             background-color: #4A4A4A;
             border-radius: 10px;
             border: 2px solid #2B2B2B;
         }
-        #sidebar-overlay, #confirm-modal-overlay, #sync-modal-overlay {
+        #sidebar-overlay, .modal-overlay {
             transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
             visibility: hidden;
             opacity: 0;
         }
-        #sidebar-overlay.is-open, #confirm-modal-overlay.is-open, #sync-modal-overlay.is-open {
+        #sidebar-overlay.is-open, .modal-overlay.is-open {
             visibility: visible;
             opacity: 1;
         }
-        #sidebar-mobile, #confirm-modal, #sync-modal {
+        #sidebar-mobile, .modal-content {
             transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
             transform: scale(0.95);
             opacity: 0;
         }
-        #sidebar-overlay.is-open #sidebar-mobile, #confirm-modal-overlay.is-open #confirm-modal, #sync-modal-overlay.is-open #sync-modal {
+        #sidebar-overlay.is-open #sidebar-mobile, .modal-overlay.is-open .modal-content {
             transform: scale(1);
             opacity: 1;
         }
@@ -219,14 +219,14 @@
     </div>
     
     <!-- Sync Modal -->
-    <div id="sync-modal-overlay" class="fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center p-4">
-        <div id="sync-modal" class="relative w-full max-w-sm bg-[#2B2B2B] rounded-2xl shadow-2xl p-6">
+    <div id="sync-modal-overlay" class="modal-overlay fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center p-4">
+        <div id="sync-modal" class="modal-content relative w-full max-w-sm bg-[#2B2B2B] rounded-2xl shadow-2xl p-6">
             <button id="sync-modal-close-btn" class="absolute top-4 right-4 p-2 rounded-full hover:bg-gray-700">
                 <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                 </svg>
             </button>
-            <div class="bg-[#2B2B2B] p-6 rounded-lg shadow-lg text-center">
+            <div class="text-center">
                 <h3 class="text-lg font-semibold mb-4">Sincronização</h3>
                 <button id="sync-button-modal" class="w-full p-2 bg-blue-600 hover:bg-blue-700 rounded-md font-semibold transition-colors text-white text-sm mb-4">Sincronizar Dados Pessoais</button>
                 <p class="text-xs text-gray-400 mb-2">Seu ID de Usuário:</p>
@@ -234,6 +234,46 @@
                 <button id="copyUserId-modal" class="w-full p-2 bg-gray-600 hover:bg-gray-700 rounded-md font-semibold transition-colors text-white text-sm mb-4">Copiar ID</button>
                 <input id="userIdInput-modal" type="text" placeholder="Cole um ID para carregar" class="w-full p-2 bg-[#1B1B1B] text-center text-xs rounded-md mb-2">
                 <button id="loadUserId-modal" class="w-full p-2 bg-green-600 hover:bg-green-700 rounded-md font-semibold transition-colors text-white text-sm">Carregar ID</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Edit Modal -->
+    <div id="edit-modal-overlay" class="modal-overlay fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center p-4">
+        <div id="edit-modal" class="modal-content relative w-full max-w-lg bg-[#2B2B2B] rounded-2xl shadow-2xl">
+             <button id="edit-modal-close-btn" class="absolute top-4 right-4 p-2 rounded-full hover:bg-gray-700">
+                <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+            <div class="p-6">
+                <h3 class="text-lg font-semibold mb-4">Editar Atividade</h3>
+            </div>
+            <div class="modal-body p-6 border-t border-b border-gray-700 max-h-[60vh] overflow-y-auto space-y-4">
+                <div>
+                    <label for="edit-activity" class="block text-sm font-medium text-gray-300 mb-1">Atividade</label>
+                    <input type="text" id="edit-activity" class="w-full p-2 bg-[#1B1B1B] border border-gray-600 rounded-md">
+                </div>
+                <div>
+                    <label for="edit-time" class="block text-sm font-medium text-gray-300 mb-1">Horário (ex: 08:00 - 12:00)</label>
+                    <input type="text" id="edit-time" class="w-full p-2 bg-[#1B1B1B] border border-gray-600 rounded-md">
+                </div>
+                <div>
+                    <label for="edit-professor" class="block text-sm font-medium text-gray-300 mb-1">Professor</label>
+                    <input type="text" id="edit-professor" class="w-full p-2 bg-[#1B1B1B] border border-gray-600 rounded-md">
+                </div>
+                <div>
+                    <label for="edit-location" class="block text-sm font-medium text-gray-300 mb-1">Local</label>
+                    <input type="text" id="edit-location" class="w-full p-2 bg-[#1B1B1B] border border-gray-600 rounded-md">
+                </div>
+                 <div id="edit-student-ids-container" class="hidden">
+                    <label class="block text-sm font-medium text-gray-300 mb-1">Alunos (Cirurgia)</label>
+                    <div id="edit-student-ids-checkboxes" class="grid grid-cols-2 gap-2 p-2 bg-[#1B1B1B] rounded-md">
+                        <!-- Student checkboxes will be populated here -->
+                    </div>
+                </div>
+            </div>
+            <div class="p-6 flex justify-end gap-4">
+                <button id="edit-modal-cancel-btn" class="px-6 py-2 bg-gray-600 hover:bg-gray-700 rounded-md font-semibold transition-colors">Cancelar</button>
+                <button id="edit-modal-save-btn" class="px-6 py-2 bg-green-600 hover:bg-green-700 rounded-md font-semibold transition-colors">Salvar</button>
             </div>
         </div>
     </div>
@@ -249,8 +289,8 @@
     </div>
 
     <!-- Confirm Modal -->
-    <div id="confirm-modal-overlay" class="fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center p-4">
-        <div id="confirm-modal" class="relative w-full max-w-sm bg-[#2B2B2B] rounded-2xl shadow-2xl p-6">
+    <div id="confirm-modal-overlay" class="modal-overlay fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center p-4">
+        <div id="confirm-modal" class="modal-content relative w-full max-w-sm bg-[#2B2B2B] rounded-2xl shadow-2xl p-6">
             <p id="confirm-message" class="text-center mb-6">Você tem certeza?</p>
             <div class="flex justify-center gap-4">
                 <button id="confirm-btn-yes" class="px-6 py-2 bg-green-600 hover:bg-green-700 rounded-md font-semibold transition-colors">Sim</button>
@@ -261,12 +301,13 @@
 
     <!-- Firebase SDKs -->
     <script type="module">
-        // Import necessary Firebase functions
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-        import { getFirestore, doc, onSnapshot, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { getFirestore, doc, onSnapshot, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-        // Your web app's Firebase configuration
+        // CONFIGURAÇÃO DO ADMINISTRADOR
+        const ADMIN_USER_ID = "r5NLb0GqtcRuTmeVt3g3gRoGirl2";
+
         const firebaseConfig = {
           apiKey: "AIzaSyDyfgOvzTYd6si3g-mPQyInbfiFG1hoVAU",
           authDomain: "cronograma-medufpr.firebaseapp.com",
@@ -277,23 +318,22 @@
           measurementId: "G-6RNMK13MMK"
         };
 
-
-        // Initialize Firebase
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
         
         // --- Global State Variables ---
         let userId = null;
-        let unsubscribeUser; // Listener for user-specific data
-        let unsubscribeShared; // Listener for shared data
-        let allData = {}; // To store schedule data from JSON files
+        let isAdmin = false;
+        let unsubscribeUser;
+        let unsubscribeSchedules = {};
+        let schedulesData = {};
         let currentSpecialty = 'cirurgia';
         let currentWeekOrRodizio = '1';
         let currentStudent = 'all';
-        let checklistData = {}; // To store the checked state of activities
+        let checklistData = {};
         let hideStudyTime = false;
-        let onCallClaimData = {}; // NEW: To store on-call claimed slots data
+        let onCallClaimData = {};
 
         // --- DOM Element References ---
         const scheduleGrid = document.getElementById('schedule-grid');
@@ -302,43 +342,31 @@
         
         const weekSelectorMain = document.getElementById('week-selector-main');
         const scheduleSubtitleMain = document.getElementById('schedule-subtitle-main');
-        const weekLabelMain = document.getElementById('week-label-main');
-        const weekSelectorContainerMain = document.getElementById('week-selector-container-main');
-
+        
         const studentSelectorMobile = document.getElementById('student-selector-mobile');
         const studentImageMobile = document.getElementById('student-image-mobile');
-        const clearWeekButtonMobile = document.getElementById('clearWeekButton-mobile');
-        const studentContainerMobile = document.getElementById('student-selector-container-mobile');
-
-        const weekSelectorContainerDesktop = document.getElementById('week-selector-container-desktop');
+        
         const weekSelectorDesktop = document.getElementById('week-selector-desktop');
         const scheduleSubtitleDesktop = document.getElementById('schedule-subtitle-desktop');
         const studentSelectorDesktop = document.getElementById('student-selector-desktop');
         const studentImageDesktop = document.getElementById('student-image-desktop');
-        const clearWeekButtonDesktop = document.getElementById('clearWeekButton-desktop');
-        const studentContainerDesktop = document.getElementById('student-selector-container-desktop');
         
         const daysOfWeek = ['SEGUNDA', 'TERÇA', 'QUARTA', 'QUINTA', 'SEXTA', 'SÁBADO', 'DOMINGO'];
         
         const sidebarOverlay = document.getElementById('sidebar-overlay');
         const sidebarToggle = document.getElementById('sidebar-toggle');
         const sidebarClose = document.getElementById('sidebar-close');
-
+        
         const btnCirurgia = document.getElementById('btn-cirurgia');
         const btnPediatria = document.getElementById('btn-pediatria');
         const btnCirurgiaMobile = document.getElementById('btn-cirurgia-mobile');
         const btnPediatriaMobile = document.getElementById('btn-pediatria-mobile');
-
+        
         const todayBtn = document.getElementById('today-btn');
         
         const hideStudyMobile = document.getElementById('hide-study-mobile');
         const hideStudyDesktop = document.getElementById('hide-study-desktop');
         
-        const userIdDisplayMobile = document.getElementById('userIdDisplay-mobile');
-        const copyUserIdBtnMobile = document.getElementById('copyUserId-mobile');
-        const userIdInputMobile = document.getElementById('userIdInput-mobile');
-        const loadUserIdBtnMobile = document.getElementById('loadUserId-mobile');
-
         const syncModalOverlay = document.getElementById('sync-modal-overlay');
         const syncModalOpenBtn = document.getElementById('sync-modal-open-btn');
         const syncModalCloseBtn = document.getElementById('sync-modal-close-btn');
@@ -348,170 +376,127 @@
         const userIdInputModal = document.getElementById('userIdInput-modal');
         const loadUserIdModal = document.getElementById('loadUserId-modal');
         
-        const syncButtonMobile = document.getElementById('sync-button-mobile');
-
         const toast = document.getElementById('toast-notification');
         const toastMessage = document.getElementById('toast-message');
+        
         const confirmModalOverlay = document.getElementById('confirm-modal-overlay');
         const confirmMessage = document.getElementById('confirm-message');
         const confirmBtnYes = document.getElementById('confirm-btn-yes');
         const confirmBtnNo = document.getElementById('confirm-btn-no');
-
+        
+        const editModalOverlay = document.getElementById('edit-modal-overlay');
+        const editModal = document.getElementById('edit-modal');
+        const editModalCloseBtn = document.getElementById('edit-modal-close-btn');
+        const editModalCancelBtn = document.getElementById('edit-modal-cancel-btn');
+        const editModalSaveBtn = document.getElementById('edit-modal-save-btn');
+        
         // --- UI Functions ---
-
         function showToast(message) {
             toastMessage.textContent = message;
             toast.classList.add('show');
-            setTimeout(() => {
-                toast.classList.remove('show');
-            }, 3000);
+            setTimeout(() => toast.classList.remove('show'), 3000);
         }
 
         function showConfirm(message, onConfirm) {
             confirmMessage.textContent = message;
-            confirmModalOverlay.classList.add('is-open');
-
-            const handleYes = () => {
-                onConfirm();
-                cleanup();
-            };
+            toggleModal(confirmModalOverlay, true);
+            
+            const handleYes = () => { onConfirm(); cleanup(); };
             const handleNo = () => cleanup();
 
             function cleanup() {
-                confirmModalOverlay.classList.remove('is-open');
-                confirmBtnYes.removeEventListener('click', handleYes);
-                confirmBtnNo.removeEventListener('click', handleNo);
+                toggleModal(confirmModalOverlay, false);
+                confirmBtnYes.removeEventListener('click', handleYes, { once: true });
+                confirmBtnNo.removeEventListener('click', handleNo, { once: true });
             }
 
-            confirmBtnYes.addEventListener('click', handleYes);
-            confirmBtnNo.addEventListener('click', handleNo);
+            confirmBtnYes.addEventListener('click', handleYes, { once: true });
+            confirmBtnNo.addEventListener('click', handleNo, { once: true });
         }
 
-        function toggleSidebar() {
-            sidebarOverlay.classList.toggle('is-open');
+        function toggleModal(overlay, forceOpen = null) {
+            if (forceOpen === true) {
+                 overlay.classList.add('is-open');
+            } else if (forceOpen === false) {
+                 overlay.classList.remove('is-open');
+            } else {
+                overlay.classList.toggle('is-open');
+            }
         }
-        
-        function toggleSyncModal() {
-            syncModalOverlay.classList.toggle('is-open');
-        }
 
-
-        // --- Data Handling and Firebase ---
-
-        async function fetchData() {
+        // --- Initialization and Data Flow ---
+        async function startApp() {
             loadingIndicator.classList.remove('hidden');
             loadingIndicator.classList.add('flex');
             scheduleGrid.classList.add('hidden');
 
-            const mockSchedule = {
-                cirurgia: {
-                    weeks: [
-                        { id: '1', title: 'Cirurgia Geral (Teste)', dates: '25/08 - 31/08', start: '2025-08-25', end: '2025-08-31' },
-                        { id: '2', title: 'Cirurgia Vascular (Teste)', dates: '01/09 - 07/09', start: '2025-09-01', end: '2025-09-07' }
-                    ],
-                    students: [
-                        { id: 'all', name: 'Todos os Alunos', imageUrl: 'https://i.imgur.com/5AW2oEL.png' },
-                        { id: 1, name: 'Aluno Teste 1', imageUrl: 'https://placehold.co/400x400/EBF4FF/76A9EA?text=A1' },
-                        { id: 2, name: 'Aluno Teste 2', imageUrl: 'https://placehold.co/400x400/EBF4FF/76A9EA?text=A2' }
-                    ],
-                    schedule: [
-                        { week: '1', day: 'SEGUNDA', time: '08:00 - 12:00', activity: 'Ambulatório Mock', professor: 'Dr. Exemplo', location: 'Hospital de Testes', studentId: [1] },
-                        { week: '1', day: 'TERÇA', time: '13:00 - 17:00', activity: 'Centro Cirúrgico Mock', professor: 'Dra. Simulada', location: 'Hospital de Testes', studentId: [2] },
-                        { week: '2', day: 'QUARTA', time: '09:00 - 11:00', activity: 'PA PLANTÃO', professor: 'Dr. Exemplo', location: 'Sala de Conferências', studentId: [1, 2], slots: 2 }
-                    ]
-                },
-                pediatria: {
-                    weeks: [
-                        { id: '1', title: 'Rodízio Pediatria 1 (Teste)', dates: '25/08 - 31/08', start: '2025-08-25', end: '2025-08-31' },
-                        { id: '2', title: 'Rodízio Pediatria 2 (Teste)', dates: '01/09 - 07/09', start: '2025-09-01', end: '2025-09-07' }
-                    ],
-                    students: [
-                        { id: 'p1', name: 'Ped Aluno 1', imageUrl: 'https://placehold.co/400x400/F4EBF4/A976A9?text=P1' },
-                        { id: 'p2', name: 'Ped Aluno 2', imageUrl: 'https://placehold.co/400x400/F4EBF4/A976A9?text=P2' },
-                        { id: 'p3', name: 'Ped Aluno 3', imageUrl: 'https://placehold.co/400x400/F4EBF4/A976A9?text=P3' }
-                    ],
-                    schedule: [
-                        { week: '1', day: 'QUINTA', time: '10:00 - 12:00', activity: 'PA Pediatria', professor: 'Dra. Criança', location: 'Hospital Infantil de Teste', slots: 2 },
-                        { week: '2', day: 'SEXTA', time: '14:00 - 16:00', activity: 'PA PLANTÃO', professor: 'Dr. Bebê', location: 'Hospital Infantil de Teste', slots: 3 }
-                    ]
-                }
-            };
-
-            try {
-                const results = await Promise.allSettled([
-                    fetch('cirurgia_schedule.json').then(res => res.ok ? res.json() : Promise.reject()),
-                    fetch('pediatria_schedule.json').then(res => res.ok ? res.json() : Promise.reject())
-                ]);
-
-                allData.cirurgia = results[0].status === 'fulfilled' ? results[0].value : mockSchedule.cirurgia;
-                allData.pediatria = results[1].status === 'fulfilled' ? results[1].value : mockSchedule.pediatria;
-                
-                initializeUI();
-                initializeAuth();
-
-            } catch (error) {
-                console.error("Error during initial data fetch:", error);
-                allData.cirurgia = mockSchedule.cirurgia;
-                allData.pediatria = mockSchedule.pediatria;
-                initializeUI();
-                initializeAuth();
-            } finally {
-                loadingIndicator.classList.add('hidden');
-                loadingIndicator.classList.remove('flex');
-                scheduleGrid.classList.remove('hidden');
-            }
-        }
-        
-        async function initializeAuth() {
-            onAuthStateChanged(auth, (user) => {
+            await signInAnonymously(auth).catch(err => console.error("Anonymous sign-in failed:", err));
+            
+            onAuthStateChanged(auth, user => {
                 if (user) {
-                    const activeUserId = localStorage.getItem('loadedUserId') || user.uid;
-                    if (!userId || userId !== activeUserId) {
-                        setupUserListener(activeUserId);
-                    }
-                    setupSharedOnCallListener();
+                    userId = user.uid;
+                    isAdmin = userId === ADMIN_USER_ID;
+                    userIdDisplayModal.value = userId;
+                    document.getElementById('userIdDisplay-mobile').value = userId;
+
+                    const activeUserId = localStorage.getItem('loadedUserId') || userId;
+                    setupUserListener(activeUserId);
+                    initializeSchedules();
                 } else {
-                    if(unsubscribeShared) unsubscribeShared();
-                    if(unsubscribeUser) unsubscribeUser();
+                    // Handle sign-out state if necessary
+                    if (unsubscribeUser) unsubscribeUser();
+                    Object.values(unsubscribeSchedules).forEach(unsub => unsub());
+                    scheduleGrid.innerHTML = '<p class="text-center">Por favor, recarregue a página.</p>';
                 }
             });
-
-            try {
-                if (!auth.currentUser) {
-                    await signInAnonymously(auth);
-                }
-            } catch (error) {
-                console.error("Authentication failed:", error);
-                mainContent.innerHTML = `<p class="text-red-400 text-center">Falha na autenticação. A sincronização não funcionará.</p>`;
-            }
         }
 
-        async function saveUserStateToFirebase() {
-            if (!userId) return;
-            const userDocRef = doc(db, 'users', userId);
-            try {
-                await setDoc(userDocRef, {
-                    checklistData,
-                    currentStudent,
-                    currentSpecialty,
-                    hideStudyTime,
-                    currentWeekOrRodizio,
-                }, { merge: true });
-                showToast("Dados pessoais sincronizados!");
-            } catch (error) {
-                console.error("Error saving user state: ", error);
-                showToast("Erro ao sincronizar dados pessoais.");
+        async function initializeSchedules() {
+            const specialties = ['cirurgia', 'pediatria', 'onCallClaims'];
+            
+            for (const specialty of specialties) {
+                const docRef = doc(db, 'schedules', specialty);
+                
+                // For main schedules, check if they exist and seed them from local JSON if they don't.
+                if (specialty !== 'onCallClaims') {
+                    try {
+                        const docSnap = await getDoc(docRef);
+                        if (!docSnap.exists()) {
+                            console.log(`'${specialty}' schedule not found in Firestore. Seeding from local file...`);
+                            const response = await fetch(`${specialty}_schedule.json`);
+                            if (!response.ok) throw new Error(`Failed to fetch ${specialty}_schedule.json`);
+                            const jsonData = await response.json();
+                            await setDoc(docRef, jsonData);
+                            console.log(`Successfully seeded '${specialty}' schedule to Firestore.`);
+                        }
+                    } catch (error) {
+                         console.error(`Could not check or seed '${specialty}':`, error);
+                    }
+                }
+
+                // Set up real-time listeners for all schedule documents.
+                if (unsubscribeSchedules[specialty]) unsubscribeSchedules[specialty]();
+                unsubscribeSchedules[specialty] = onSnapshot(docRef, (docSnap) => {
+                    if (docSnap.exists()) {
+                        if (specialty === 'onCallClaims') {
+                            onCallClaimData = docSnap.data().claims || {};
+                        } else {
+                            schedulesData[specialty] = docSnap.data();
+                        }
+                    }
+                    // Re-render only if the app has finished its initial user setup.
+                    if (document.body.dataset.initialized) {
+                         populateSelectors();
+                         renderSchedule();
+                    }
+                }, err => console.error(`Error listening to '${specialty}':`, err));
             }
         }
 
         function setupUserListener(uid) {
-            userId = uid;
-            userIdDisplayMobile.value = uid;
-            userIdDisplayModal.value = uid;
-            const userDocRef = doc(db, 'users', userId);
-
+            const userDocRef = doc(db, 'users', uid);
             if (unsubscribeUser) unsubscribeUser();
-
+            
             unsubscribeUser = onSnapshot(userDocRef, (docSnap) => {
                 const oldSpecialty = currentSpecialty;
                 let stateChanged = false;
@@ -523,74 +508,117 @@
                     if (currentSpecialty !== (data.currentSpecialty || 'cirurgia')) { currentSpecialty = data.currentSpecialty || 'cirurgia'; stateChanged = true; }
                     if (hideStudyTime !== (data.hideStudyTime || false)) { hideStudyTime = data.hideStudyTime || false; stateChanged = true; }
                     if (currentWeekOrRodizio !== (data.currentWeekOrRodizio || '1')) { currentWeekOrRodizio = data.currentWeekOrRodizio || '1'; stateChanged = true; }
-                
-                    // BUG FIX: Validate student selection after loading state
-                    if (currentSpecialty === 'pediatria') {
-                        const pedStudents = allData.pediatria ? allData.pediatria.students : [];
-                        const studentExists = pedStudents.some(s => s.id === currentStudent);
-                        if (!studentExists && pedStudents.length > 0) {
-                            currentStudent = pedStudents[0].id;
-                            stateChanged = true;
-                        }
-                    }
-
                 } else {
-                    saveUserStateToFirebase(); 
-                    return; 
-                }
-                
-                if (!stateChanged && document.body.dataset.initialized) return;
-
-                document.body.dataset.initialized = true;
-
-                updateActiveSpecialtyButtons();
-                hideStudyDesktop.checked = hideStudyTime;
-                hideStudyMobile.checked = hideStudyTime;
-
-                if (oldSpecialty !== currentSpecialty) {
-                    updateUILayout();
-                    populateSelectors();
+                    // If no user data exists, save the current default state to create the document.
+                    saveUserStateToFirebase(uid);
                 }
 
-                weekSelectorDesktop.value = currentWeekOrRodizio;
-                weekSelectorMain.value = currentWeekOrRodizio;
-                
-                updateView();
-            }, (error) => {
-                console.error("Error in user snapshot listener:", error);
-            });
-        }
-        
-        function setupSharedOnCallListener() {
-            const onCallDocRef = doc(db, 'schedules', 'onCallClaims');
-            if (unsubscribeShared) unsubscribeShared();
-            
-            unsubscribeShared = onSnapshot(onCallDocRef, (docSnap) => {
-                const newData = docSnap.exists() ? docSnap.data().claims || {} : {};
-                if (JSON.stringify(onCallClaimData) !== JSON.stringify(newData)) {
-                    onCallClaimData = newData;
-                    renderSchedule();
+                // This flag ensures the UI doesn't render prematurely.
+                if (!document.body.dataset.initialized || stateChanged) {
+                    if (!document.body.dataset.initialized) {
+                         updateUILayout();
+                         populateSelectors();
+                         loadingIndicator.classList.add('hidden');
+                         loadingIndicator.classList.remove('flex');
+                         scheduleGrid.classList.remove('hidden');
+                    }
+                    document.body.dataset.initialized = true;
+                    updateActiveSpecialtyButtons();
+                    hideStudyDesktop.checked = hideStudyTime;
+                    hideStudyMobile.checked = hideStudyTime;
+                    updateView();
                 }
-            }, (error) => {
-                console.error("Error in shared snapshot listener:", error);
-            });
+            }, err => console.error("User snapshot listener error:", err));
+        }
+
+        async function saveUserStateToFirebase(targetUid) {
+            const uidToSave = targetUid || localStorage.getItem('loadedUserId') || userId;
+            if (!uidToSave) return;
+            const userDocRef = doc(db, 'users', uidToSave);
+            try {
+                await setDoc(userDocRef, {
+                    checklistData, currentStudent, currentSpecialty, hideStudyTime, currentWeekOrRodizio
+                }, { merge: true });
+                showToast("Dados pessoais sincronizados!");
+            } catch (error) {
+                console.error("Error saving user state: ", error);
+                showToast("Erro ao sincronizar dados pessoais.");
+            }
         }
         
-        // --- Core Application Logic ---
-        
-        function initializeUI() {
-            updateUILayout();
-            populateSelectors();
-            updateView();
+        // --- Admin Functions ---
+        function openEditModal(item, itemIndex) {
+            editModal.dataset.itemIndex = itemIndex; 
+            document.getElementById('edit-activity').value = item.activity || '';
+            document.getElementById('edit-time').value = item.time || '';
+            document.getElementById('edit-professor').value = item.professor || '';
+            document.getElementById('edit-location').value = item.location || '';
+            const studentContainer = document.getElementById('edit-student-ids-container');
+            const studentCheckboxes = document.getElementById('edit-student-ids-checkboxes');
+            if(currentSpecialty === 'cirurgia'){
+                studentContainer.style.display = 'block';
+                studentCheckboxes.innerHTML = '';
+                schedulesData.cirurgia.students.filter(s => s.id !== 'all').forEach(student => {
+                    const isChecked = item.studentId?.includes(student.id) ? 'checked' : '';
+                    studentCheckboxes.innerHTML += `<label class="flex items-center gap-2"><input type="checkbox" value="${student.id}" class="h-4 w-4 rounded bg-gray-700 border-gray-600 text-blue-500 focus:ring-blue-600" ${isChecked}><span>${student.name}</span></label>`;
+                });
+            } else {
+                studentContainer.style.display = 'none';
+            }
+            toggleModal(editModalOverlay, true);
         }
-        
-        function resetLocalState() {
-            checklistData = {};
-            currentSpecialty = 'cirurgia';
-            currentStudent = 'all';
-            hideStudyTime = false;
-            const data = allData[currentSpecialty];
-            currentWeekOrRodizio = (data?.weeks?.[0]?.id) || '1';
+
+        async function saveActivityChanges() {
+            const itemIndex = parseInt(editModal.dataset.itemIndex);
+            if (isNaN(itemIndex)) return showToast("Erro: Atividade não encontrada.");
+
+            const dataToUpdate = { ...schedulesData[currentSpecialty] };
+            const scheduleCopy = [...dataToUpdate.schedule];
+            const updatedItem = { ...scheduleCopy[itemIndex] };
+
+            updatedItem.activity = document.getElementById('edit-activity').value;
+            updatedItem.time = document.getElementById('edit-time').value;
+            updatedItem.professor = document.getElementById('edit-professor').value;
+            updatedItem.location = document.getElementById('edit-location').value;
+            if (currentSpecialty === 'cirurgia') {
+                updatedItem.studentId = Array.from(document.querySelectorAll('#edit-student-ids-checkboxes input:checked')).map(cb => parseInt(cb.value));
+            }
+            scheduleCopy[itemIndex] = updatedItem;
+            dataToUpdate.schedule = scheduleCopy;
+
+            try {
+                const docRef = doc(db, 'schedules', currentSpecialty);
+                await setDoc(docRef, dataToUpdate); // This overwrites the entire document with the updated data
+                showToast("Atividade atualizada com sucesso!");
+                toggleModal(editModalOverlay, false);
+            } catch (error) {
+                console.error("Error saving activity:", error);
+                showToast("Erro ao salvar a atividade.");
+            }
+        }
+
+
+        // --- UI Logic & Event Handlers ---
+        function updateUILayout() {
+            const isCirurgia = currentSpecialty === 'cirurgia';
+            document.getElementById('student-selector-container-desktop').style.display = 'block';
+            document.getElementById('student-selector-container-mobile').style.display = 'block';
+            const weekLabel = isCirurgia ? 'Selecione a Semana' : 'Selecione o Rodízio';
+            document.getElementById('week-label-desktop').textContent = weekLabel;
+            document.getElementById('week-label-main').textContent = weekLabel;
+        }
+
+        function populateSelectors() {
+            const data = schedulesData[currentSpecialty];
+            if (!data || !data.weeks) return;
+            const { weeks, students } = data;
+            const createOption = (value, text) => `<option value="${value}">${text}</option>`;
+            weekSelectorDesktop.innerHTML = weeks.map(w => createOption(w.id, `${currentSpecialty === 'pediatria' ? 'Rodízio' : 'Semana'} ${w.id}: ${w.title}`)).join('');
+            weekSelectorMain.innerHTML = weekSelectorDesktop.innerHTML;
+            if (students) {
+                studentSelectorDesktop.innerHTML = students.map(s => createOption(s.id, s.name)).join('');
+                studentSelectorMobile.innerHTML = studentSelectorDesktop.innerHTML;
+            }
         }
 
         function updateActiveSpecialtyButtons() {
@@ -601,471 +629,246 @@
             btnPediatriaMobile.classList.toggle('active', !isCirurgia);
         }
 
-        function switchSpecialty(newSpecialty) {
-            if (newSpecialty === currentSpecialty) return;
-            currentSpecialty = newSpecialty;
-            const data = allData[currentSpecialty];
-            currentWeekOrRodizio = (data?.weeks?.[0]?.id) || '1';
-            
-            // BUG FIX: Ensure a valid student is selected when switching to Pediatria
-            if (newSpecialty === 'pediatria') {
-                if (data && data.students && data.students.length > 0) {
-                    currentStudent = data.students[0].id;
-                }
-            } else {
-                currentStudent = 'all';
-            }
-
-            updateActiveSpecialtyButtons();
-            updateUILayout();
-            populateSelectors();
-            updateView();
-            saveUserStateToFirebase();
-        }
-
-        function populateSelectors() {
-            const data = allData[currentSpecialty];
-            if (!data) return; 
-            const weeks = data.weeks;
-            const students = data.students;
-
-            const selector = weekSelectorDesktop;
-            const mobileSelector = weekSelectorMain;
-            
-            selector.innerHTML = '';
-            mobileSelector.innerHTML = '';
-            studentSelectorDesktop.innerHTML = '';
-            studentSelectorMobile.innerHTML = '';
-            
-            weeks.forEach(week => {
-                const option = document.createElement('option');
-                option.value = week.id;
-                option.textContent = `${currentSpecialty === 'pediatria' ? 'Rodízio' : 'Semana'} ${week.id}: ${week.title}`;
-                selector.appendChild(option.cloneNode(true));
-                mobileSelector.appendChild(option.cloneNode(true));
-            });
-
-            if (students) {
-                students.forEach(student => {
-                    const option = document.createElement('option');
-                    option.value = student.id;
-                    option.textContent = student.name;
-                    studentSelectorDesktop.appendChild(option.cloneNode(true));
-                    studentSelectorMobile.appendChild(option.cloneNode(true));
-                });
-            }
-        }
-        
-        function updateUILayout() {
-            const isCirurgia = currentSpecialty === 'cirurgia';
-            
-            studentContainerDesktop.style.display = 'block';
-            studentContainerMobile.style.display = 'block';
-            
-            const weekLabel = isCirurgia ? 'Selecione a Semana' : 'Selecione o Rodízio';
-            document.getElementById('week-label-desktop').textContent = weekLabel;
-            weekLabelMain.textContent = weekLabel;
-        }
-
         function updateView() {
-            const data = allData[currentSpecialty];
-            if (!data) return;
-            const selectedWeekData = data.weeks.find(w => w.id == currentWeekOrRodizio);
-            const subtitleText = selectedWeekData ? `${selectedWeekData.title} (${selectedWeekData.dates})` : '';
+            const data = schedulesData[currentSpecialty];
+            if (!data || !data.weeks) return;
+            const selectedWeekData = data.weeks?.find(w => w.id == currentWeekOrRodizio);
+            scheduleSubtitleDesktop.textContent = selectedWeekData ? `${selectedWeekData.title} (${selectedWeekData.dates})` : '';
+            scheduleSubtitleMain.textContent = scheduleSubtitleDesktop.textContent;
             
-            scheduleSubtitleDesktop.textContent = subtitleText;
-            scheduleSubtitleMain.textContent = subtitleText;
-            
-            const selectedStudent = data.students.find(s => s.id == currentStudent);
+            const selectedStudent = data.students?.find(s => s.id == currentStudent);
             if (selectedStudent) {
                 studentImageMobile.src = selectedStudent.imageUrl || 'https://i.imgur.com/5AW2oEL.png';
                 studentImageDesktop.src = selectedStudent.imageUrl || 'https://i.imgur.com/5AW2oEL.png';
                 studentSelectorMobile.value = currentStudent;
                 studentSelectorDesktop.value = currentStudent;
             }
-            
+            weekSelectorDesktop.value = currentWeekOrRodizio;
+            weekSelectorMain.value = currentWeekOrRodizio;
             renderSchedule();
         }
 
         function renderSchedule() {
-            const data = allData[currentSpecialty];
-            if (!data) {
-                scheduleGrid.innerHTML = ''; // Clear grid if data is not available
-                return;
-            }
+            const data = schedulesData[currentSpecialty];
+            if (!data || !data.schedule) { scheduleGrid.innerHTML = ''; return; }
             let weekData = data.schedule.filter(item => item.week == currentWeekOrRodizio);
-
-            if (currentSpecialty === 'cirurgia') {
-                weekData = weekData.filter(item => currentStudent === 'all' || (item.studentId && item.studentId.includes(parseInt(currentStudent))));
+            if (currentSpecialty === 'cirurgia' && currentStudent !== 'all') {
+                weekData = weekData.filter(item => item.studentId && item.studentId.includes(parseInt(currentStudent)));
             }
-            
-            let filteredData = hideStudyTime ? weekData.filter(item => !item.activity.toLowerCase().includes('horário estudo')) : weekData;
+            let filteredData = hideStudyTime ? weekData.filter(item => !item.activity.toUpperCase().includes('HORÁRIO ESTUDO')) : weekData;
 
-            const fragment = document.createDocumentFragment();
-
+            scheduleGrid.innerHTML = '';
             const groupedByDay = filteredData.reduce((acc, item) => {
-                if (!acc[item.day]) acc[item.day] = [];
-                acc[item.day].push(item);
+                (acc[item.day] = acc[item.day] || []).push(item);
                 return acc;
             }, {});
 
-            const orderedDays = daysOfWeek.filter(day => groupedByDay[day]);
-
-            const weekInfo = data.weeks.find(w => w.id == currentWeekOrRodizio);
-
-            orderedDays.forEach(day => {
+            daysOfWeek.filter(day => groupedByDay[day]).forEach(day => {
                 const activitiesForDay = groupedByDay[day].sort((a, b) => a.time.localeCompare(b.time));
                 const dayColumn = document.createElement('div');
                 dayColumn.className = 'flex flex-col gap-4';
                 dayColumn.id = `day-col-${day}`;
 
+                const weekInfo = data.weeks.find(w => w.id == currentWeekOrRodizio);
                 const dayHeader = document.createElement('h2');
                 dayHeader.className = 'text-xl font-bold text-center p-3 bg-[#2D2D2D] rounded-lg shadow-sm sticky top-0 z-10';
-                
                 if (weekInfo && weekInfo.start) {
                     const startDate = new Date(weekInfo.start + 'T00:00:00');
                     const dayIndex = daysOfWeek.indexOf(day);
-                    if (dayIndex !== -1) {
-                        const currentDate = new Date(startDate);
-                        currentDate.setDate(startDate.getDate() + dayIndex);
-                        const formattedDate = `${String(currentDate.getDate()).padStart(2, '0')}/${String(currentDate.getMonth() + 1).padStart(2, '0')}`;
-                        dayHeader.innerHTML = `
-                            ${day.charAt(0) + day.slice(1).toLowerCase()}
-                            <span class="block text-sm font-normal text-gray-400 mt-1">${formattedDate}</span>
-                        `;
-                    } else {
-                         dayHeader.textContent = day.charAt(0) + day.slice(1).toLowerCase();
-                    }
+                    const currentDate = new Date(startDate);
+                    currentDate.setDate(startDate.getDate() + dayIndex);
+                    const formattedDate = `${String(currentDate.getDate()).padStart(2, '0')}/${String(currentDate.getMonth() + 1).padStart(2, '0')}`;
+                    dayHeader.innerHTML = `${day.charAt(0) + day.slice(1).toLowerCase()} <span class="block text-sm font-normal text-gray-400 mt-1">${formattedDate}</span>`;
                 } else {
                     dayHeader.textContent = day.charAt(0) + day.slice(1).toLowerCase();
                 }
-
                 dayColumn.appendChild(dayHeader);
 
                 activitiesForDay.forEach((item) => {
-                    const activityId = `${currentSpecialty}-week${currentWeekOrRodizio}-day${day}-time${item.time.replace(/[\s:-]/g, '')}-${item.activity.replace(/[^a-zA-Z0-9]/g, '').substring(0, 10)}`;
-                    const isChecked = checklistData[activityId] || false;
-                    
-                    const card = document.createElement('div');
-                    card.className = `activity-card rounded-lg p-4 border-l-4 shadow-md bg-[#2D2D2D] border-[#2899F5]`;
-                     if (isChecked) card.classList.add('checked');
-
-                    const now = new Date();
-                    const currentTime = now.getHours() * 100 + now.getMinutes();
-                    const [startTimeStr, endTimeStr] = item.time.split(' - ');
-                    const startTime = parseInt(startTimeStr.replace(':', ''), 10);
-                    const endTime = parseInt(endTimeStr.replace(':', ''), 10);
-                    
-                    const today = now.toLocaleDateString('pt-BR', { weekday: 'long' }).toUpperCase();
-                    const isTodayInWeek = weekInfo && new Date() >= new Date(weekInfo.start) && new Date() <= new Date(weekInfo.end + 'T23:59:59');
-
-                    if (isTodayInWeek && day === today && currentTime >= startTime && currentTime <= endTime) {
-                        card.classList.add('current-activity');
-                    }
-
-                    const activityUpper = item.activity.toUpperCase();
-                    if (activityUpper.includes('PLANTÃO') || activityUpper.includes('PA PEDIATRIA')) {
-                        const onCallId = activityId;
-                        const totalSlots = item.slots || 2;
-                        
-                        const slots = onCallClaimData[onCallId] || new Array(totalSlots).fill(null);
-                        
-                        const currentStudentData = allData[currentSpecialty].students.find(s => s.id == currentStudent);
-                        const currentUserSlot = slots.find(slot => slot && currentStudentData && slot.id == currentStudentData.id);
-                        const hasEmptySlot = slots.some(slot => slot === null);
-
-                        let slotsHtml = '<ul class="mt-3 border-t border-gray-700 pt-3 text-sm space-y-1">';
-                        slots.forEach((slot, index) => {
-                            slotsHtml += `<li class="flex items-center gap-2 ${slot ? 'text-green-400' : 'text-gray-500'}">
-                                <span class="font-semibold">${index + 1}.</span>
-                                <span>${slot ? slot.name : 'Vaga disponível'}</span>
-                            </li>`;
-                        });
-                        slotsHtml += '</ul>';
-
-                        let buttonHtml = '';
-                        const isDisabled = currentSpecialty === 'cirurgia' && currentStudent === 'all';
-                        if (currentUserSlot) {
-                            buttonHtml = `<button data-action="leave" class="w-full mt-4 p-2 bg-yellow-600 hover:bg-yellow-700 rounded-md font-semibold transition-colors text-white text-sm">Sair do Plantão</button>`;
-                        } else if (hasEmptySlot) {
-                            buttonHtml = `<button data-action="claim" class="w-full mt-4 p-2 bg-blue-600 hover:bg-blue-700 rounded-md font-semibold transition-colors text-white text-sm ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}" ${isDisabled ? 'disabled' : ''}>Reivindicar Vaga</button>`;
-                        } else {
-                            buttonHtml = `<p class="text-center text-xs text-gray-400 mt-4">Todas as vagas preenchidas.</p>`;
-                        }
-                        
-                        card.innerHTML = `
-                            <div class="flex items-start justify-between">
-                                <div class="flex-1">
-                                    <p class="font-bold text-md activity-title">${item.activity}</p>
-                                    <p class="text-sm text-gray-400 font-medium mt-1">${item.time}</p>
-                                </div>
-                                <input type="checkbox" id="${activityId}" class="ml-4 mt-1 h-5 w-5 rounded bg-gray-700 border-gray-600 text-blue-500 focus:ring-blue-600" ${isChecked ? 'checked' : ''}>
-                            </div>
-                            ${slotsHtml}
-                            ${buttonHtml}
-                        `;
-                        
-                        const actionButton = card.querySelector('button[data-action]');
-                        if (actionButton) {
-                            actionButton.addEventListener('click', () => handleOnCallAction(onCallId, actionButton.dataset.action, totalSlots));
-                        }
-                        card.querySelector(`#${activityId}`).addEventListener('change', handleChecklistChange);
-
-                    } else { // Regular activity card
-                        let studentHtml = '';
-                        if (currentSpecialty === 'cirurgia' && item.studentId) {
-                            const involvedStudents = allData.cirurgia.students
-                                .filter(s => s.id !== 'all' && item.studentId.includes(s.id))
-                                .map(s => s.name.split(' ')[0])
-                                .join(', ');
-                                studentHtml = `<p class="mt-2 text-xs text-gray-500"><strong>Alunos:</strong> ${involvedStudents}</p>`;
-                        }
-                        
-                        const locationUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.location + ', Curitiba, Brazil')}`;
-
-                        card.innerHTML = `
-                            <div class="flex items-start justify-between">
-                                <div class="flex-1">
-                                    <p class="font-bold text-md activity-title">${item.activity}</p>
-                                    <p class="text-sm text-gray-400 font-medium mt-1">${item.time}</p>
-                                </div>
-                                <input type="checkbox" id="${activityId}" class="ml-4 mt-1 h-5 w-5 rounded bg-gray-700 border-gray-600 text-blue-500 focus:ring-blue-600" ${isChecked ? 'checked' : ''}>
-                            </div>
-                            <div class="mt-3 border-t border-gray-700 pt-3 text-sm">
-                                <p><strong>Professor:</strong> ${item.professor}</p>
-                                <p><strong>Local:</strong> <a href="${locationUrl}" target="_blank" class="text-blue-400 hover:underline">${item.location}</a></p>
-                                ${studentHtml}
-                            </div>
-                        `;
-                        card.querySelector(`#${activityId}`).addEventListener('change', handleChecklistChange);
-                    }
-                    
+                    const originalIndex = schedulesData[currentSpecialty].schedule.findIndex(originalItem => JSON.stringify(originalItem) === JSON.stringify(item));
+                    const card = createActivityCard(item, originalIndex);
                     dayColumn.appendChild(card);
                 });
-                fragment.appendChild(dayColumn);
+                scheduleGrid.appendChild(dayColumn);
             });
-
-            scheduleGrid.innerHTML = '';
-            scheduleGrid.appendChild(fragment);
         }
         
-        // --- Event Handlers ---
-
-        function handleWeekChange(e) {
-            currentWeekOrRodizio = e.target.value;
-            syncSelectors(e.target, e.target.id.includes('desktop') ? weekSelectorMain : weekSelectorDesktop);
-            updateView();
-        }
-
-        function handleStudentChange(e) {
-            currentStudent = e.target.value;
-            syncSelectors(e.target, e.target.id.includes('mobile') ? studentSelectorDesktop : studentSelectorMobile);
-            updateView();
+        function createActivityCard(item, originalIndex) {
+            const activityId = `${currentSpecialty}-week${currentWeekOrRodizio}-day${item.day}-time${item.time.replace(/[\s:-]/g, '')}-${item.activity.replace(/[^a-zA-Z0-9]/g, '').substring(0, 10)}`;
+            const isChecked = checklistData[activityId] || false;
             
-            if (e.target.id.includes('mobile')) {
-                setTimeout(() => toggleSidebar(), 300);
+            const card = document.createElement('div');
+            card.className = `activity-card relative rounded-lg p-4 border-l-4 shadow-md bg-[#2D2D2D] border-[#2899F5]`;
+            if (isChecked) card.classList.add('checked');
+
+            const now = new Date();
+            const weekInfo = schedulesData[currentSpecialty].weeks.find(w => w.id == currentWeekOrRodizio);
+            if (weekInfo && new Date() >= new Date(weekInfo.start) && new Date() <= new Date(weekInfo.end + 'T23:59:59') && item.day === now.toLocaleDateString('pt-BR', { weekday: 'long' }).toUpperCase()) {
+                const [startTimeStr, endTimeStr] = item.time.split(' - ');
+                const startTime = parseInt(startTimeStr.replace(':', ''), 10);
+                const endTime = parseInt(endTimeStr.replace(':', ''), 10);
+                if (now.getHours() * 100 + now.getMinutes() >= startTime && now.getHours() * 100 + now.getMinutes() <= endTime) {
+                    card.classList.add('current-activity');
+                }
             }
-        }
-
-        function handleChecklistChange(event) {
-            const checkbox = event.target;
-            const activityId = checkbox.id;
-            checklistData[activityId] = checkbox.checked;
             
-            checkbox.closest('.activity-card').classList.toggle('checked', checkbox.checked);
+            const activityUpper = item.activity.toUpperCase();
+            if (activityUpper.includes('PLANTÃO') || activityUpper.includes('PA PEDIATRIA')) {
+                 const onCallId = activityId;
+                const totalSlots = item.slots || 2;
+                const slots = onCallClaimData[onCallId] || new Array(totalSlots).fill(null);
+                const currentStudentData = schedulesData[currentSpecialty].students.find(s => s.id == currentStudent);
+                const currentUserSlot = slots.find(slot => slot && currentStudentData && slot.id == currentStudentData.id);
+                const hasEmptySlot = slots.some(slot => slot === null);
+                let slotsHtml = '<ul class="mt-3 border-t border-gray-700 pt-3 text-sm space-y-1">';
+                slots.forEach((slot, index) => {
+                    slotsHtml += `<li class="flex items-center gap-2 ${slot ? 'text-green-400' : 'text-gray-500'}"><span class="font-semibold">${index + 1}.</span><span>${slot ? slot.name : 'Vaga disponível'}</span></li>`;
+                });
+                slotsHtml += '</ul>';
+                let buttonHtml = '';
+                const isDisabled = currentSpecialty === 'cirurgia' && currentStudent === 'all';
+                if (currentUserSlot) {
+                    buttonHtml = `<button data-action="leave" class="w-full mt-4 p-2 bg-yellow-600 hover:bg-yellow-700 rounded-md font-semibold transition-colors text-white text-sm">Sair do Plantão</button>`;
+                } else if (hasEmptySlot) {
+                    buttonHtml = `<button data-action="claim" class="w-full mt-4 p-2 bg-blue-600 hover:bg-blue-700 rounded-md font-semibold transition-colors text-white text-sm ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}" ${isDisabled ? 'disabled' : ''}>Reivindicar Vaga</button>`;
+                }
+                card.innerHTML = `
+                    <div class="flex items-start justify-between">
+                        <div class="flex-1 pr-8"><p class="font-bold text-md activity-title">${item.activity}</p><p class="text-sm text-gray-400 font-medium mt-1">${item.time}</p></div>
+                        <input type="checkbox" id="${activityId}" class="ml-4 mt-1 h-5 w-5 rounded bg-gray-700 border-gray-600 text-blue-500 focus:ring-blue-600" ${isChecked ? 'checked' : ''}>
+                    </div>
+                    ${slotsHtml}${buttonHtml}
+                `;
+                card.querySelector('button[data-action]')?.addEventListener('click', () => handleOnCallAction(onCallId, card.querySelector('button[data-action]').dataset.action, totalSlots));
+            } else {
+                 let studentHtml = '';
+                if (currentSpecialty === 'cirurgia' && item.studentId && schedulesData.cirurgia && schedulesData.cirurgia.students) {
+                    studentHtml = `<p class="mt-2 text-xs text-gray-500"><strong>Alunos:</strong> ${schedulesData.cirurgia.students.filter(s => s.id !== 'all' && item.studentId.includes(s.id)).map(s => s.name.split(' ')[0]).join(', ')}</p>`;
+                }
+                const locationUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.location + ', Curitiba, Brazil')}`;
+                card.innerHTML = `
+                    <div class="flex items-start justify-between">
+                        <div class="flex-1 pr-8"><p class="font-bold text-md activity-title">${item.activity}</p><p class="text-sm text-gray-400 font-medium mt-1">${item.time}</p></div>
+                        <input type="checkbox" id="${activityId}" class="ml-4 mt-1 h-5 w-5 rounded bg-gray-700 border-gray-600 text-blue-500 focus:ring-blue-600" ${isChecked ? 'checked' : ''}>
+                    </div>
+                    <div class="mt-3 border-t border-gray-700 pt-3 text-sm">
+                        <p><strong>Professor:</strong> ${item.professor}</p>
+                        <p><strong>Local:</strong> <a href="${locationUrl}" target="_blank" class="text-blue-400 hover:underline">${item.location}</a></p>
+                        ${studentHtml}
+                    </div>
+                `;
+            }
+            card.querySelector(`#${activityId}`)?.addEventListener('change', handleChecklistChange);
+            
+            if (isAdmin) {
+                const editBtn = document.createElement('button');
+                editBtn.className = 'absolute top-2 right-2 p-1.5 rounded-full hover:bg-gray-600';
+                editBtn.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L14.732 3.732z"></path></svg>`;
+                editBtn.onclick = () => openEditModal(item, originalIndex);
+                card.appendChild(editBtn);
+            }
+            return card;
         }
 
-        function handleHideStudyChange(e) {
-            hideStudyTime = e.target.checked;
-            renderSchedule();
+        function switchSpecialty(newSpecialty) {
+            if (newSpecialty === currentSpecialty) return;
+            currentSpecialty = newSpecialty;
+            const data = schedulesData[currentSpecialty];
+            currentWeekOrRodizio = (data?.weeks?.[0]?.id) || '1';
+            currentStudent = (newSpecialty === 'pediatria' && data?.students) ? data.students[0].id : 'all';
+            updateActiveSpecialtyButtons();
+            populateSelectors();
+            updateView();
+            saveUserStateToFirebase();
         }
 
+        // --- Event Handlers ---
+        function handleWeekChange(e){ currentWeekOrRodizio = e.target.value; updateView(); }
+        function handleStudentChange(e){ currentStudent = e.target.value; updateView(); }
+        function handleChecklistChange(e){ checklistData[e.target.id] = e.target.checked; e.target.closest('.activity-card').classList.toggle('checked', e.target.checked); }
+        function handleHideStudyChange(e){ hideStudyTime = e.target.checked; renderSchedule(); }
+        
         async function handleOnCallAction(onCallId, action, totalSlots) {
-            if (currentSpecialty === 'cirurgia' && currentStudent === 'all') {
+             if (currentSpecialty === 'cirurgia' && currentStudent === 'all') {
                 showToast("Por favor, selecione um aluno para reivindicar uma vaga.");
                 return;
             }
-
             const updatedOnCallData = JSON.parse(JSON.stringify(onCallClaimData));
-            if (!updatedOnCallData[onCallId]) {
-                updatedOnCallData[onCallId] = new Array(totalSlots).fill(null);
-            }
+            if (!updatedOnCallData[onCallId]) updatedOnCallData[onCallId] = new Array(totalSlots).fill(null);
             const slots = updatedOnCallData[onCallId];
-            const currentStudentData = allData[currentSpecialty].students.find(s => s.id == currentStudent);
-            
-            if (!currentStudentData) {
-                showToast("Aluno não encontrado. Tente novamente.");
-                return;
-            }
-
+            const currentStudentData = schedulesData[currentSpecialty].students.find(s => s.id == currentStudent);
+            if (!currentStudentData) return showToast("Aluno não encontrado.");
             if (action === 'claim') {
                 const emptySlotIndex = slots.findIndex(slot => slot === null);
-                if (emptySlotIndex !== -1) {
-                    slots[emptySlotIndex] = { id: currentStudentData.id, name: currentStudentData.name };
-                } else {
-                    showToast("Não há vagas disponíveis.");
-                    return;
-                }
+                if (emptySlotIndex !== -1) slots[emptySlotIndex] = { id: currentStudentData.id, name: currentStudentData.name };
+                else return showToast("Não há vagas disponíveis.");
             } else if (action === 'leave') {
                 const userSlotIndex = slots.findIndex(slot => slot && slot.id == currentStudentData.id);
-                if (userSlotIndex !== -1) {
-                    slots[userSlotIndex] = null;
-                }
+                if (userSlotIndex !== -1) slots[userSlotIndex] = null;
             }
-            
-            const onCallDocRef = doc(db, 'schedules', 'onCallClaims');
-            try {
-                await setDoc(onCallDocRef, { claims: updatedOnCallData });
-            } catch (error) {
-                console.error("Error updating on-call data:", error);
-                showToast("Erro ao atualizar vaga.");
-            }
+            try { await setDoc(doc(db, 'schedules', 'onCallClaims'), { claims: updatedOnCallData }); } 
+            catch (error) { console.error("Error updating on-call data:", error); showToast("Erro ao atualizar vaga."); }
         }
 
-        function clearWeekData() {
-            showConfirm("Tem certeza que deseja limpar todas as marcações desta semana?", () => {
-                const weekPrefix = `${currentSpecialty}-week${currentWeekOrRodizio}`;
-                const keysToDelete = Object.keys(checklistData).filter(key => key.startsWith(weekPrefix));
-
-                if (keysToDelete.length === 0) {
-                    showToast("Nenhuma marcação para limpar nesta semana.");
-                    return;
-                }
-                
-                const newChecklistData = {};
-                for (const key in checklistData) {
-                    if (!key.startsWith(weekPrefix)) {
-                        newChecklistData[key] = checklistData[key];
-                    }
-                }
-                
-                checklistData = newChecklistData;
-
-                saveUserStateToFirebase();
-                renderSchedule();
-                showToast("Marcações da semana limpas!");
+        function clearWeekData(){
+            showConfirm("Tem certeza que deseja limpar as marcações desta semana?", () => {
+                 const weekPrefix = `${currentSpecialty}-week${currentWeekOrRodizio}`;
+                 Object.keys(checklistData).forEach(key => {
+                     if(key.startsWith(weekPrefix)) delete checklistData[key];
+                 });
+                 saveUserStateToFirebase();
+                 renderSchedule();
+                 showToast("Marcações da semana limpas!");
             });
         }
         
-        function handleCopyId(displayElement) {
-            displayElement.select();
-            document.execCommand('copy');
-            showToast('ID copiado para a área de transferência!');
-        }
-
-        function handleLoadId(inputElement) {
-            const newId = inputElement.value.trim();
-            if (newId && newId !== userId) {
-                showConfirm(`Carregar dados do ID ${newId}? Suas configurações atuais serão sobrescritas.`, () => {
-                    if (unsubscribeUser) unsubscribeUser();
-                    localStorage.setItem('loadedUserId', newId);
-                    resetLocalState();
-                    initializeUI(); 
-                    setupUserListener(newId);
-                });
-            }
-        }
-        
-        function syncSelectors(source, target) {
-             if(target) target.value = source.value;
-        }
-
-        function scrollToToday(smooth = false) {
-            const now = new Date();
-            const todayStr = now.toISOString().split('T')[0];
-            const data = allData[currentSpecialty];
-            if (!data || !data.weeks) return;
-            const currentWeekInfo = data.weeks.find(w => todayStr >= w.start && todayStr <= w.end);
-
-            if (currentWeekInfo) {
-                if(currentWeekOrRodizio !== currentWeekInfo.id) {
-                    currentWeekOrRodizio = currentWeekInfo.id;
-                    weekSelectorDesktop.value = currentWeekInfo.id;
-                    weekSelectorMain.value = currentWeekInfo.id;
-                    updateView();
-                }
-                
-                setTimeout(() => {
-                    const todayDay = now.toLocaleDateString('pt-BR', { weekday: 'long' }).toUpperCase();
-                    const dayCol = document.getElementById(`day-col-${todayDay}`);
-                    if (dayCol) {
-                       dayCol.scrollIntoView({ behavior: smooth ? 'smooth' : 'auto', block: 'start' });
-                    }
-                }, 100);
-            } else {
-                if(smooth) {
-                    showToast('Nenhuma atividade programada para hoje.');
-                }
-            }
-        }
-
         // --- Event Listener Setup ---
-
-        sidebarToggle.addEventListener('click', toggleSidebar);
-        sidebarClose.addEventListener('click', toggleSidebar);
-        sidebarOverlay.addEventListener('click', (e) => {
-            if (e.target === sidebarOverlay) toggleSidebar();
+        document.getElementById('clearWeekButton-desktop').addEventListener('click', clearWeekData);
+        document.getElementById('clearWeekButton-mobile').addEventListener('click', clearWeekData);
+        
+        loadUserIdModal.addEventListener('click', () => {
+             const newId = userIdInputModal.value.trim();
+             if (newId && newId !== (localStorage.getItem('loadedUserId') || userId)) {
+                localStorage.setItem('loadedUserId', newId);
+                window.location.reload();
+             }
         });
+        
+        editModalCloseBtn.addEventListener('click', () => toggleModal(editModalOverlay, false));
+        editModalCancelBtn.addEventListener('click', () => toggleModal(editModalOverlay, false));
+        editModalSaveBtn.addEventListener('click', saveActivityChanges);
+        sidebarToggle.addEventListener('click', () => toggleModal(sidebarOverlay));
+        sidebarClose.addEventListener('click', () => toggleModal(sidebarOverlay, false));
+        syncModalOpenBtn.addEventListener('click', () => toggleModal(syncModalOverlay));
+        syncModalCloseBtn.addEventListener('click', () => toggleModal(syncModalOverlay, false));
+        
+        sidebarOverlay.addEventListener('click', (e) => { if (e.target === sidebarOverlay) toggleModal(sidebarOverlay, false); });
+        syncModalOverlay.addEventListener('click', (e) => { if (e.target === syncModalOverlay) toggleModal(syncModalOverlay, false); });
+        editModalOverlay.addEventListener('click', (e) => { if (e.target === editModalOverlay) toggleModal(editModalOverlay, false); });
 
         btnCirurgia.addEventListener('click', (e) => { e.preventDefault(); switchSpecialty('cirurgia'); });
         btnPediatria.addEventListener('click', (e) => { e.preventDefault(); switchSpecialty('pediatria'); });
         btnCirurgiaMobile.addEventListener('click', () => switchSpecialty('cirurgia'));
         btnPediatriaMobile.addEventListener('click', () => switchSpecialty('pediatria'));
-
-        weekSelectorMain.addEventListener('change', handleWeekChange);
         weekSelectorDesktop.addEventListener('change', handleWeekChange);
-
-        studentSelectorMobile.addEventListener('change', handleStudentChange);
+        weekSelectorMain.addEventListener('change', handleWeekChange);
         studentSelectorDesktop.addEventListener('change', handleStudentChange);
-
-        clearWeekButtonMobile.addEventListener('click', clearWeekData);
-        clearWeekButtonDesktop.addEventListener('click', clearWeekData);
-
-        hideStudyMobile.addEventListener('change', handleHideStudyChange);
+        studentSelectorMobile.addEventListener('change', handleStudentChange);
         hideStudyDesktop.addEventListener('change', handleHideStudyChange);
-        
-        syncButtonMobile.addEventListener('click', saveUserStateToFirebase);
+        hideStudyMobile.addEventListener('change', handleHideStudyChange);
         syncButtonModal.addEventListener('click', saveUserStateToFirebase);
-        
-        syncModalOpenBtn.addEventListener('click', toggleSyncModal);
-        syncModalCloseBtn.addEventListener('click', toggleSyncModal);
-        syncModalOverlay.addEventListener('click', (e) => {
-            if(e.target === syncModalOverlay) toggleSyncModal();
-        });
-
-        todayBtn.addEventListener('click', () => scrollToToday(true));
-        
-        copyUserIdBtnMobile.addEventListener('click', () => handleCopyId(userIdDisplayMobile));
-        copyUserIdModal.addEventListener('click', () => handleCopyId(userIdDisplayModal));
-
-        loadUserIdBtnMobile.addEventListener('click', () => handleLoadId(userIdInputMobile));
-        loadUserIdModal.addEventListener('click', () => handleLoadId(userIdInputModal));
-        
-        // --- Initialization ---
-
-        setInterval(() => {
-            renderSchedule();
-        }, 60000);
+        document.getElementById('sync-button-mobile').addEventListener('click', saveUserStateToFirebase);
+        copyUserIdModal.addEventListener('click', () => { userIdDisplayModal.select(); document.execCommand('copy'); showToast('ID copiado!'); });
 
         let saveTimeout;
-        window.addEventListener('beforeunload', () => {
-           if (userId) saveUserStateToFirebase();
-        });
-
         function debouncedSave() {
             clearTimeout(saveTimeout);
             saveTimeout = setTimeout(saveUserStateToFirebase, 2000);
         }
-
         scheduleGrid.addEventListener('change', debouncedSave);
-        weekSelectorMain.addEventListener('change', debouncedSave);
-        weekSelectorDesktop.addEventListener('change', debouncedSave);
-        studentSelectorMobile.addEventListener('change', debouncedSave);
-        studentSelectorDesktop.addEventListener('change', debouncedSave);
-        hideStudyMobile.addEventListener('change', debouncedSave);
-        hideStudyDesktop.addEventListener('change', debouncedSave);
 
-        fetchData();
+        startApp();
+
     </script>
 </body>
 </html>
