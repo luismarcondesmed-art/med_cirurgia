@@ -439,6 +439,12 @@
         async function initializeAuth() {
             onAuthStateChanged(auth, async (user) => {
                 if (user) {
+                    // This is the point where we are SURE we have a user
+                    
+                    // 1. Fetch data now that we are authenticated
+                    fetchData();
+
+                    // 2. Check for admin status
                     const adminRef = doc(db, 'admins', user.uid);
                     try {
                         const adminSnap = await getDoc(adminRef);
@@ -448,6 +454,7 @@
                         isAdmin = false;
                     }
                     
+                    // 3. Set up user-specific settings listener
                     const activeUserId = localStorage.getItem('loadedUserId') || user.uid;
                     if (!userId || userId !== activeUserId) {
                         setupUserListener(activeUserId);
@@ -498,27 +505,31 @@
                     return; 
                 }
                 
-                if (!stateChanged && document.body.dataset.initialized) return;
-
-                document.body.dataset.initialized = true;
-                updateActiveSpecialtyButtons();
-                hideStudyDesktop.checked = hideStudyTime;
-                hideStudyMobile.checked = hideStudyTime;
-                if (oldSpecialty !== currentSpecialty) {
-                    populateSelectors();
+                // This flag ensures the UI doesn't re-render with defaults before Firestore data loads
+                if (!document.body.dataset.initialized || stateChanged) {
+                    document.body.dataset.initialized = true;
+                    updateActiveSpecialtyButtons();
+                    hideStudyDesktop.checked = hideStudyTime;
+                    hideStudyMobile.checked = hideStudyTime;
+                    if (oldSpecialty !== currentSpecialty) {
+                        populateSelectors();
+                    }
+                    weekSelectorDesktop.value = currentWeekOrRodizio;
+                    weekSelectorMain.value = currentWeekOrRodizio;
+                    updateView();
                 }
-                weekSelectorDesktop.value = currentWeekOrRodizio;
-                weekSelectorMain.value = currentWeekOrRodizio;
-                updateView();
             });
         }
         
         // --- Core Application Logic ---
-        function initializeUI() {
-            fetchData();
-            initializeAuth();
+        function updateActiveSpecialtyButtons() {
+            const isCirurgia = currentSpecialty === 'cirurgia';
+            btnCirurgia.classList.toggle('active', isCirurgia);
+            btnPediatria.classList.toggle('active', !isCirurgia);
+            btnCirurgiaMobile.classList.toggle('active', isCirurgia);
+            btnPediatriaMobile.classList.toggle('active', !isCirurgia);
         }
-        
+
         function switchSpecialty(newSpecialty) {
             if (newSpecialty === currentSpecialty) return;
             currentSpecialty = newSpecialty;
@@ -631,12 +642,10 @@
                         if (currentTime >= startTime && currentTime <= endTime) card.classList.add('current-activity');
                     }
 
-                    // Card content is built here to append edit button later
                     const cardContent = document.createElement('div');
                     card.appendChild(cardContent);
                     dayColumn.appendChild(card);
                     
-                    // Render specific card content
                     renderCardContent(cardContent, item, activityId, isChecked, schedulesData[currentSpecialty]?.students || []);
 
                     if (isAdmin) {
@@ -656,7 +665,6 @@
         function renderCardContent(container, item, activityId, isChecked, allStudents) {
             container.innerHTML = ''; // Clear previous content
             if (item.activity.toUpperCase().includes('PLANTÃO') || item.activity.toUpperCase().includes('PA PEDIATRIA')) {
-                // On-call card
                 const totalSlots = item.slots || 2;
                 const slots = onCallClaimData[activityId] || new Array(totalSlots).fill(null);
                 const currentStudentData = allStudents.find(s => s.id == currentStudent);
@@ -690,7 +698,6 @@
                 container.querySelector('button[data-action]')?.addEventListener('click', () => handleOnCallAction(activityId, container.querySelector('button[data-action]').dataset.action, totalSlots));
 
             } else {
-                // Regular activity card
                 let studentHtml = '';
                 if (currentSpecialty === 'cirurgia' && item.studentId) {
                     studentHtml = `<p class="mt-2 text-xs text-gray-500"><strong>Alunos:</strong> ${allStudents.filter(s => s.id !== 'all' && item.studentId.includes(s.id)).map(s => s.name.split(' ')[0]).join(', ')}</p>`;
@@ -751,9 +758,8 @@
             catch (error) { console.error("Error updating on-call data:", error); showToast("Erro ao atualizar vaga."); }
         }
 
-        // NEW: Admin Edit Functions
         function openEditModal(item, itemIndex) {
-            editModal.dataset.itemIndex = itemIndex; // Store index to know which item to save
+            editModal.dataset.itemIndex = itemIndex; 
 
             document.getElementById('edit-activity').value = item.activity || '';
             document.getElementById('edit-time').value = item.time || '';
@@ -785,10 +791,7 @@
 
         async function saveActivityChanges() {
             const itemIndex = parseInt(editModal.dataset.itemIndex);
-            if (isNaN(itemIndex)) {
-                showToast("Erro: Atividade não encontrada.");
-                return;
-            }
+            if (isNaN(itemIndex)) { showToast("Erro: Atividade não encontrada."); return; }
 
             const scheduleCopy = [...schedulesData[currentSpecialty].schedule];
             const updatedItem = { ...scheduleCopy[itemIndex] };
@@ -799,8 +802,7 @@
             updatedItem.location = document.getElementById('edit-location').value;
 
             if (currentSpecialty === 'cirurgia') {
-                const selectedStudentIds = Array.from(document.querySelectorAll('#edit-student-ids-checkboxes input:checked')).map(cb => parseInt(cb.value));
-                updatedItem.studentId = selectedStudentIds;
+                updatedItem.studentId = Array.from(document.querySelectorAll('#edit-student-ids-checkboxes input:checked')).map(cb => parseInt(cb.value));
             }
             
             scheduleCopy[itemIndex] = updatedItem;
@@ -819,7 +821,6 @@
 
         function syncSelectors(source, target) { if(target) target.value = source.value; }
         // --- Event Listener Setup ---
-        document.addEventListener('DOMContentLoaded', initializeUI);
         btnCirurgia.addEventListener('click', (e) => { e.preventDefault(); switchSpecialty('cirurgia'); });
         btnPediatria.addEventListener('click', (e) => { e.preventDefault(); switchSpecialty('pediatria'); });
         btnCirurgiaMobile.addEventListener('click', () => switchSpecialty('cirurgia'));
@@ -873,11 +874,14 @@
         hideStudyMobile.addEventListener('change', debouncedSave);
         hideStudyDesktop.addEventListener('change', debouncedSave);
 
-        // NEW: Edit Modal Listeners
+        // Edit Modal Listeners
         editModalCloseBtn.addEventListener('click', toggleEditModal);
         editModalCancelBtn.addEventListener('click', toggleEditModal);
         editModalSaveBtn.addEventListener('click', saveActivityChanges);
         editModalOverlay.addEventListener('click', e => { if(e.target === editModalOverlay) toggleEditModal(); });
+        
+        // --- Initialization ---
+        initializeAuth(); // Start the authentication process first
     </script>
 </body>
 </html>
