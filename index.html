@@ -427,15 +427,31 @@
         import { getFirestore, doc, onSnapshot, setDoc, addDoc, collection, serverTimestamp, query, getDoc, getDocs, updateDoc, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // --- Secure Configuration ---
-        // These variables are expected to be injected by the secure environment.
-        // DO NOT HARDCODE VALUES HERE.
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
-        const ADMIN_UID = "r5NLb0GqtcRuTmeVt3g3gRoGirl2"; // For demonstration. In a real app, this should be managed server-side.
+        const ADMIN_UID = "r5NLb0GqtcRuTmeVt3g3gRoGirl2"; // For demonstration.
 
+        // Fallback config to ensure app functionality if environment variable is not injected.
+        const fallbackFirebaseConfig = {
+            apiKey: "AIzaSyDyfgOvzTYd6si3g-mPQyInbfiFG1hoVAU",
+            authDomain: "cronograma-medufpr.firebaseapp.com",
+            projectId: "cronograma-medufpr",
+            storageBucket: "cronograma-medufpr.appspot.com",
+            messagingSenderId: "68632769127",
+            appId: "1:68632769127:web:1144e190a83a3581be1ac2"
+        };
+        
+        // Use the injected config if available, otherwise use the fallback.
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : fallbackFirebaseConfig;
+        
         // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
+        let app, auth, db;
+        try {
+            app = initializeApp(firebaseConfig);
+            auth = getAuth(app);
+            db = getFirestore(app);
+        } catch (e) {
+            console.error("Firebase initialization failed:", e);
+            document.getElementById('main-loader').innerHTML = '<p class="text-red-500">Falha na inicialização do Firebase. Verifique a configuração.</p>';
+        }
         
         // --- Centralized Application State ---
         const state = {
@@ -584,8 +600,6 @@
 
         // --- Gemini API Integration ---
         async function callGemini(prompt) {
-            // IMPORTANT: The API key is handled by the execution environment.
-            // Do not hardcode it here. An empty string allows the environment to inject it.
             const apiKey = ""; 
             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
 
@@ -616,7 +630,7 @@
                 console.error("Gemini API call error:", error);
                 return "Ocorreu um erro ao contatar o assistente de estudos. Tente novamente.";
             }
-        }
+        } 
 
         // --- Data Handling and Firebase ---
 
@@ -628,44 +642,76 @@
                 if (cirurgiaDoc.exists() && pediatriaDoc.exists()) {
                     state.allData.cirurgia = cirurgiaDoc.data();
                     state.allData.pediatria = pediatriaDoc.data();
+                    console.log("Cronograma carregado com sucesso do Firebase.");
                 } else {
-                    console.error("Schedule data not found in Firestore. Please ensure the 'schedules' collection with 'cirurgia' and 'pediatria' documents exists.");
-                     DOM.mainContent.innerHTML = `<p class="text-red-500 text-center">Dados de cronograma não encontrados. Contacte o administrador.</p>`;
+                    // If docs don't exist in Firebase, trigger the catch block to use local files.
+                    throw new Error("Schedule documents not found in Firebase.");
                 }
                 
                 initializeUI();
-                await initializeAuth();
                 setupSharedListeners();
 
             } catch (error) {
-                console.error("Error during initial data fetch:", error);
-                DOM.mainContent.innerHTML = `<p class="text-red-500 text-center">Falha ao carregar o cronograma. Verifique sua conexão e as permissões do Firestore.</p>`;
+                console.warn("Falha ao carregar do Firebase. Tentando carregar cronograma local...", error);
+                showToast("Falha na conexão. Carregando dados locais.");
+
+                try {
+                    const [cirurgiaRes, pediatriaRes] = await Promise.all([
+                        fetch('cirurgia_schedule.json'),
+                        fetch('pediatria_schedule.json')
+                    ]);
+
+                    if (!cirurgiaRes.ok || !pediatriaRes.ok) {
+                        throw new Error('Não foi possível encontrar os arquivos de cronograma local (cirurgia_schedule.json or pediatria_schedule.json).');
+                    }
+
+                    state.allData.cirurgia = await cirurgiaRes.json();
+                    state.allData.pediatria = await pediatriaRes.json();
+                    
+                    console.log("Cronograma carregado com sucesso dos arquivos locais.");
+                    initializeUI();
+                    // Don't setup shared listeners for local data as they require Firebase.
+                } catch (fallbackError) {
+                    console.error("Error loading local fallback data:", fallbackError);
+                    DOM.mainContent.innerHTML = `<p class="text-red-500 text-center">Falha ao carregar dados do Firebase e dos arquivos locais. Verifique a configuração e a presença dos arquivos JSON.</p>`;
+                }
             } finally {
                 DOM.mainLoader.style.display = 'none';
             }
         }
 
-        async function initializeAuth() {
-            const auth = getAuth();
-            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                await signInWithCustomToken(auth, __initial_auth_token);
-            } else {
-                await signInAnonymously(auth);
-            }
 
+        async function initializeAuth() {
+            if (!auth) return; // Stop if Firebase didn't initialize
             onAuthStateChanged(auth, (user) => {
                 if (user && !state.authReady) {
+                    state.authReady = true;
                     const activeUserId = localStorage.getItem('loadedUserId') || user.uid;
+                    
                     setupUserListener(activeUserId);
                     updateAdminUI(activeUserId);
-                    state.authReady = true;
+                    
+                    // Fetch data after authentication is confirmed.
+                    fetchData(); 
                 }
             });
+
+            try {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else if (!auth.currentUser) {
+                    await signInAnonymously(auth);
+                }
+            } catch (error) {
+                console.error("Authentication failed:", error);
+                // If auth fails, try loading local data immediately
+                fetchData();
+            }
         }
 
 
         async function saveUserStateToFirebase() {
-            if (!state.userId) return;
+            if (!state.userId || !db) return;
             const userDocRef = doc(db, 'users', state.userId);
             try {
                 await setDoc(userDocRef, {
@@ -683,6 +729,7 @@
         }
 
         function setupUserListener(uid) {
+            if (!db) return;
             state.userId = uid;
             DOM.userIdDisplayMobile.value = uid;
             DOM.userIdDisplayModal.value = uid;
@@ -744,6 +791,7 @@
         }
         
         function setupSharedListeners() {
+            if (!db) return;
             const onCallDocRef = doc(db, 'schedules', 'onCallClaims');
             if (state.unsubscribeOnCall) state.unsubscribeOnCall();
             state.unsubscribeOnCall = onSnapshot(onCallDocRef, (docSnap) => {
@@ -1436,6 +1484,10 @@
                 const todayDay = now.toLocaleDateString('pt-BR', { weekday: 'long' }).toUpperCase();
                 
                 const data = state.allData[state.currentSpecialty];
+                if (!data || !data.weeks) {
+                    showToast('Dados do cronograma ainda não foram carregados.');
+                    return;
+                }
                 const currentWeekInfo = data.weeks.find(w => todayStr >= w.start && todayStr <= w.end);
 
                 if (currentWeekInfo) {
@@ -1496,8 +1548,10 @@
         // --- Initialization ---
         document.addEventListener('DOMContentLoaded', () => {
             setupEventListeners();
-            fetchData();
+            // Start the authentication flow.
+            initializeAuth();
         });
     </script>
 </body>
 </html>
+
