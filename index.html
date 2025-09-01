@@ -2,7 +2,7 @@
 <html lang="pt-BR" class="dark">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale-1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cronograma Interativo de Estágios</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📖</text></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -164,6 +164,13 @@
             </aside>
 
             <main id="main-content" class="col-span-12 lg:col-span-9 overflow-y-auto">
+                 <!-- Loading Indicator -->
+                <div id="loading-indicator" class="hidden justify-center items-center h-64">
+                    <svg class="animate-spin h-10 w-10 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                </div>
                 <div id="week-selector-container-main" class="p-4 bg-[#2B2B2B] border border-gray-700 rounded-lg mb-6 lg:hidden">
                     <label id="week-label-main" for="week-selector-main" class="block text-sm font-medium text-center mb-2">Selecione</label>
                     <select id="week-selector-main" class="w-full p-3 bg-[#2D2D2D] border border-gray-600 rounded-md shadow-sm focus:ring-[#2899F5] focus:border-[#2899F5]"></select>
@@ -291,6 +298,7 @@
         // --- DOM Element References ---
         const scheduleGrid = document.getElementById('schedule-grid');
         const mainContent = document.getElementById('main-content');
+        const loadingIndicator = document.getElementById('loading-indicator');
         
         const weekSelectorMain = document.getElementById('week-selector-main');
         const scheduleSubtitleMain = document.getElementById('schedule-subtitle-main');
@@ -391,6 +399,10 @@
         // --- Data Handling and Firebase ---
 
         async function fetchData() {
+            loadingIndicator.classList.remove('hidden');
+            loadingIndicator.classList.add('flex');
+            scheduleGrid.classList.add('hidden');
+
             const mockSchedule = {
                 cirurgia: {
                     weeks: [
@@ -436,8 +448,6 @@
                 
                 initializeUI();
                 initializeAuth();
-                // FIX: setupSharedOnCallListener is now called inside onAuthStateChanged
-                // setupSharedOnCallListener(); 
 
             } catch (error) {
                 console.error("Error during initial data fetch:", error);
@@ -445,6 +455,10 @@
                 allData.pediatria = mockSchedule.pediatria;
                 initializeUI();
                 initializeAuth();
+            } finally {
+                loadingIndicator.classList.add('hidden');
+                loadingIndicator.classList.remove('flex');
+                scheduleGrid.classList.remove('hidden');
             }
         }
         
@@ -455,10 +469,8 @@
                     if (!userId || userId !== activeUserId) {
                         setupUserListener(activeUserId);
                     }
-                    // FIX: This is the correct place to initialize listeners that require auth
                     setupSharedOnCallListener();
                 } else {
-                    // User signed out, clean up listeners if they exist
                     if(unsubscribeShared) unsubscribeShared();
                     if(unsubscribeUser) unsubscribeUser();
                 }
@@ -478,7 +490,6 @@
             if (!userId) return;
             const userDocRef = doc(db, 'users', userId);
             try {
-                // Only save user-specific data here
                 await setDoc(userDocRef, {
                     checklistData,
                     currentStudent,
@@ -507,27 +518,22 @@
 
                 if (docSnap.exists()) {
                     const data = docSnap.data();
-                    // Only update user-specific state from this listener
-                    if (JSON.stringify(checklistData) !== JSON.stringify(data.checklistData || {})) {
-                        checklistData = data.checklistData || {};
-                        stateChanged = true;
+                    if (JSON.stringify(checklistData) !== JSON.stringify(data.checklistData || {})) { checklistData = data.checklistData || {}; stateChanged = true; }
+                    if (currentStudent !== (data.currentStudent || 'all')) { currentStudent = data.currentStudent || 'all'; stateChanged = true; }
+                    if (currentSpecialty !== (data.currentSpecialty || 'cirurgia')) { currentSpecialty = data.currentSpecialty || 'cirurgia'; stateChanged = true; }
+                    if (hideStudyTime !== (data.hideStudyTime || false)) { hideStudyTime = data.hideStudyTime || false; stateChanged = true; }
+                    if (currentWeekOrRodizio !== (data.currentWeekOrRodizio || '1')) { currentWeekOrRodizio = data.currentWeekOrRodizio || '1'; stateChanged = true; }
+                
+                    // BUG FIX: Validate student selection after loading state
+                    if (currentSpecialty === 'pediatria') {
+                        const pedStudents = allData.pediatria ? allData.pediatria.students : [];
+                        const studentExists = pedStudents.some(s => s.id === currentStudent);
+                        if (!studentExists && pedStudents.length > 0) {
+                            currentStudent = pedStudents[0].id;
+                            stateChanged = true;
+                        }
                     }
-                    if (currentStudent !== (data.currentStudent || 'all')) {
-                         currentStudent = data.currentStudent || 'all';
-                         stateChanged = true;
-                    }
-                    if (currentSpecialty !== (data.currentSpecialty || 'cirurgia')) {
-                        currentSpecialty = data.currentSpecialty || 'cirurgia';
-                        stateChanged = true;
-                    }
-                     if (hideStudyTime !== (data.hideStudyTime || false)) {
-                        hideStudyTime = data.hideStudyTime || false;
-                        stateChanged = true;
-                    }
-                    if (currentWeekOrRodizio !== (data.currentWeekOrRodizio || '1')) {
-                        currentWeekOrRodizio = data.currentWeekOrRodizio || '1';
-                        stateChanged = true;
-                    }
+
                 } else {
                     saveUserStateToFirebase(); 
                     return; 
@@ -538,7 +544,6 @@
                 document.body.dataset.initialized = true;
 
                 updateActiveSpecialtyButtons();
-
                 hideStudyDesktop.checked = hideStudyTime;
                 hideStudyMobile.checked = hideStudyTime;
 
@@ -551,13 +556,6 @@
                 weekSelectorMain.value = currentWeekOrRodizio;
                 
                 updateView();
-
-                // DESIGN IMPROVEMENT: Scroll to today on first load
-                if (!document.body.dataset.scrolledToToday) {
-                    scrollToToday();
-                    document.body.dataset.scrolledToToday = true;
-                }
-
             }, (error) => {
                 console.error("Error in user snapshot listener:", error);
             });
@@ -571,7 +569,6 @@
                 const newData = docSnap.exists() ? docSnap.data().claims || {} : {};
                 if (JSON.stringify(onCallClaimData) !== JSON.stringify(newData)) {
                     onCallClaimData = newData;
-                    // Only re-render if the data actually changed to prevent loops
                     renderSchedule();
                 }
             }, (error) => {
@@ -592,7 +589,6 @@
             currentSpecialty = 'cirurgia';
             currentStudent = 'all';
             hideStudyTime = false;
-            // Do not reset onCallClaimData as it's shared
             const data = allData[currentSpecialty];
             currentWeekOrRodizio = (data?.weeks?.[0]?.id) || '1';
         }
@@ -611,9 +607,11 @@
             const data = allData[currentSpecialty];
             currentWeekOrRodizio = (data?.weeks?.[0]?.id) || '1';
             
-            // Reset student based on new specialty to avoid invalid state
+            // BUG FIX: Ensure a valid student is selected when switching to Pediatria
             if (newSpecialty === 'pediatria') {
-                currentStudent = data?.students?.[0]?.id || 'p1';
+                if (data && data.students && data.students.length > 0) {
+                    currentStudent = data.students[0].id;
+                }
             } else {
                 currentStudent = 'all';
             }
@@ -661,7 +659,6 @@
         function updateUILayout() {
             const isCirurgia = currentSpecialty === 'cirurgia';
             
-            // BUG FIX: The student selector should always be visible
             studentContainerDesktop.style.display = 'block';
             studentContainerMobile.style.display = 'block';
             
@@ -692,7 +689,10 @@
 
         function renderSchedule() {
             const data = allData[currentSpecialty];
-            if (!data) return;
+            if (!data) {
+                scheduleGrid.innerHTML = ''; // Clear grid if data is not available
+                return;
+            }
             let weekData = data.schedule.filter(item => item.week == currentWeekOrRodizio);
 
             if (currentSpecialty === 'cirurgia') {
@@ -747,19 +747,8 @@
                     const isChecked = checklistData[activityId] || false;
                     
                     const card = document.createElement('div');
-                    card.className = `activity-card rounded-lg p-4 border-l-4 shadow-md bg-[#2D2D2D]`;
+                    card.className = `activity-card rounded-lg p-4 border-l-4 shadow-md bg-[#2D2D2D] border-[#2899F5]`;
                      if (isChecked) card.classList.add('checked');
-                    
-                    // DESIGN IMPROVEMENT: Add border colors based on activity type
-                    const activityUpper = item.activity.toUpperCase();
-                    if (activityUpper.includes('PLANTÃO') || activityUpper.includes('PA PEDIATRIA')) {
-                        card.classList.add('border-red-500');
-                    } else if (activityUpper.includes('HORÁRIO ESTUDO')) {
-                        card.classList.add('border-amber-500');
-                    } else {
-                        card.classList.add('border-blue-500');
-                    }
-
 
                     const now = new Date();
                     const currentTime = now.getHours() * 100 + now.getMinutes();
@@ -774,12 +763,11 @@
                         card.classList.add('current-activity');
                     }
 
-                    // Broaden the check for on-call activities
+                    const activityUpper = item.activity.toUpperCase();
                     if (activityUpper.includes('PLANTÃO') || activityUpper.includes('PA PEDIATRIA')) {
                         const onCallId = activityId;
                         const totalSlots = item.slots || 2;
                         
-                        // Use the shared state
                         const slots = onCallClaimData[onCallId] || new Array(totalSlots).fill(null);
                         
                         const currentStudentData = allData[currentSpecialty].students.find(s => s.id == currentStudent);
@@ -898,7 +886,6 @@
                 return;
             }
 
-            // Create a deep copy to avoid modifying the global state directly before saving
             const updatedOnCallData = JSON.parse(JSON.stringify(onCallClaimData));
             if (!updatedOnCallData[onCallId]) {
                 updatedOnCallData[onCallId] = new Array(totalSlots).fill(null);
@@ -926,11 +913,9 @@
                 }
             }
             
-            // Save the entire updated object to Firestore
             const onCallDocRef = doc(db, 'schedules', 'onCallClaims');
             try {
                 await setDoc(onCallDocRef, { claims: updatedOnCallData });
-                // The listener will automatically update the UI
             } catch (error) {
                 console.error("Error updating on-call data:", error);
                 showToast("Erro ao atualizar vaga.");
@@ -989,10 +974,10 @@
             const now = new Date();
             const todayStr = now.toISOString().split('T')[0];
             const data = allData[currentSpecialty];
+            if (!data || !data.weeks) return;
             const currentWeekInfo = data.weeks.find(w => todayStr >= w.start && todayStr <= w.end);
 
             if (currentWeekInfo) {
-                // If we are not on the correct week, switch to it
                 if(currentWeekOrRodizio !== currentWeekInfo.id) {
                     currentWeekOrRodizio = currentWeekInfo.id;
                     weekSelectorDesktop.value = currentWeekInfo.id;
@@ -1000,7 +985,6 @@
                     updateView();
                 }
                 
-                // Use a timeout to ensure the DOM has been updated after a potential view change
                 setTimeout(() => {
                     const todayDay = now.toLocaleDateString('pt-BR', { weekday: 'long' }).toUpperCase();
                     const dayCol = document.getElementById(`day-col-${todayDay}`);
@@ -1009,7 +993,7 @@
                     }
                 }, 100);
             } else {
-                if(smooth) { // Only show toast if the action was user-initiated
+                if(smooth) {
                     showToast('Nenhuma atividade programada para hoje.');
                 }
             }
