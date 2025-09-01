@@ -22,6 +22,7 @@
             transform: translateY(-4px);
             box-shadow: 0 4px 20px rgba(0,0,0,0.2);
         }
+        /* Style for completed activities */
         .activity-card.checked {
             opacity: 0.6;
             background-color: #3a3a3a;
@@ -30,23 +31,39 @@
             text-decoration: line-through;
             color: #888;
         }
+        /* Style for the current, ongoing activity */
         .activity-card.current-activity {
             border-color: #34D399; /* Green-400 */
             box-shadow: 0 0 15px rgba(52, 211, 153, 0.3);
         }
+        /* NEW: Specific border colors for different activity types for better visual hierarchy */
+        .activity-card.on-call { border-color: #EF4444; } /* red-500 */
+        .activity-card.study { border-color: #F59E0B; } /* amber-500 */
+        .activity-card.regular { border-color: #3B82F6; } /* blue-500 */
+
         .activity-title {
             word-wrap: break-word;
             overflow-wrap: break-word;
         }
-        select {
+        
+        /* NEW: Custom styling for select dropdowns for a consistent look */
+        .custom-select-wrapper {
+            position: relative;
+        }
+        .custom-select-wrapper select {
             -webkit-appearance: none;
             -moz-appearance: none;
             appearance: none;
-            background-repeat: no-repeat;
-            background-position: right 1rem center;
-            background-size: .65em auto;
-            background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23F3F3F3%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E');
+            padding-right: 2.5rem; /* Make space for the custom arrow */
         }
+        .custom-select-wrapper .custom-arrow {
+            position: absolute;
+            right: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            pointer-events: none; /* Allows clicks to go through to the select */
+        }
+
         #schedule-grid {
             display: grid;
             gap: 1rem;
@@ -145,13 +162,23 @@
             <aside id="sidebar-desktop" class="hidden lg:flex lg:col-span-3 flex-col gap-8 overflow-y-auto">
                 <div id="week-selector-container-desktop" class="p-6 bg-[#2B2B2B] rounded-lg shadow-lg flex-col gap-2">
                     <label id="week-label-desktop" for="week-selector-desktop" class="block text-sm font-medium text-center mb-2">Selecione a Semana</label>
-                    <select id="week-selector-desktop" class="w-full p-3 bg-[#2D2D2D] border border-gray-600 rounded-md shadow-sm focus:ring-[#2899F5] focus:border-[#2899F5]"></select>
+                    <div class="custom-select-wrapper">
+                        <select id="week-selector-desktop" class="w-full p-3 bg-[#2D2D2D] border border-gray-600 rounded-md shadow-sm focus:ring-[#2899F5] focus:border-[#2899F5]"></select>
+                        <div class="custom-arrow">
+                             <svg class="w-5 h-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" /></svg>
+                        </div>
+                    </div>
                     <p id="schedule-subtitle-desktop" class="text-sm text-gray-400 mt-2 text-center"></p>
                 </div>
                 <div id="student-selector-container-desktop" class="bg-[#2B2B2B] p-6 rounded-lg shadow-lg text-center">
                     <h3 class="text-lg font-semibold mb-4">Selecione o Aluno</h3>
                     <img id="student-image-desktop" src="https://i.imgur.com/5AW2oEL.png" alt="Foto do Grupo" class="w-full h-auto mx-auto rounded-lg object-cover border-4 border-gray-600 mb-4">
-                    <select id="student-selector-desktop" class="w-full p-3 bg-[#2D2D2D] border border-gray-600 rounded-md shadow-sm focus:ring-[#2899F5] focus:border-[#2899F5]"></select>
+                    <div class="custom-select-wrapper">
+                        <select id="student-selector-desktop" class="w-full p-3 bg-[#2D2D2D] border border-gray-600 rounded-md shadow-sm focus:ring-[#2899F5] focus:border-[#2899F5]"></select>
+                        <div class="custom-arrow">
+                             <svg class="w-5 h-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" /></svg>
+                        </div>
+                    </div>
                 </div>
                  <div class="bg-[#2B2B2B] p-6 rounded-lg shadow-lg text-center">
                     <h3 class="text-lg font-semibold mb-4">Opções</h3>
@@ -166,7 +193,12 @@
             <main id="main-content" class="col-span-12 lg:col-span-9 overflow-y-auto">
                 <div id="week-selector-container-main" class="p-4 bg-[#2B2B2B] border border-gray-700 rounded-lg mb-6 lg:hidden">
                     <label id="week-label-main" for="week-selector-main" class="block text-sm font-medium text-center mb-2">Selecione</label>
-                    <select id="week-selector-main" class="w-full p-3 bg-[#2D2D2D] border border-gray-600 rounded-md shadow-sm focus:ring-[#2899F5] focus:border-[#2899F5]"></select>
+                    <div class="custom-select-wrapper">
+                        <select id="week-selector-main" class="w-full p-3 bg-[#2D2D2D] border border-gray-600 rounded-md shadow-sm focus:ring-[#2899F5] focus:border-[#2899F5]"></select>
+                        <div class="custom-arrow">
+                            <svg class="w-5 h-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" /></svg>
+                        </div>
+                    </div>
                     <p id="schedule-subtitle-main" class="text-sm text-gray-400 mt-2 text-center"></p>
                 </div>
                 <div id="schedule-grid" class="gap-4"></div>
@@ -189,29 +221,27 @@
             <div id="student-selector-container-mobile" class="bg-[#2B2B2B] rounded-lg text-center">
                 <h3 class="text-lg font-semibold mb-4">Selecione o Aluno</h3>
                 <img id="student-image-mobile" src="https://i.imgur.com/5AW2oEL.png" alt="Foto do Grupo" class="w-full h-auto mx-auto rounded-lg object-cover border-4 border-gray-600 mb-4">
-                <select id="student-selector-mobile" class="w-full p-3 bg-[#2D2D2D] border border-gray-600 rounded-md shadow-sm focus:ring-[#2899F5] focus:border-[#2899F5]"></select>
+                <div class="custom-select-wrapper">
+                    <select id="student-selector-mobile" class="w-full p-3 bg-[#2D2D2D] border border-gray-600 rounded-md shadow-sm focus:ring-[#2899F5] focus:border-[#2899F5]"></select>
+                    <div class="custom-arrow">
+                        <svg class="w-5 h-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" /></svg>
+                    </div>
+                </div>
             </div>
-             <div class="bg-[#2B2B2B] p-6 rounded-lg shadow-lg text-center">
-                <h3 class="text-lg font-semibold mb-4">Sincronização</h3>
-                <button id="sync-button-mobile" class="w-full p-2 bg-blue-600 hover:bg-blue-700 rounded-md font-semibold transition-colors text-white text-sm mb-4">Sincronizar Dados Pessoais</button>
-                <p class="text-xs text-gray-400 mb-2">Seu ID de Usuário:</p>
-                <input id="userIdDisplay-mobile" type="text" readonly class="w-full p-2 bg-[#1B1B1B] text-center text-xs rounded-md mb-2 truncate">
-                <button id="copyUserId-mobile" class="w-full p-2 bg-gray-600 hover:bg-gray-700 rounded-md font-semibold transition-colors text-white text-sm mb-4">Copiar ID</button>
-                <input id="userIdInput-mobile" type="text" placeholder="Cole um ID para carregar" class="w-full p-2 bg-[#1B1B1B] text-center text-xs rounded-md mb-2">
-                <button id="loadUserId-mobile" class="w-full p-2 bg-green-600 hover:bg-green-700 rounded-md font-semibold transition-colors text-white text-sm">Carregar ID</button>
-            </div>
+            <!-- IMPROVEMENT: Sync section removed from here for a cleaner sidebar. A button now opens the modal. -->
              <div class="bg-[#2B2B2B] rounded-lg text-center">
-                <h3 class="text-lg font-semibold mb-4">Opções</h3>
-                <div class="flex items-center justify-center gap-2 text-sm">
+                <h3 class="text-lg font-semibold mb-4">Opções e Sincronização</h3>
+                <div class="flex items-center justify-center gap-2 text-sm mb-4">
                     <input type="checkbox" id="hide-study-mobile" class="h-4 w-4 rounded bg-gray-700 border-gray-600 text-blue-500 focus:ring-blue-600">
                     <label for="hide-study-mobile">Ocultar horários de estudo</label>
                 </div>
-                <button id="clearWeekButton-mobile" class="w-full mt-4 p-2 bg-red-600 hover:bg-red-700 rounded-md font-semibold transition-colors text-white text-sm">Limpar marcações</button>
+                 <button id="sync-button-mobile" class="w-full p-2 bg-blue-600 hover:bg-blue-700 rounded-md font-semibold transition-colors text-white text-sm mb-2">Sincronizar Dados</button>
+                <button id="clearWeekButton-mobile" class="w-full p-2 bg-red-600 hover:bg-red-700 rounded-md font-semibold transition-colors text-white text-sm">Limpar marcações</button>
             </div>
         </aside>
     </div>
     
-    <!-- Sync Modal -->
+    <!-- Sync Modal (Used by both Desktop and Mobile now) -->
     <div id="sync-modal-overlay" class="fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center p-4">
         <div id="sync-modal" class="relative w-full max-w-sm bg-[#2B2B2B] rounded-2xl shadow-2xl p-6">
             <button id="sync-modal-close-btn" class="absolute top-4 right-4 p-2 rounded-full hover:bg-gray-700">
@@ -219,10 +249,10 @@
                     <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                 </svg>
             </button>
-            <div class="bg-[#2B2B2B] p-6 rounded-lg shadow-lg text-center">
+            <div class="text-center">
                 <h3 class="text-lg font-semibold mb-4">Sincronização</h3>
-                <button id="sync-button-modal" class="w-full p-2 bg-blue-600 hover:bg-blue-700 rounded-md font-semibold transition-colors text-white text-sm mb-4">Sincronizar Dados Pessoais</button>
-                <p class="text-xs text-gray-400 mb-2">Seu ID de Usuário:</p>
+                 <button id="sync-button-modal" class="w-full p-2 bg-blue-600 hover:bg-blue-700 rounded-md font-semibold transition-colors text-white text-sm mb-4">Salvar Configurações na Nuvem</button>
+                <p class="text-xs text-gray-400 mb-2">Seu ID de Usuário (compartilhe para sincronizar):</p>
                 <input id="userIdDisplay-modal" type="text" readonly class="w-full p-2 bg-[#1B1B1B] text-center text-xs rounded-md mb-2 truncate">
                 <button id="copyUserId-modal" class="w-full p-2 bg-gray-600 hover:bg-gray-700 rounded-md font-semibold transition-colors text-white text-sm mb-4">Copiar ID</button>
                 <input id="userIdInput-modal" type="text" placeholder="Cole um ID para carregar" class="w-full p-2 bg-[#1B1B1B] text-center text-xs rounded-md mb-2">
@@ -326,11 +356,6 @@
         const hideStudyMobile = document.getElementById('hide-study-mobile');
         const hideStudyDesktop = document.getElementById('hide-study-desktop');
         
-        const userIdDisplayMobile = document.getElementById('userIdDisplay-mobile');
-        const copyUserIdBtnMobile = document.getElementById('copyUserId-mobile');
-        const userIdInputMobile = document.getElementById('userIdInput-mobile');
-        const loadUserIdBtnMobile = document.getElementById('loadUserId-mobile');
-
         const syncModalOverlay = document.getElementById('sync-modal-overlay');
         const syncModalOpenBtn = document.getElementById('sync-modal-open-btn');
         const syncModalCloseBtn = document.getElementById('sync-modal-close-btn');
@@ -405,6 +430,7 @@
                     schedule: [
                         { week: '1', day: 'SEGUNDA', time: '08:00 - 12:00', activity: 'Ambulatório Mock', professor: 'Dr. Exemplo', location: 'Hospital de Testes', studentId: [1] },
                         { week: '1', day: 'TERÇA', time: '13:00 - 17:00', activity: 'Centro Cirúrgico Mock', professor: 'Dra. Simulada', location: 'Hospital de Testes', studentId: [2] },
+                        { week: '1', day: 'QUARTA', time: '09:00 - 11:00', activity: 'HORÁRIO ESTUDO', professor: 'N/A', location: 'Casa', studentId: [1,2] },
                         { week: '2', day: 'QUARTA', time: '09:00 - 11:00', activity: 'PA PLANTÃO', professor: 'Dr. Exemplo', location: 'Sala de Conferências', studentId: [1, 2], slots: 2 }
                     ]
                 },
@@ -489,7 +515,6 @@
 
         function setupUserListener(uid) {
             userId = uid;
-            userIdDisplayMobile.value = uid;
             userIdDisplayModal.value = uid;
             const userDocRef = doc(db, 'users', userId);
 
@@ -648,7 +673,6 @@
         function updateUILayout() {
             const isCirurgia = currentSpecialty === 'cirurgia';
             
-            // BUG FIX: The student selector should always be visible
             studentContainerDesktop.style.display = 'block';
             studentContainerMobile.style.display = 'block';
             
@@ -686,7 +710,7 @@
                 weekData = weekData.filter(item => currentStudent === 'all' || (item.studentId && item.studentId.includes(parseInt(currentStudent))));
             }
             
-            let filteredData = hideStudyTime ? weekData.filter(item => !item.activity.toLowerCase().includes('horário estudo')) : weekData;
+            let filteredData = hideStudyTime ? weekData.filter(item => !item.activity.toUpperCase().includes('HORÁRIO ESTUDO')) : weekData;
 
             const fragment = document.createDocumentFragment();
 
@@ -734,8 +758,20 @@
                     const isChecked = checklistData[activityId] || false;
                     
                     const card = document.createElement('div');
-                    card.className = `activity-card rounded-lg p-4 border-l-4 shadow-md bg-[#2D2D2D] border-[#2899F5]`;
+                    // IMPROVEMENT: Base classes without border color, which will be added dynamically
+                    card.className = `activity-card rounded-lg p-4 border-l-4 shadow-md bg-[#2D2D2D]`;
                      if (isChecked) card.classList.add('checked');
+                     
+                    // IMPROVEMENT: Add class based on activity type for visual hierarchy
+                    const activityUpper = item.activity.toUpperCase();
+                    if (activityUpper.includes('PLANTÃO') || activityUpper.includes('PA PEDIATRIA')) {
+                        card.classList.add('on-call');
+                    } else if (activityUpper.includes('HORÁRIO ESTUDO')) {
+                        card.classList.add('study');
+                    } else {
+                        card.classList.add('regular');
+                    }
+
 
                     const now = new Date();
                     const currentTime = now.getHours() * 100 + now.getMinutes();
@@ -750,13 +786,10 @@
                         card.classList.add('current-activity');
                     }
 
-                    // BUG FIX: Broaden the check for on-call activities
-                    const activityUpper = item.activity.toUpperCase();
                     if (activityUpper.includes('PLANTÃO') || activityUpper.includes('PA PEDIATRIA')) {
                         const onCallId = activityId;
                         const totalSlots = item.slots || 2;
                         
-                        // Use the shared state
                         const slots = onCallClaimData[onCallId] || new Array(totalSlots).fill(null);
                         
                         const currentStudentData = allData[currentSpecialty].students.find(s => s.id == currentStudent);
@@ -987,7 +1020,10 @@
         hideStudyMobile.addEventListener('change', handleHideStudyChange);
         hideStudyDesktop.addEventListener('change', handleHideStudyChange);
         
-        syncButtonMobile.addEventListener('click', saveUserStateToFirebase);
+        syncButtonMobile.addEventListener('click', () => {
+            toggleSyncModal(); // Open the modal from the mobile sidebar button
+            toggleSidebar(); // Close the sidebar for better UX
+        });
         syncButtonModal.addEventListener('click', saveUserStateToFirebase);
         
         syncModalOpenBtn.addEventListener('click', toggleSyncModal);
@@ -1021,10 +1057,8 @@
             }
         });
         
-        copyUserIdBtnMobile.addEventListener('click', () => handleCopyId(userIdDisplayMobile));
         copyUserIdModal.addEventListener('click', () => handleCopyId(userIdDisplayModal));
 
-        loadUserIdBtnMobile.addEventListener('click', () => handleLoadId(userIdInputMobile));
         loadUserIdModal.addEventListener('click', () => handleLoadId(userIdInputModal));
         
         // --- Initialization ---
