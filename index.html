@@ -81,10 +81,10 @@
             transform: scale(1);
             opacity: 1;
         }
-        .specialty-btn {
+        .nav-btn {
             transition: background-color 0.2s, color 0.2s;
         }
-        .specialty-btn.active {
+        .nav-btn.active {
             background-color: #2899F5;
             color: white;
         }
@@ -97,7 +97,6 @@
             transform: translateY(0);
             opacity: 1;
         }
-         /* Gemini Loader */
         .gemini-loader {
             width: 48px;
             height: 48px;
@@ -115,32 +114,57 @@
         .admin-only {
             display: none;
         }
+        #gemini-modal-content h3 { color: #e5e7eb; margin-top: 1.5em; margin-bottom: 0.5em; font-weight: 600; }
+        #gemini-modal-content ul { color: #d1d5db; list-style-position: inside; padding-left: 0; }
+        #gemini-modal-content li { margin-bottom: 0.5em; }
+        #gemini-modal-content a { color: #60a5fa; text-decoration: underline; }
+        #gemini-modal-content strong, #gemini-modal-content b { color: #f9fafb; }
+        .suggestion-item.resolved { opacity: 0.6; }
+        .suggestion-item.resolved .suggestion-text { text-decoration: line-through; }
     </style>
 </head>
 <body class="bg-[#1B1B1B] text-[#F3F3F3]">
 
     <!-- Retractable Specialty Sidebar -->
     <aside class="fixed top-0 left-0 h-screen z-30 bg-[#2B2B2B] border-r border-gray-700 w-20 hover:w-56 transition-all duration-300 ease-in-out group hidden lg:flex flex-col">
-        <div class="flex items-center justify-center h-20 border-b border-gray-700">
+        <div class="flex items-center justify-center h-20 border-b border-gray-700 flex-shrink-0">
             <svg class="h-8 w-8 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
             </svg>
         </div>
+        
         <nav class="flex-grow flex flex-col justify-center space-y-2">
-            <a href="#" id="btn-cirurgia" class="specialty-btn flex items-center py-3 px-6 justify-center group-hover:justify-start text-gray-300 hover:bg-gray-700 hover:text-white rounded-r-lg">
+            <a href="#" id="btn-cirurgia" class="nav-btn flex items-center py-3 px-6 justify-center group-hover:justify-start text-gray-300 hover:bg-gray-700 hover:text-white rounded-r-lg">
                 <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M9.53 16.122a3 3 0 00-5.78 1.128 2.25 2.25 0 01-2.4 2.245 4.5 4.5 0 008.4-2.245c0-.399-.078-.78-.22-1.128zm0 0a15.998 15.998 0 003.388-1.62m-5.043-.025a15.998 15.998 0 011.622-3.385m5.043.025a15.998 15.998 0 001.622-3.385m3.388 1.62a15.998 15.998 0 00-1.62-3.385m-1.622 3.385a15.998 15.998 0 01-3.388 1.62m5.043-.025a15.998 15.998 0 01-1.622 3.385m-5.043.025a15.998 15.998 0 00-1.622 3.385m-1.62-3.385a15.998 15.998 0 00-3.388-1.62m11.622 5.043a15.998 15.998 0 003.388-1.62" />
                 </svg>
                 <span class="font-semibold whitespace-nowrap opacity-0 w-0 group-hover:ml-4 group-hover:opacity-100 group-hover:w-auto transition-all duration-300 ease-in-out">Cirurgia</span>
             </a>
-            <a href="#" id="btn-pediatria" class="specialty-btn flex items-center py-3 px-6 justify-center group-hover:justify-start text-gray-300 hover:bg-gray-700 hover:text-white rounded-r-lg">
+            <a href="#" id="btn-pediatria" class="nav-btn flex items-center py-3 px-6 justify-center group-hover:justify-start text-gray-300 hover:bg-gray-700 hover:text-white rounded-r-lg">
                 <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
                 </svg>
                 <span class="font-semibold whitespace-nowrap opacity-0 w-0 group-hover:ml-4 group-hover:opacity-100 group-hover:w-auto transition-all duration-300 ease-in-out">Pediatria</span>
             </a>
         </nav>
-        <div class="mt-auto mb-4">
+
+        <div class="mt-auto mb-4 space-y-2 flex-shrink-0">
+             <div class="border-t border-gray-700 mx-4 my-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+             <button id="generate-study-plan-desktop" class="nav-btn w-full flex items-center py-3 px-6 justify-center group-hover:justify-start text-gray-300 hover:bg-gray-700 hover:text-white rounded-r-lg">
+                 <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.898 20.572L16.25 21.75l-.648-1.178a3.375 3.375 0 00-2.455-2.456L12 17.25l1.178-.648a3.375 3.375 0 002.455-2.456L16.25 13.5l.648 1.178a3.375 3.375 0 002.456 2.456L20.25 18l-1.178.648a3.375 3.375 0 00-2.456 2.456z" /></svg>
+                <span class="font-semibold whitespace-nowrap opacity-0 w-0 group-hover:ml-4 group-hover:opacity-100 group-hover:w-auto transition-all duration-300 ease-in-out">Assistente IA</span>
+            </button>
+            <div class="admin-only">
+                <button id="add-tips-btn-desktop" class="nav-btn w-full flex items-center py-3 px-6 justify-center group-hover:justify-start text-gray-300 hover:bg-gray-700 hover:text-white rounded-r-lg">
+                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" /></svg>
+                    <span class="font-semibold whitespace-nowrap opacity-0 w-0 group-hover:ml-4 group-hover:opacity-100 group-hover:w-auto transition-all duration-300 ease-in-out">Editar Dicas</span>
+                </button>
+                 <button id="view-suggestions-btn-desktop" class="nav-btn w-full flex items-center py-3 px-6 justify-center group-hover:justify-start text-gray-300 hover:bg-gray-700 hover:text-white rounded-r-lg">
+                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" /></svg>
+                    <span class="font-semibold whitespace-nowrap opacity-0 w-0 group-hover:ml-4 group-hover:opacity-100 group-hover:w-auto transition-all duration-300 ease-in-out">Ver Sugestões</span>
+                </button>
+            </div>
+            <div class="border-t border-gray-700 mx-4 my-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             <button id="sync-modal-open-btn" class="flex items-center py-3 px-6 justify-center group-hover:justify-start text-gray-300 hover:bg-gray-700 hover:text-white rounded-r-lg w-full">
                 <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 16.5V9.75m0 0l3 3m-3-3l-3 3M6.75 19.5a4.5 4.5 0 01-1.41-8.775 5.25 5.25 0 0110.233-2.33 3 3 0 013.758 3.848A3.752 3.752 0 0118 19.5H6.75z" />
@@ -171,10 +195,6 @@
                     <img id="student-image-desktop" src="https://i.imgur.com/5AW2oEL.png" alt="Foto do Grupo" class="w-full h-auto mx-auto rounded-lg object-cover border-4 border-gray-600 mb-4">
                     <select id="student-selector-desktop" class="w-full p-3 bg-[#2D2D2D] border border-gray-600 rounded-md shadow-sm focus:ring-[#2899F5] focus:border-[#2899F5]"></select>
                 </div>
-                <div class="bg-[#2B2B2B] p-6 rounded-lg shadow-lg text-center">
-                    <h3 class="text-lg font-semibold mb-4">Assistente de IA</h3>
-                    <button id="generate-study-plan-desktop" class="w-full p-2 bg-purple-600 hover:bg-purple-700 rounded-md font-semibold transition-colors text-white text-sm">✨ Gerar Plano de Estudo</button>
-                </div>
                  <div class="bg-[#2B2B2B] p-6 rounded-lg shadow-lg text-center">
                     <h3 class="text-lg font-semibold mb-4">Opções</h3>
                     <div class="flex items-center justify-center gap-2 text-sm">
@@ -183,11 +203,6 @@
                     </div>
                     <button id="suggest-change-btn-desktop" class="w-full mt-4 p-2 bg-gray-600 hover:bg-gray-700 rounded-md font-semibold transition-colors text-white text-sm">🔧 Sugerir Alteração</button>
                     <button id="clearWeekButton-desktop" class="w-full mt-4 p-2 bg-red-600 hover:bg-red-700 rounded-md font-semibold transition-colors text-white text-sm">Limpar marcações</button>
-                </div>
-                <div class="bg-[#2B2B2B] p-6 rounded-lg shadow-lg text-center admin-only">
-                    <h3 class="text-lg font-semibold mb-4">Administrador</h3>
-                    <button id="add-tips-btn-desktop" class="w-full p-2 bg-teal-600 hover:bg-teal-700 rounded-md font-semibold transition-colors text-white text-sm">🧠 Adicionar Dicas da Turma</button>
-                    <button id="view-suggestions-btn-desktop" class="w-full mt-4 p-2 bg-indigo-600 hover:bg-indigo-700 rounded-md font-semibold transition-colors text-white text-sm">📬 Ver Sugestões</button>
                 </div>
             </aside>
 
@@ -211,8 +226,8 @@
                 </svg>
             </button>
             <div id="specialty-selector-container-mobile" class="flex items-center gap-2 bg-[#1B1B1B] p-1 rounded-lg">
-                <button id="btn-cirurgia-mobile" class="specialty-btn flex-1 px-4 py-2 text-sm font-semibold rounded-md">Cirurgia</button>
-                <button id="btn-pediatria-mobile" class="specialty-btn flex-1 px-4 py-2 text-sm font-semibold rounded-md">Pediatria</button>
+                <button id="btn-cirurgia-mobile" class="nav-btn flex-1 px-4 py-2 text-sm font-semibold rounded-md">Cirurgia</button>
+                <button id="btn-pediatria-mobile" class="nav-btn flex-1 px-4 py-2 text-sm font-semibold rounded-md">Pediatria</button>
             </div>
             <div id="student-selector-container-mobile" class="bg-[#2B2B2B] rounded-lg text-center">
                 <h3 class="text-lg font-semibold mb-4">Selecione o Aluno</h3>
@@ -276,7 +291,7 @@
                     </svg>
                 </button>
             </div>
-            <div id="gemini-modal-content" class="overflow-y-auto text-gray-300 prose prose-invert prose-sm pr-2 modal-scroll">
+            <div id="gemini-modal-content" class="overflow-y-auto text-gray-300 pr-2 modal-scroll">
                 <!-- Gemini content will be injected here -->
             </div>
             <div id="gemini-modal-loader" class="flex items-center justify-center p-8">
@@ -579,7 +594,7 @@
 
         // --- Gemini API Integration ---
         async function callGemini(prompt) {
-            const apiKey = "AIzaSyBMb-UfMT4zOay6kdh8PYtBFnIV8clNlok"; // Canvas will provide this
+            const apiKey = "AIzaSyAHB_GyF9KrJQE9RvWPYX9Sac6UH3JkOEc"; // Canvas will provide this
             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
 
             const payload = {
@@ -799,6 +814,10 @@
                 querySnapshot.forEach((doc) => {
                     suggestionsData.push({ id: doc.id, ...doc.data() });
                 });
+                 // If the suggestions view is open, refresh it
+                if (suggestionsViewModalOverlay.classList.contains('is-open')) {
+                    handleViewSuggestionsClick();
+                }
             }, (error) => {
                 console.error("Error fetching suggestions:", error);
             });
@@ -1247,7 +1266,8 @@
                     specialty: currentSpecialty,
                     week: currentWeekOrRodizio,
                     suggestion: suggestionText,
-                    createdAt: serverTimestamp()
+                    createdAt: serverTimestamp(),
+                    resolved: false
                 });
                 showToast("Sugestão enviada com sucesso!");
                 toggleSuggestionModal(false);
@@ -1259,24 +1279,48 @@
                 suggestionSaveLoader.classList.add('hidden');
             }
         }
+        
+        async function handleResolveSuggestion(suggestionId) {
+            const suggestionRef = doc(db, 'suggestions', suggestionId);
+            try {
+                await setDoc(suggestionRef, { resolved: true }, { merge: true });
+                showToast("Sugestão marcada como resolvida.");
+            } catch (error) {
+                console.error("Error resolving suggestion:", error);
+                showToast("Erro ao resolver sugestão.");
+            }
+        }
 
         function handleViewSuggestionsClick() {
-            suggestionsList.innerHTML = ''; // Clear old list
+            suggestionsList.innerHTML = ''; 
 
             if (suggestionsData.length === 0) {
                 suggestionsList.innerHTML = '<p>Nenhuma sugestão nova.</p>';
             } else {
                 const listHtml = suggestionsData.map(sug => {
                     const date = sug.createdAt?.toDate().toLocaleString('pt-BR') || 'Data indisponível';
+                    const isResolved = sug.resolved || false;
                     return `
-                        <div class="p-4 bg-[#1B1B1B] rounded-lg mb-4 border border-gray-700">
-                            <p class="text-base">${sug.suggestion}</p>
-                            <p class="text-xs text-gray-500 mt-2">Enviado por: ${sug.userId.substring(0, 8)}... em ${date}</p>
-                            <p class="text-xs text-gray-400 mt-1">Contexto: ${sug.specialty} - Semana ${sug.week}</p>
+                        <div class="suggestion-item p-4 bg-[#1B1B1B] rounded-lg mb-4 border border-gray-700 ${isResolved ? 'resolved' : ''}">
+                            <p class="suggestion-text text-base">${sug.suggestion}</p>
+                            <div class="flex justify-between items-center mt-3 pt-2 border-t border-gray-700">
+                                 <div class="text-xs">
+                                    <p class="text-gray-500">Enviado por: ${sug.userId.substring(0, 8)}... em ${date}</p>
+                                    <p class="text-gray-400 mt-1">Contexto: ${sug.specialty} - Semana ${sug.week}</p>
+                                 </div>
+                                 ${!isResolved ? `<button data-id="${sug.id}" class="resolve-suggestion-btn px-3 py-1 bg-green-600 hover:bg-green-700 text-white text-xs font-semibold rounded-md">Marcar como Resolvida</button>` : '<span class="text-xs text-green-400 font-semibold">Resolvida</span>'}
+                            </div>
                         </div>
                     `;
                 }).join('');
                 suggestionsList.innerHTML = listHtml;
+
+                suggestionsList.querySelectorAll('.resolve-suggestion-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const suggestionId = e.target.dataset.id;
+                        handleResolveSuggestion(suggestionId);
+                    });
+                });
             }
             toggleSuggestionViewModal(true);
         }
@@ -1455,5 +1499,4 @@
     </script>
 </body>
 </html>
-
 
