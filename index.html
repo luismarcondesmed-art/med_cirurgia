@@ -22,7 +22,6 @@
             transform: translateY(-4px);
             box-shadow: 0 4px 20px rgba(0,0,0,0.2);
         }
-        /* Style for completed activities */
         .activity-card.checked {
             opacity: 0.6;
             background-color: #3a3a3a;
@@ -31,12 +30,10 @@
             text-decoration: line-through;
             color: #888;
         }
-        /* Style for the current, ongoing activity */
         .activity-card.current-activity {
             border-color: #34D399; /* Green-400 */
             box-shadow: 0 0 15px rgba(52, 211, 153, 0.3);
         }
-        /* NEW: Specific border colors for different activity types for better visual hierarchy */
         .activity-card.on-call { border-color: #EF4444; } /* red-500 */
         .activity-card.study { border-color: #F59E0B; } /* amber-500 */
         .activity-card.regular { border-color: #3B82F6; } /* blue-500 */
@@ -46,7 +43,6 @@
             overflow-wrap: break-word;
         }
         
-        /* NEW: Custom styling for select dropdowns for a consistent look */
         .custom-select-wrapper {
             position: relative;
         }
@@ -54,14 +50,14 @@
             -webkit-appearance: none;
             -moz-appearance: none;
             appearance: none;
-            padding-right: 2.5rem; /* Make space for the custom arrow */
+            padding-right: 2.5rem;
         }
         .custom-select-wrapper .custom-arrow {
             position: absolute;
             right: 0.75rem;
             top: 50%;
             transform: translateY(-50%);
-            pointer-events: none; /* Allows clicks to go through to the select */
+            pointer-events: none;
         }
 
         #schedule-grid {
@@ -69,32 +65,32 @@
             gap: 1rem;
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
         }
-        aside::-webkit-scrollbar, main::-webkit-scrollbar {
+        aside::-webkit-scrollbar, main::-webkit-scrollbar, .modal-body::-webkit-scrollbar {
             width: 8px;
         }
-        aside::-webkit-scrollbar-track, main::-webkit-scrollbar-track {
+        aside::-webkit-scrollbar-track, main::-webkit-scrollbar-track, .modal-body::-webkit-scrollbar-track {
             background: #2B2B2B;
         }
-        aside::-webkit-scrollbar-thumb, main::-webkit-scrollbar-thumb {
+        aside::-webkit-scrollbar-thumb, main::-webkit-scrollbar-thumb, .modal-body::-webkit-scrollbar-thumb {
             background-color: #4A4A4A;
             border-radius: 10px;
             border: 2px solid #2B2B2B;
         }
-        #sidebar-overlay, #confirm-modal-overlay, #sync-modal-overlay {
+        #sidebar-overlay, .modal-overlay {
             transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
             visibility: hidden;
             opacity: 0;
         }
-        #sidebar-overlay.is-open, #confirm-modal-overlay.is-open, #sync-modal-overlay.is-open {
+        #sidebar-overlay.is-open, .modal-overlay.is-open {
             visibility: visible;
             opacity: 1;
         }
-        #sidebar-mobile, #confirm-modal, #sync-modal {
+        #sidebar-mobile, .modal-content {
             transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
             transform: scale(0.95);
             opacity: 0;
         }
-        #sidebar-overlay.is-open #sidebar-mobile, #confirm-modal-overlay.is-open #confirm-modal, #sync-modal-overlay.is-open #sync-modal {
+        #sidebar-overlay.is-open #sidebar-mobile, .modal-overlay.is-open .modal-content {
             transform: scale(1);
             opacity: 1;
         }
@@ -149,7 +145,7 @@
         </div>
     </aside>
 
-    <div class="lg:pl-20"> <!-- Main content offset for the sidebar -->
+    <div class="lg:pl-20">
         <header class="lg:hidden text-center p-4 relative border-b border-gray-700 bg-[#2B2B2B] flex-shrink-0 flex items-center justify-center">
             <button id="sidebar-toggle" class="absolute left-4 top-1/2 -translate-y-1/2 p-2 rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
@@ -158,9 +154,8 @@
         </header>
 
         <div id="content-wrapper" class="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-8 p-4 md:p-8 overflow-hidden h-screen">
-            <!-- Sidebar for desktop -->
             <aside id="sidebar-desktop" class="hidden lg:flex lg:col-span-3 flex-col gap-8 overflow-y-auto">
-                <div id="week-selector-container-desktop" class="p-6 bg-[#2B2B2B] rounded-lg shadow-lg flex-col gap-2">
+                <div class="p-6 bg-[#2B2B2B] rounded-lg shadow-lg flex-col gap-2">
                     <label id="week-label-desktop" for="week-selector-desktop" class="block text-sm font-medium text-center mb-2">Selecione a Semana</label>
                     <div class="custom-select-wrapper">
                         <select id="week-selector-desktop" class="w-full p-3 bg-[#2D2D2D] border border-gray-600 rounded-md shadow-sm focus:ring-[#2899F5] focus:border-[#2899F5]"></select>
@@ -170,7 +165,7 @@
                     </div>
                     <p id="schedule-subtitle-desktop" class="text-sm text-gray-400 mt-2 text-center"></p>
                 </div>
-                <div id="student-selector-container-desktop" class="bg-[#2B2B2B] p-6 rounded-lg shadow-lg text-center">
+                <div class="bg-[#2B2B2B] p-6 rounded-lg shadow-lg text-center">
                     <h3 class="text-lg font-semibold mb-4">Selecione o Aluno</h3>
                     <img id="student-image-desktop" src="https://i.imgur.com/5AW2oEL.png" alt="Foto do Grupo" class="w-full h-auto mx-auto rounded-lg object-cover border-4 border-gray-600 mb-4">
                     <div class="custom-select-wrapper">
@@ -191,7 +186,7 @@
             </aside>
 
             <main id="main-content" class="col-span-12 lg:col-span-9 overflow-y-auto">
-                <div id="week-selector-container-main" class="p-4 bg-[#2B2B2B] border border-gray-700 rounded-lg mb-6 lg:hidden">
+                <div class="p-4 bg-[#2B2B2B] border border-gray-700 rounded-lg mb-6 lg:hidden">
                     <label id="week-label-main" for="week-selector-main" class="block text-sm font-medium text-center mb-2">Selecione</label>
                     <div class="custom-select-wrapper">
                         <select id="week-selector-main" class="w-full p-3 bg-[#2D2D2D] border border-gray-600 rounded-md shadow-sm focus:ring-[#2899F5] focus:border-[#2899F5]"></select>
@@ -210,15 +205,13 @@
     <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-70 z-40 flex items-center justify-center p-4">
         <aside id="sidebar-mobile" class="relative w-full max-w-sm bg-[#2B2B2B] rounded-2xl shadow-2xl flex flex-col gap-8 p-6 overflow-y-auto max-h-[90vh]">
             <button id="sidebar-close" class="absolute top-4 right-4 p-2 rounded-full hover:bg-gray-700">
-                <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                </svg>
+                <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
             </button>
-            <div id="specialty-selector-container-mobile" class="flex items-center gap-2 bg-[#1B1B1B] p-1 rounded-lg">
+            <div class="flex items-center gap-2 bg-[#1B1B1B] p-1 rounded-lg">
                 <button id="btn-cirurgia-mobile" class="specialty-btn flex-1 px-4 py-2 text-sm font-semibold rounded-md">Cirurgia</button>
                 <button id="btn-pediatria-mobile" class="specialty-btn flex-1 px-4 py-2 text-sm font-semibold rounded-md">Pediatria</button>
             </div>
-            <div id="student-selector-container-mobile" class="bg-[#2B2B2B] rounded-lg text-center">
+            <div class="bg-[#2B2B2B] rounded-lg text-center">
                 <h3 class="text-lg font-semibold mb-4">Selecione o Aluno</h3>
                 <img id="student-image-mobile" src="https://i.imgur.com/5AW2oEL.png" alt="Foto do Grupo" class="w-full h-auto mx-auto rounded-lg object-cover border-4 border-gray-600 mb-4">
                 <div class="custom-select-wrapper">
@@ -228,7 +221,6 @@
                     </div>
                 </div>
             </div>
-            <!-- IMPROVEMENT: Sync section removed from here for a cleaner sidebar. A button now opens the modal. -->
              <div class="bg-[#2B2B2B] rounded-lg text-center">
                 <h3 class="text-lg font-semibold mb-4">Opções e Sincronização</h3>
                 <div class="flex items-center justify-center gap-2 text-sm mb-4">
@@ -241,13 +233,11 @@
         </aside>
     </div>
     
-    <!-- Sync Modal (Used by both Desktop and Mobile now) -->
-    <div id="sync-modal-overlay" class="fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center p-4">
-        <div id="sync-modal" class="relative w-full max-w-sm bg-[#2B2B2B] rounded-2xl shadow-2xl p-6">
+    <!-- Modals (shared between desktop/mobile) -->
+    <div id="sync-modal-overlay" class="modal-overlay fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center p-4">
+        <div id="sync-modal" class="modal-content relative w-full max-w-sm bg-[#2B2B2B] rounded-2xl shadow-2xl p-6">
             <button id="sync-modal-close-btn" class="absolute top-4 right-4 p-2 rounded-full hover:bg-gray-700">
-                <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                </svg>
+                <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
             </button>
             <div class="text-center">
                 <h3 class="text-lg font-semibold mb-4">Sincronização</h3>
@@ -260,20 +250,55 @@
             </div>
         </div>
     </div>
+    
+    <!-- NEW: Admin Edit Modal -->
+    <div id="edit-modal-overlay" class="modal-overlay fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center p-4">
+        <div id="edit-modal" class="modal-content relative w-full max-w-lg bg-[#2B2B2B] rounded-2xl shadow-2xl">
+             <button id="edit-modal-close-btn" class="absolute top-4 right-4 p-2 rounded-full hover:bg-gray-700">
+                <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+            <div class="p-6">
+                <h3 class="text-lg font-semibold mb-4">Editar Atividade</h3>
+            </div>
+            <div class="modal-body p-6 border-t border-b border-gray-700 max-h-[60vh] overflow-y-auto space-y-4">
+                <div>
+                    <label for="edit-activity" class="block text-sm font-medium text-gray-300 mb-1">Atividade</label>
+                    <input type="text" id="edit-activity" class="w-full p-2 bg-[#1B1B1B] border border-gray-600 rounded-md">
+                </div>
+                <div>
+                    <label for="edit-time" class="block text-sm font-medium text-gray-300 mb-1">Horário (ex: 08:00 - 12:00)</label>
+                    <input type="text" id="edit-time" class="w-full p-2 bg-[#1B1B1B] border border-gray-600 rounded-md">
+                </div>
+                <div>
+                    <label for="edit-professor" class="block text-sm font-medium text-gray-300 mb-1">Professor</label>
+                    <input type="text" id="edit-professor" class="w-full p-2 bg-[#1B1B1B] border border-gray-600 rounded-md">
+                </div>
+                <div>
+                    <label for="edit-location" class="block text-sm font-medium text-gray-300 mb-1">Local</label>
+                    <input type="text" id="edit-location" class="w-full p-2 bg-[#1B1B1B] border border-gray-600 rounded-md">
+                </div>
+                 <div id="edit-student-ids-container" class="hidden">
+                    <label class="block text-sm font-medium text-gray-300 mb-1">Alunos (Cirurgia)</label>
+                    <div id="edit-student-ids-checkboxes" class="grid grid-cols-2 gap-2 p-2 bg-[#1B1B1B] rounded-md">
+                        <!-- Student checkboxes will be populated here -->
+                    </div>
+                </div>
+            </div>
+            <div class="p-6 flex justify-end gap-4">
+                <button id="edit-modal-cancel-btn" class="px-6 py-2 bg-gray-600 hover:bg-gray-700 rounded-md font-semibold transition-colors">Cancelar</button>
+                <button id="edit-modal-save-btn" class="px-6 py-2 bg-green-600 hover:bg-green-700 rounded-md font-semibold transition-colors">Salvar</button>
+            </div>
+        </div>
+    </div>
 
-    <!-- "Today" Button -->
     <button id="today-btn" class="fixed bottom-6 right-6 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-3 rounded-full shadow-lg z-30">
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
     </button>
-
-    <!-- Toast Notification -->
     <div id="toast-notification" class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg">
         <p id="toast-message">ID copiado!</p>
     </div>
-
-    <!-- Confirm Modal -->
-    <div id="confirm-modal-overlay" class="fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center p-4">
-        <div id="confirm-modal" class="relative w-full max-w-sm bg-[#2B2B2B] rounded-2xl shadow-2xl p-6">
+    <div id="confirm-modal-overlay" class="modal-overlay fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center p-4">
+        <div id="confirm-modal" class="modal-content relative w-full max-w-sm bg-[#2B2B2B] rounded-2xl shadow-2xl p-6">
             <p id="confirm-message" class="text-center mb-6">Você tem certeza?</p>
             <div class="flex justify-center gap-4">
                 <button id="confirm-btn-yes" class="px-6 py-2 bg-green-600 hover:bg-green-700 rounded-md font-semibold transition-colors">Sim</button>
@@ -284,14 +309,10 @@
 
     <!-- Firebase SDKs -->
     <script type="module">
-        // Import necessary Firebase functions
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-        import { getFirestore, doc, onSnapshot, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { getFirestore, doc, onSnapshot, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-        // SECURITY: Exposing the config object client-side is standard for Firebase web apps,
-        // but it requires that you have STRONG Firestore Security Rules and App Check enabled
-        // to prevent unauthorized access and quota abuse.
         const firebaseConfig = {
           apiKey: "AIzaSyDyfgOvzTYd6si3g-mPQyInbfiFG1hoVAU",
           authDomain: "cronograma-medufpr.firebaseapp.com",
@@ -302,62 +323,46 @@
           measurementId: "G-6RNMK13MMK"
         };
 
-
-        // Initialize Firebase
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
         
         // --- Global State Variables ---
         let userId = null;
-        let unsubscribeUser; // Listener for user-specific data
-        let unsubscribeShared; // Listener for shared data
-        let allData = {}; // To store schedule data from JSON files
+        let isAdmin = false; // NEW: Admin flag
+        let unsubscribeUser, unsubscribeSchedules = {};
+        let schedulesData = {}; // NEW: To store schedule data from Firestore
         let currentSpecialty = 'cirurgia';
         let currentWeekOrRodizio = '1';
         let currentStudent = 'all';
-        let checklistData = {}; // To store the checked state of activities
+        let checklistData = {};
         let hideStudyTime = false;
-        let onCallClaimData = {}; // NEW: To store on-call claimed slots data
+        let onCallClaimData = {};
 
         // --- DOM Element References ---
         const scheduleGrid = document.getElementById('schedule-grid');
-        const mainContent = document.getElementById('main-content');
-        
         const weekSelectorMain = document.getElementById('week-selector-main');
         const scheduleSubtitleMain = document.getElementById('schedule-subtitle-main');
         const weekLabelMain = document.getElementById('week-label-main');
-        const weekSelectorContainerMain = document.getElementById('week-selector-container-main');
-
         const studentSelectorMobile = document.getElementById('student-selector-mobile');
         const studentImageMobile = document.getElementById('student-image-mobile');
         const clearWeekButtonMobile = document.getElementById('clearWeekButton-mobile');
-        const studentContainerMobile = document.getElementById('student-selector-container-mobile');
-
-        const weekSelectorContainerDesktop = document.getElementById('week-selector-container-desktop');
         const weekSelectorDesktop = document.getElementById('week-selector-desktop');
         const scheduleSubtitleDesktop = document.getElementById('schedule-subtitle-desktop');
         const studentSelectorDesktop = document.getElementById('student-selector-desktop');
         const studentImageDesktop = document.getElementById('student-image-desktop');
         const clearWeekButtonDesktop = document.getElementById('clearWeekButton-desktop');
-        const studentContainerDesktop = document.getElementById('student-selector-container-desktop');
-        
         const daysOfWeek = ['SEGUNDA', 'TERÇA', 'QUARTA', 'QUINTA', 'SEXTA', 'SÁBADO', 'DOMINGO'];
-        
         const sidebarOverlay = document.getElementById('sidebar-overlay');
         const sidebarToggle = document.getElementById('sidebar-toggle');
         const sidebarClose = document.getElementById('sidebar-close');
-
         const btnCirurgia = document.getElementById('btn-cirurgia');
         const btnPediatria = document.getElementById('btn-pediatria');
         const btnCirurgiaMobile = document.getElementById('btn-cirurgia-mobile');
         const btnPediatriaMobile = document.getElementById('btn-pediatria-mobile');
-
         const todayBtn = document.getElementById('today-btn');
-        
         const hideStudyMobile = document.getElementById('hide-study-mobile');
         const hideStudyDesktop = document.getElementById('hide-study-desktop');
-        
         const syncModalOverlay = document.getElementById('sync-modal-overlay');
         const syncModalOpenBtn = document.getElementById('sync-modal-open-btn');
         const syncModalCloseBtn = document.getElementById('sync-modal-close-btn');
@@ -366,9 +371,7 @@
         const copyUserIdModal = document.getElementById('copyUserId-modal');
         const userIdInputModal = document.getElementById('userIdInput-modal');
         const loadUserIdModal = document.getElementById('loadUserId-modal');
-        
         const syncButtonMobile = document.getElementById('sync-button-mobile');
-
         const toast = document.getElementById('toast-notification');
         const toastMessage = document.getElementById('toast-message');
         const confirmModalOverlay = document.getElementById('confirm-modal-overlay');
@@ -376,139 +379,97 @@
         const confirmBtnYes = document.getElementById('confirm-btn-yes');
         const confirmBtnNo = document.getElementById('confirm-btn-no');
 
-        // --- UI Functions ---
+        // NEW: Edit Modal DOM elements
+        const editModalOverlay = document.getElementById('edit-modal-overlay');
+        const editModal = document.getElementById('edit-modal');
+        const editModalCloseBtn = document.getElementById('edit-modal-close-btn');
+        const editModalCancelBtn = document.getElementById('edit-modal-cancel-btn');
+        const editModalSaveBtn = document.getElementById('edit-modal-save-btn');
 
+        // --- UI Functions ---
         function showToast(message) {
             toastMessage.textContent = message;
             toast.classList.add('show');
-            setTimeout(() => {
-                toast.classList.remove('show');
-            }, 3000);
+            setTimeout(() => toast.classList.remove('show'), 3000);
         }
-
         function showConfirm(message, onConfirm) {
             confirmMessage.textContent = message;
             confirmModalOverlay.classList.add('is-open');
-
-            const handleYes = () => {
-                onConfirm();
-                cleanup();
-            };
+            const handleYes = () => { onConfirm(); cleanup(); };
             const handleNo = () => cleanup();
-
             function cleanup() {
                 confirmModalOverlay.classList.remove('is-open');
                 confirmBtnYes.removeEventListener('click', handleYes);
                 confirmBtnNo.removeEventListener('click', handleNo);
             }
-
             confirmBtnYes.addEventListener('click', handleYes);
             confirmBtnNo.addEventListener('click', handleNo);
         }
-
-        function toggleSidebar() {
-            sidebarOverlay.classList.toggle('is-open');
-        }
-        
-        function toggleSyncModal() {
-            syncModalOverlay.classList.toggle('is-open');
-        }
-
+        function toggleSidebar() { sidebarOverlay.classList.toggle('is-open'); }
+        function toggleSyncModal() { syncModalOverlay.classList.toggle('is-open'); }
+        function toggleEditModal() { editModalOverlay.classList.toggle('is-open'); }
 
         // --- Data Handling and Firebase ---
-
-        async function fetchData() {
-            const mockSchedule = {
-                cirurgia: {
-                    weeks: [
-                        { id: '1', title: 'Cirurgia Geral (Teste)', dates: '25/08 - 31/08', start: '2025-08-25', end: '2025-08-31' },
-                        { id: '2', title: 'Cirurgia Vascular (Teste)', dates: '01/09 - 07/09', start: '2025-09-01', end: '2025-09-07' }
-                    ],
-                    students: [
-                        { id: 'all', name: 'Todos os Alunos', imageUrl: 'https://i.imgur.com/5AW2oEL.png' },
-                        { id: 1, name: 'Aluno Teste 1', imageUrl: 'https://placehold.co/400x400/EBF4FF/76A9EA?text=A1' },
-                        { id: 2, name: 'Aluno Teste 2', imageUrl: 'https://placehold.co/400x400/EBF4FF/76A9EA?text=A2' }
-                    ],
-                    schedule: [
-                        { week: '1', day: 'SEGUNDA', time: '08:00 - 12:00', activity: 'Ambulatório Mock', professor: 'Dr. Exemplo', location: 'Hospital de Testes', studentId: [1] },
-                        { week: '1', day: 'TERÇA', time: '13:00 - 17:00', activity: 'Centro Cirúrgico Mock', professor: 'Dra. Simulada', location: 'Hospital de Testes', studentId: [2] },
-                        { week: '1', day: 'QUARTA', time: '09:00 - 11:00', activity: 'HORÁRIO ESTUDO', professor: 'N/A', location: 'Casa', studentId: [1,2] },
-                        { week: '2', day: 'QUARTA', time: '09:00 - 11:00', activity: 'PA PLANTÃO', professor: 'Dr. Exemplo', location: 'Sala de Conferências', studentId: [1, 2], slots: 2 }
-                    ]
-                },
-                pediatria: {
-                    weeks: [
-                        { id: '1', title: 'Rodízio Pediatria 1 (Teste)', dates: '25/08 - 31/08', start: '2025-08-25', end: '2025-08-31' },
-                        { id: '2', title: 'Rodízio Pediatria 2 (Teste)', dates: '01/09 - 07/09', start: '2025-09-01', end: '2025-09-07' }
-                    ],
-                    students: [
-                        { id: 'p1', name: 'Ped Aluno 1', imageUrl: 'https://placehold.co/400x400/F4EBF4/A976A9?text=P1' },
-                        { id: 'p2', name: 'Ped Aluno 2', imageUrl: 'https://placehold.co/400x400/F4EBF4/A976A9?text=P2' },
-                        { id: 'p3', name: 'Ped Aluno 3', imageUrl: 'https://placehold.co/400x400/F4EBF4/A976A9?text=P3' }
-                    ],
-                    schedule: [
-                        { week: '1', day: 'QUINTA', time: '10:00 - 12:00', activity: 'PA Pediatria', professor: 'Dra. Criança', location: 'Hospital Infantil de Teste', slots: 2 },
-                        { week: '2', day: 'SEXTA', time: '14:00 - 16:00', activity: 'PA PLANTÃO', professor: 'Dr. Bebê', location: 'Hospital Infantil de Teste', slots: 3 }
-                    ]
-                }
-            };
-
-            try {
-                const results = await Promise.allSettled([
-                    fetch('cirurgia_schedule.json').then(res => res.ok ? res.json() : Promise.reject()),
-                    fetch('pediatria_schedule.json').then(res => res.ok ? res.json() : Promise.reject())
-                ]);
-
-                allData.cirurgia = results[0].status === 'fulfilled' ? results[0].value : mockSchedule.cirurgia;
-                allData.pediatria = results[1].status === 'fulfilled' ? results[1].value : mockSchedule.pediatria;
+        function fetchData() {
+            const specialties = ['cirurgia', 'pediatria', 'onCallClaims'];
+            specialties.forEach(specialty => {
+                const docRef = specialty === 'onCallClaims' ? doc(db, 'schedules', 'onCallClaims') : doc(db, 'schedules', specialty);
+                if (unsubscribeSchedules[specialty]) unsubscribeSchedules[specialty]();
                 
-                initializeUI();
-                initializeAuth();
-                setupSharedOnCallListener(); // Set up the shared listener once
+                unsubscribeSchedules[specialty] = onSnapshot(docRef, (docSnap) => {
+                    if (specialty === 'onCallClaims') {
+                         onCallClaimData = docSnap.exists() ? docSnap.data().claims || {} : {};
+                    } else {
+                        if (docSnap.exists()) {
+                            schedulesData[specialty] = docSnap.data();
+                        } else {
+                            console.warn(`Document for ${specialty} does not exist in Firestore.`);
+                            schedulesData[specialty] = { weeks: [], students: [], schedule: [] };
+                        }
+                    }
 
-            } catch (error) {
-                console.error("Error during initial data fetch:", error);
-                allData.cirurgia = mockSchedule.cirurgia;
-                allData.pediatria = mockSchedule.pediatria;
-                initializeUI();
-                initializeAuth();
-                setupSharedOnCallListener();
-            }
+                    if (document.body.dataset.initialized) {
+                        populateSelectors();
+                        renderSchedule();
+                    }
+                }, (error) => console.error(`Error fetching ${specialty} data:`, error));
+            });
         }
         
         async function initializeAuth() {
-            onAuthStateChanged(auth, (user) => {
+            onAuthStateChanged(auth, async (user) => {
                 if (user) {
+                    const adminRef = doc(db, 'admins', user.uid);
+                    try {
+                        const adminSnap = await getDoc(adminRef);
+                        isAdmin = adminSnap.exists() && adminSnap.data().role === 'admin';
+                    } catch (e) {
+                        console.error("Error checking admin status:", e);
+                        isAdmin = false;
+                    }
+                    
                     const activeUserId = localStorage.getItem('loadedUserId') || user.uid;
                     if (!userId || userId !== activeUserId) {
                         setupUserListener(activeUserId);
+                    } else {
+                        renderSchedule(); // Re-render in case admin status changed view
                     }
                 }
             });
 
             try {
-                if (!auth.currentUser) {
-                    await signInAnonymously(auth);
-                }
+                if (!auth.currentUser) await signInAnonymously(auth);
             } catch (error) {
                 console.error("Authentication failed:", error);
-                mainContent.innerHTML = `<p class="text-red-400 text-center">Falha na autenticação. A sincronização não funcionará.</p>`;
             }
         }
 
         async function saveUserStateToFirebase() {
             if (!userId) return;
-            // SECURITY: This function writes to the user's document. Without proper Firestore rules
-            // (e.g., allow write: if request.auth.uid == userId;), any user could potentially
-            // overwrite the data of another user by loading their ID.
             const userDocRef = doc(db, 'users', userId);
             try {
                 await setDoc(userDocRef, {
-                    checklistData,
-                    currentStudent,
-                    currentSpecialty,
-                    hideStudyTime,
-                    currentWeekOrRodizio,
+                    checklistData, currentStudent, currentSpecialty, hideStudyTime, currentWeekOrRodizio
                 }, { merge: true });
                 showToast("Dados pessoais sincronizados!");
             } catch (error) {
@@ -521,35 +482,17 @@
             userId = uid;
             userIdDisplayModal.value = uid;
             const userDocRef = doc(db, 'users', userId);
-
             if (unsubscribeUser) unsubscribeUser();
-
             unsubscribeUser = onSnapshot(userDocRef, (docSnap) => {
                 const oldSpecialty = currentSpecialty;
                 let stateChanged = false;
-
                 if (docSnap.exists()) {
                     const data = docSnap.data();
-                    if (JSON.stringify(checklistData) !== JSON.stringify(data.checklistData || {})) {
-                        checklistData = data.checklistData || {};
-                        stateChanged = true;
-                    }
-                    if (currentStudent !== (data.currentStudent || 'all')) {
-                         currentStudent = data.currentStudent || 'all';
-                         stateChanged = true;
-                    }
-                    if (currentSpecialty !== (data.currentSpecialty || 'cirurgia')) {
-                        currentSpecialty = data.currentSpecialty || 'cirurgia';
-                        stateChanged = true;
-                    }
-                     if (hideStudyTime !== (data.hideStudyTime || false)) {
-                        hideStudyTime = data.hideStudyTime || false;
-                        stateChanged = true;
-                    }
-                    if (currentWeekOrRodizio !== (data.currentWeekOrRodizio || '1')) {
-                        currentWeekOrRodizio = data.currentWeekOrRodizio || '1';
-                        stateChanged = true;
-                    }
+                    if (JSON.stringify(checklistData) !== JSON.stringify(data.checklistData || {})) { checklistData = data.checklistData || {}; stateChanged = true; }
+                    if (currentStudent !== (data.currentStudent || 'all')) { currentStudent = data.currentStudent || 'all'; stateChanged = true; }
+                    if (currentSpecialty !== (data.currentSpecialty || 'cirurgia')) { currentSpecialty = data.currentSpecialty || 'cirurgia'; stateChanged = true; }
+                    if (hideStudyTime !== (data.hideStudyTime || false)) { hideStudyTime = data.hideStudyTime || false; stateChanged = true; }
+                    if (currentWeekOrRodizio !== (data.currentWeekOrRodizio || '1')) { currentWeekOrRodizio = data.currentWeekOrRodizio || '1'; stateChanged = true; }
                 } else {
                     saveUserStateToFirebase(); 
                     return; 
@@ -558,162 +501,79 @@
                 if (!stateChanged && document.body.dataset.initialized) return;
 
                 document.body.dataset.initialized = true;
-
                 updateActiveSpecialtyButtons();
-
                 hideStudyDesktop.checked = hideStudyTime;
                 hideStudyMobile.checked = hideStudyTime;
-
                 if (oldSpecialty !== currentSpecialty) {
-                    updateUILayout();
                     populateSelectors();
                 }
-
                 weekSelectorDesktop.value = currentWeekOrRodizio;
                 weekSelectorMain.value = currentWeekOrRodizio;
-                
                 updateView();
-            }, (error) => {
-                console.error("Error in user snapshot listener:", error);
-            });
-        }
-        
-        function setupSharedOnCallListener() {
-            const onCallDocRef = doc(db, 'schedules', 'onCallClaims');
-            if (unsubscribeShared) unsubscribeShared();
-            
-            unsubscribeShared = onSnapshot(onCallDocRef, (docSnap) => {
-                const newData = docSnap.exists() ? docSnap.data().claims || {} : {};
-                if (JSON.stringify(onCallClaimData) !== JSON.stringify(newData)) {
-                    onCallClaimData = newData;
-                    renderSchedule();
-                }
-            }, (error) => {
-                console.error("Error in shared snapshot listener:", error);
             });
         }
         
         // --- Core Application Logic ---
-        
         function initializeUI() {
-            updateUILayout();
-            populateSelectors();
-            updateView();
+            fetchData();
+            initializeAuth();
         }
         
-        function resetLocalState() {
-            checklistData = {};
-            currentSpecialty = 'cirurgia';
-            currentStudent = 'all';
-            hideStudyTime = false;
-            const data = allData[currentSpecialty];
-            currentWeekOrRodizio = (data?.weeks?.[0]?.id) || '1';
-        }
-
-        function updateActiveSpecialtyButtons() {
-            const isCirurgia = currentSpecialty === 'cirurgia';
-            btnCirurgia.classList.toggle('active', isCirurgia);
-            btnPediatria.classList.toggle('active', !isCirurgia);
-            btnCirurgiaMobile.classList.toggle('active', isCirurgia);
-            btnPediatriaMobile.classList.toggle('active', !isCirurgia);
-        }
-
         function switchSpecialty(newSpecialty) {
             if (newSpecialty === currentSpecialty) return;
             currentSpecialty = newSpecialty;
-            const data = allData[currentSpecialty];
+            const data = schedulesData[currentSpecialty];
             currentWeekOrRodizio = (data?.weeks?.[0]?.id) || '1';
-            
-            if (newSpecialty === 'pediatria') {
-                currentStudent = data?.students?.[0]?.id || 'p1';
-            } else {
-                currentStudent = 'all';
-            }
-
+            currentStudent = (newSpecialty === 'pediatria') ? (data?.students?.[0]?.id || 'p1') : 'all';
             updateActiveSpecialtyButtons();
-            updateUILayout();
             populateSelectors();
             updateView();
             saveUserStateToFirebase();
         }
 
         function populateSelectors() {
-            const data = allData[currentSpecialty];
-            if (!data) return; 
-            const weeks = data.weeks;
-            const students = data.students;
-
-            const selector = weekSelectorDesktop;
-            const mobileSelector = weekSelectorMain;
+            const data = schedulesData[currentSpecialty];
+            if (!data || !data.weeks) return; 
+            const { weeks, students } = data;
+            const createOption = (value, text) => `<option value="${value}">${text}</option>`;
             
-            selector.innerHTML = '';
-            mobileSelector.innerHTML = '';
-            studentSelectorDesktop.innerHTML = '';
-            studentSelectorMobile.innerHTML = '';
+            weekSelectorDesktop.innerHTML = weeks.map(w => createOption(w.id, `${currentSpecialty === 'pediatria' ? 'Rodízio' : 'Semana'} ${w.id}: ${w.title}`)).join('');
+            weekSelectorMain.innerHTML = weekSelectorDesktop.innerHTML;
             
-            weeks.forEach(week => {
-                const option = document.createElement('option');
-                option.value = week.id;
-                option.textContent = `${currentSpecialty === 'pediatria' ? 'Rodízio' : 'Semana'} ${week.id}: ${week.title}`;
-                selector.appendChild(option.cloneNode(true));
-                mobileSelector.appendChild(option.cloneNode(true));
-            });
-
             if (students) {
-                students.forEach(student => {
-                    const option = document.createElement('option');
-                    option.value = student.id;
-                    option.textContent = student.name;
-                    studentSelectorDesktop.appendChild(option.cloneNode(true));
-                    studentSelectorMobile.appendChild(option.cloneNode(true));
-                });
+                studentSelectorDesktop.innerHTML = students.map(s => createOption(s.id, s.name)).join('');
+                studentSelectorMobile.innerHTML = studentSelectorDesktop.innerHTML;
             }
         }
         
-        function updateUILayout() {
-            const isCirurgia = currentSpecialty === 'cirurgia';
-            
-            studentContainerDesktop.style.display = 'block';
-            studentContainerMobile.style.display = 'block';
-            
-            const weekLabel = isCirurgia ? 'Selecione a Semana' : 'Selecione o Rodízio';
-            document.getElementById('week-label-desktop').textContent = weekLabel;
-            weekLabelMain.textContent = weekLabel;
-        }
-
         function updateView() {
-            const data = allData[currentSpecialty];
+            const data = schedulesData[currentSpecialty];
             if (!data) return;
-            const selectedWeekData = data.weeks.find(w => w.id == currentWeekOrRodizio);
+            const selectedWeekData = data.weeks?.find(w => w.id == currentWeekOrRodizio);
             const subtitleText = selectedWeekData ? `${selectedWeekData.title} (${selectedWeekData.dates})` : '';
-            
             scheduleSubtitleDesktop.textContent = subtitleText;
             scheduleSubtitleMain.textContent = subtitleText;
-            
-            const selectedStudent = data.students.find(s => s.id == currentStudent);
+            const selectedStudent = data.students?.find(s => s.id == currentStudent);
             if (selectedStudent) {
                 studentImageMobile.src = selectedStudent.imageUrl || 'https://i.imgur.com/5AW2oEL.png';
                 studentImageDesktop.src = selectedStudent.imageUrl || 'https://i.imgur.com/5AW2oEL.png';
                 studentSelectorMobile.value = currentStudent;
                 studentSelectorDesktop.value = currentStudent;
             }
-            
             renderSchedule();
         }
 
         function renderSchedule() {
-            const data = allData[currentSpecialty];
-            if (!data) return;
+            const data = schedulesData[currentSpecialty];
+            if (!data || !data.schedule) { scheduleGrid.innerHTML = ''; return; }
             let weekData = data.schedule.filter(item => item.week == currentWeekOrRodizio);
 
             if (currentSpecialty === 'cirurgia') {
                 weekData = weekData.filter(item => currentStudent === 'all' || (item.studentId && item.studentId.includes(parseInt(currentStudent))));
             }
-            
             let filteredData = hideStudyTime ? weekData.filter(item => !item.activity.toUpperCase().includes('HORÁRIO ESTUDO')) : weekData;
 
             const fragment = document.createDocumentFragment();
-
             const groupedByDay = filteredData.reduce((acc, item) => {
                 if (!acc[item.day]) acc[item.day] = [];
                 acc[item.day].push(item);
@@ -721,8 +581,7 @@
             }, {});
 
             const orderedDays = daysOfWeek.filter(day => groupedByDay[day]);
-
-            const weekInfo = data.weeks.find(w => w.id == currentWeekOrRodizio);
+            const weekInfo = data.weeks?.find(w => w.id == currentWeekOrRodizio);
 
             orderedDays.forEach(day => {
                 const activitiesForDay = groupedByDay[day].sort((a, b) => a.time.localeCompare(b.time));
@@ -740,365 +599,272 @@
                         const currentDate = new Date(startDate);
                         currentDate.setDate(startDate.getDate() + dayIndex);
                         const formattedDate = `${String(currentDate.getDate()).padStart(2, '0')}/${String(currentDate.getMonth() + 1).padStart(2, '0')}`;
-                        // SECURITY FIX: Switched from innerHTML to creating nodes manually to prevent XSS.
                         dayHeader.textContent = day.charAt(0) + day.slice(1).toLowerCase();
                         const dateSpan = document.createElement('span');
                         dateSpan.className = 'block text-sm font-normal text-gray-400 mt-1';
                         dateSpan.textContent = formattedDate;
                         dayHeader.appendChild(dateSpan);
-
-                    } else {
-                         dayHeader.textContent = day.charAt(0) + day.slice(1).toLowerCase();
-                    }
-                } else {
-                    dayHeader.textContent = day.charAt(0) + day.slice(1).toLowerCase();
-                }
+                    } else { dayHeader.textContent = day.charAt(0) + day.slice(1).toLowerCase(); }
+                } else { dayHeader.textContent = day.charAt(0) + day.slice(1).toLowerCase(); }
 
                 dayColumn.appendChild(dayHeader);
 
-                activitiesForDay.forEach((item) => {
+                activitiesForDay.forEach((item, index) => {
+                    const itemIndex = data.schedule.findIndex(originalItem => originalItem === item); // Find original index
                     const activityId = `${currentSpecialty}-week${currentWeekOrRodizio}-day${day}-time${item.time.replace(/[\s:-]/g, '')}-${item.activity.replace(/[^a-zA-Z0-9]/g, '').substring(0, 10)}`;
                     const isChecked = checklistData[activityId] || false;
-                    
                     const card = document.createElement('div');
-                    card.className = `activity-card rounded-lg p-4 border-l-4 shadow-md bg-[#2D2D2D]`;
-                     if (isChecked) card.classList.add('checked');
-                     
+                    card.className = 'activity-card rounded-lg p-4 border-l-4 shadow-md bg-[#2D2D2D] relative';
+                    if (isChecked) card.classList.add('checked');
+                    
                     const activityUpper = item.activity.toUpperCase();
-                    if (activityUpper.includes('PLANTÃO') || activityUpper.includes('PA PEDIATRIA')) {
-                        card.classList.add('on-call');
-                    } else if (activityUpper.includes('HORÁRIO ESTUDO')) {
-                        card.classList.add('study');
-                    } else {
-                        card.classList.add('regular');
-                    }
+                    if (activityUpper.includes('PLANTÃO') || activityUpper.includes('PA PEDIATRIA')) card.classList.add('on-call');
+                    else if (activityUpper.includes('HORÁRIO ESTUDO')) card.classList.add('study');
+                    else card.classList.add('regular');
 
                     const now = new Date();
-                    const currentTime = now.getHours() * 100 + now.getMinutes();
-                    const [startTimeStr, endTimeStr] = item.time.split(' - ');
-                    const startTime = parseInt(startTimeStr.replace(':', ''), 10);
-                    const endTime = parseInt(endTimeStr.replace(':', ''), 10);
-                    
-                    const today = now.toLocaleDateString('pt-BR', { weekday: 'long' }).toUpperCase();
-                    const isTodayInWeek = weekInfo && new Date() >= new Date(weekInfo.start) && new Date() <= new Date(weekInfo.end + 'T23:59:59');
-
-                    if (isTodayInWeek && day === today && currentTime >= startTime && currentTime <= endTime) {
-                        card.classList.add('current-activity');
+                    if (weekInfo && new Date() >= new Date(weekInfo.start) && new Date() <= new Date(weekInfo.end + 'T23:59:59') && day === now.toLocaleDateString('pt-BR', { weekday: 'long' }).toUpperCase()) {
+                        const [startTimeStr, endTimeStr] = item.time.split(' - ');
+                        const startTime = parseInt(startTimeStr.replace(':', ''), 10);
+                        const endTime = parseInt(endTimeStr.replace(':', ''), 10);
+                        const currentTime = now.getHours() * 100 + now.getMinutes();
+                        if (currentTime >= startTime && currentTime <= endTime) card.classList.add('current-activity');
                     }
 
-                    if (activityUpper.includes('PLANTÃO') || activityUpper.includes('PA PEDIATRIA')) {
-                        const onCallId = activityId;
-                        const totalSlots = item.slots || 2;
-                        
-                        const slots = onCallClaimData[onCallId] || new Array(totalSlots).fill(null);
-                        
-                        const currentStudentData = allData[currentSpecialty].students.find(s => s.id == currentStudent);
-                        const currentUserSlot = slots.find(slot => slot && currentStudentData && slot.id == currentStudentData.id);
-                        const hasEmptySlot = slots.some(slot => slot === null);
-
-                        // SECURITY FIX: Build the card content using DOM methods instead of innerHTML to prevent XSS.
-                        card.innerHTML = `
-                            <div class="flex items-start justify-between">
-                                <div class="flex-1">
-                                    <p class="font-bold text-md activity-title">${item.activity}</p>
-                                    <p class="text-sm text-gray-400 font-medium mt-1">${item.time}</p>
-                                </div>
-                                <input type="checkbox" id="${activityId}" class="ml-4 mt-1 h-5 w-5 rounded bg-gray-700 border-gray-600 text-blue-500 focus:ring-blue-600" ${isChecked ? 'checked' : ''}>
-                            </div>
-                        `;
-                        
-                        const slotsList = document.createElement('ul');
-                        slotsList.className = 'mt-3 border-t border-gray-700 pt-3 text-sm space-y-1';
-                        slots.forEach((slot, index) => {
-                            const listItem = document.createElement('li');
-                            listItem.className = `flex items-center gap-2 ${slot ? 'text-green-400' : 'text-gray-500'}`;
-                            
-                            const indexSpan = document.createElement('span');
-                            indexSpan.className = 'font-semibold';
-                            indexSpan.textContent = `${index + 1}.`;
-                            
-                            const nameSpan = document.createElement('span');
-                            nameSpan.textContent = slot ? slot.name : 'Vaga disponível';
-                            
-                            listItem.appendChild(indexSpan);
-                            listItem.appendChild(nameSpan);
-                            slotsList.appendChild(listItem);
-                        });
-                        card.appendChild(slotsList);
-
-
-                        const isDisabled = currentSpecialty === 'cirurgia' && currentStudent === 'all';
-                        if (currentUserSlot) {
-                            const button = document.createElement('button');
-                            button.dataset.action = 'leave';
-                            button.className = 'w-full mt-4 p-2 bg-yellow-600 hover:bg-yellow-700 rounded-md font-semibold transition-colors text-white text-sm';
-                            button.textContent = 'Sair do Plantão';
-                            card.appendChild(button);
-                        } else if (hasEmptySlot) {
-                            const button = document.createElement('button');
-                            button.dataset.action = 'claim';
-                            button.className = `w-full mt-4 p-2 bg-blue-600 hover:bg-blue-700 rounded-md font-semibold transition-colors text-white text-sm ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}`;
-                            button.textContent = 'Reivindicar Vaga';
-                            if(isDisabled) button.disabled = true;
-                            card.appendChild(button);
-                        } else {
-                            const p = document.createElement('p');
-                            p.className = 'text-center text-xs text-gray-400 mt-4';
-                            p.textContent = 'Todas as vagas preenchidas.';
-                            card.appendChild(p);
-                        }
-                        
-                        const actionButton = card.querySelector('button[data-action]');
-                        if (actionButton) {
-                            actionButton.addEventListener('click', () => handleOnCallAction(onCallId, actionButton.dataset.action, totalSlots));
-                        }
-                        card.querySelector(`#${activityId}`).addEventListener('change', handleChecklistChange);
-
-                    } else { // Regular activity card
-                        let studentHtml = '';
-                        if (currentSpecialty === 'cirurgia' && item.studentId) {
-                            const involvedStudents = allData.cirurgia.students
-                                .filter(s => s.id !== 'all' && item.studentId.includes(s.id))
-                                .map(s => s.name.split(' ')[0])
-                                .join(', ');
-                                studentHtml = `<p class="mt-2 text-xs text-gray-500"><strong>Alunos:</strong> ${involvedStudents}</p>`;
-                        }
-                        
-                        const locationUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.location + ', Curitiba, Brazil')}`;
-
-                        // This part is generally safe as the content comes from a trusted JSON, but shows the safe pattern.
-                        card.innerHTML = `
-                            <div class="flex items-start justify-between">
-                                <div class="flex-1">
-                                    <p class="font-bold text-md activity-title">${item.activity}</p>
-                                    <p class="text-sm text-gray-400 font-medium mt-1">${item.time}</p>
-                                </div>
-                                <input type="checkbox" id="${activityId}" class="ml-4 mt-1 h-5 w-5 rounded bg-gray-700 border-gray-600 text-blue-500 focus:ring-blue-600" ${isChecked ? 'checked' : ''}>
-                            </div>
-                            <div class="mt-3 border-t border-gray-700 pt-3 text-sm">
-                                <p><strong>Professor:</strong> ${item.professor}</p>
-                                <p><strong>Local:</strong> <a href="${locationUrl}" target="_blank" class="text-blue-400 hover:underline">${item.location}</a></p>
-                                ${studentHtml}
-                            </div>
-                        `;
-                        card.querySelector(`#${activityId}`).addEventListener('change', handleChecklistChange);
-                    }
-                    
+                    // Card content is built here to append edit button later
+                    const cardContent = document.createElement('div');
+                    card.appendChild(cardContent);
                     dayColumn.appendChild(card);
+                    
+                    // Render specific card content
+                    renderCardContent(cardContent, item, activityId, isChecked, schedulesData[currentSpecialty]?.students || []);
+
+                    if (isAdmin) {
+                        const editBtn = document.createElement('button');
+                        editBtn.className = 'absolute top-2 right-2 p-1.5 rounded-full hover:bg-gray-600';
+                        editBtn.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L14.732 3.732z"></path></svg>`;
+                        editBtn.addEventListener('click', () => openEditModal(item, itemIndex));
+                        card.appendChild(editBtn);
+                    }
                 });
                 fragment.appendChild(dayColumn);
             });
-
             scheduleGrid.innerHTML = '';
             scheduleGrid.appendChild(fragment);
         }
         
-        // --- Event Handlers ---
+        function renderCardContent(container, item, activityId, isChecked, allStudents) {
+            container.innerHTML = ''; // Clear previous content
+            if (item.activity.toUpperCase().includes('PLANTÃO') || item.activity.toUpperCase().includes('PA PEDIATRIA')) {
+                // On-call card
+                const totalSlots = item.slots || 2;
+                const slots = onCallClaimData[activityId] || new Array(totalSlots).fill(null);
+                const currentStudentData = allStudents.find(s => s.id == currentStudent);
+                const currentUserSlot = slots.find(slot => slot && currentStudentData && slot.id == currentStudentData.id);
+                const hasEmptySlot = slots.some(slot => slot === null);
 
+                let slotsHtml = '<ul class="mt-3 border-t border-gray-700 pt-3 text-sm space-y-1">';
+                slots.forEach((slot, index) => {
+                    slotsHtml += `<li class="flex items-center gap-2 ${slot ? 'text-green-400' : 'text-gray-500'}"><span class="font-semibold">${index + 1}.</span><span>${slot ? slot.name : 'Vaga disponível'}</span></li>`;
+                });
+                slotsHtml += '</ul>';
+
+                let buttonHtml = '';
+                const isDisabled = currentSpecialty === 'cirurgia' && currentStudent === 'all';
+                if (currentUserSlot) buttonHtml = `<button data-action="leave" class="w-full mt-4 p-2 bg-yellow-600 hover:bg-yellow-700 rounded-md font-semibold transition-colors text-white text-sm">Sair do Plantão</button>`;
+                else if (hasEmptySlot) buttonHtml = `<button data-action="claim" class="w-full mt-4 p-2 bg-blue-600 hover:bg-blue-700 rounded-md font-semibold transition-colors text-white text-sm ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}" ${isDisabled ? 'disabled' : ''}>Reivindicar Vaga</button>`;
+                else buttonHtml = `<p class="text-center text-xs text-gray-400 mt-4">Todas as vagas preenchidas.</p>`;
+                
+                container.innerHTML = `
+                    <div class="flex items-start justify-between">
+                        <div class="flex-1 pr-8">
+                            <p class="font-bold text-md activity-title">${item.activity}</p>
+                            <p class="text-sm text-gray-400 font-medium mt-1">${item.time}</p>
+                        </div>
+                        <input type="checkbox" id="${activityId}" class="ml-4 mt-1 h-5 w-5 rounded bg-gray-700 border-gray-600 text-blue-500 focus:ring-blue-600" ${isChecked ? 'checked' : ''}>
+                    </div>
+                    ${slotsHtml}
+                    ${buttonHtml}
+                `;
+                container.querySelector(`#${activityId}`)?.addEventListener('change', handleChecklistChange);
+                container.querySelector('button[data-action]')?.addEventListener('click', () => handleOnCallAction(activityId, container.querySelector('button[data-action]').dataset.action, totalSlots));
+
+            } else {
+                // Regular activity card
+                let studentHtml = '';
+                if (currentSpecialty === 'cirurgia' && item.studentId) {
+                    studentHtml = `<p class="mt-2 text-xs text-gray-500"><strong>Alunos:</strong> ${allStudents.filter(s => s.id !== 'all' && item.studentId.includes(s.id)).map(s => s.name.split(' ')[0]).join(', ')}</p>`;
+                }
+                const locationUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.location + ', Curitiba, Brazil')}`;
+                container.innerHTML = `
+                    <div class="flex items-start justify-between">
+                        <div class="flex-1 pr-8">
+                            <p class="font-bold text-md activity-title">${item.activity}</p>
+                            <p class="text-sm text-gray-400 font-medium mt-1">${item.time}</p>
+                        </div>
+                        <input type="checkbox" id="${activityId}" class="ml-4 mt-1 h-5 w-5 rounded bg-gray-700 border-gray-600 text-blue-500 focus:ring-blue-600" ${isChecked ? 'checked' : ''}>
+                    </div>
+                    <div class="mt-3 border-t border-gray-700 pt-3 text-sm">
+                        <p><strong>Professor:</strong> ${item.professor}</p>
+                        <p><strong>Local:</strong> <a href="${locationUrl}" target="_blank" class="text-blue-400 hover:underline">${item.location}</a></p>
+                        ${studentHtml}
+                    </div>
+                `;
+                 container.querySelector(`#${activityId}`)?.addEventListener('change', handleChecklistChange);
+            }
+        }
+        
+        // --- Event Handlers ---
         function handleWeekChange(e) {
             currentWeekOrRodizio = e.target.value;
             syncSelectors(e.target, e.target.id.includes('desktop') ? weekSelectorMain : weekSelectorDesktop);
             updateView();
         }
-
         function handleStudentChange(e) {
             currentStudent = e.target.value;
             syncSelectors(e.target, e.target.id.includes('mobile') ? studentSelectorDesktop : studentSelectorMobile);
             updateView();
-            
-            if (e.target.id.includes('mobile')) {
-                setTimeout(() => toggleSidebar(), 300);
-            }
+            if (e.target.id.includes('mobile')) setTimeout(() => toggleSidebar(), 300);
         }
-
         function handleChecklistChange(event) {
-            const checkbox = event.target;
-            const activityId = checkbox.id;
-            checklistData[activityId] = checkbox.checked;
-            
-            checkbox.closest('.activity-card').classList.toggle('checked', checkbox.checked);
+            checklistData[event.target.id] = event.target.checked;
+            event.target.closest('.activity-card').classList.toggle('checked', event.target.checked);
         }
-
-        function handleHideStudyChange(e) {
-            hideStudyTime = e.target.checked;
-            renderSchedule();
-        }
+        function handleHideStudyChange(e) { hideStudyTime = e.target.checked; renderSchedule(); }
 
         async function handleOnCallAction(onCallId, action, totalSlots) {
-            if (currentSpecialty === 'cirurgia' && currentStudent === 'all') {
-                showToast("Por favor, selecione um aluno para reivindicar uma vaga.");
-                return;
-            }
-
+            if (currentSpecialty === 'cirurgia' && currentStudent === 'all') { showToast("Por favor, selecione um aluno para reivindicar uma vaga."); return; }
             const updatedOnCallData = JSON.parse(JSON.stringify(onCallClaimData));
-            if (!updatedOnCallData[onCallId]) {
-                updatedOnCallData[onCallId] = new Array(totalSlots).fill(null);
-            }
+            if (!updatedOnCallData[onCallId]) updatedOnCallData[onCallId] = new Array(totalSlots).fill(null);
             const slots = updatedOnCallData[onCallId];
-            const currentStudentData = allData[currentSpecialty].students.find(s => s.id == currentStudent);
-            
-            if (!currentStudentData) {
-                showToast("Aluno não encontrado. Tente novamente.");
-                return;
-            }
-
+            const currentStudentData = schedulesData[currentSpecialty].students.find(s => s.id == currentStudent);
+            if (!currentStudentData) { showToast("Aluno não encontrado. Tente novamente."); return; }
             if (action === 'claim') {
                 const emptySlotIndex = slots.findIndex(slot => slot === null);
-                if (emptySlotIndex !== -1) {
-                    slots[emptySlotIndex] = { id: currentStudentData.id, name: currentStudentData.name };
-                } else {
-                    showToast("Não há vagas disponíveis.");
-                    return;
-                }
+                if (emptySlotIndex !== -1) slots[emptySlotIndex] = { id: currentStudentData.id, name: currentStudentData.name };
+                else { showToast("Não há vagas disponíveis."); return; }
             } else if (action === 'leave') {
                 const userSlotIndex = slots.findIndex(slot => slot && slot.id == currentStudentData.id);
-                if (userSlotIndex !== -1) {
-                    slots[userSlotIndex] = null;
-                }
+                if (userSlotIndex !== -1) slots[userSlotIndex] = null;
+            }
+            try { await setDoc(doc(db, 'schedules', 'onCallClaims'), { claims: updatedOnCallData }); } 
+            catch (error) { console.error("Error updating on-call data:", error); showToast("Erro ao atualizar vaga."); }
+        }
+
+        // NEW: Admin Edit Functions
+        function openEditModal(item, itemIndex) {
+            editModal.dataset.itemIndex = itemIndex; // Store index to know which item to save
+
+            document.getElementById('edit-activity').value = item.activity || '';
+            document.getElementById('edit-time').value = item.time || '';
+            document.getElementById('edit-professor').value = item.professor || '';
+            document.getElementById('edit-location').value = item.location || '';
+            
+            const studentContainer = document.getElementById('edit-student-ids-container');
+            const studentCheckboxes = document.getElementById('edit-student-ids-checkboxes');
+            
+            if(currentSpecialty === 'cirurgia'){
+                studentContainer.style.display = 'block';
+                studentCheckboxes.innerHTML = '';
+                const students = schedulesData.cirurgia.students.filter(s => s.id !== 'all');
+                students.forEach(student => {
+                    const isChecked = item.studentId?.includes(student.id) ? 'checked' : '';
+                    studentCheckboxes.innerHTML += `
+                        <label class="flex items-center gap-2">
+                            <input type="checkbox" value="${student.id}" class="h-4 w-4 rounded bg-gray-700 border-gray-600 text-blue-500 focus:ring-blue-600" ${isChecked}>
+                            <span>${student.name}</span>
+                        </label>
+                    `;
+                });
+            } else {
+                studentContainer.style.display = 'none';
+            }
+
+            toggleEditModal();
+        }
+
+        async function saveActivityChanges() {
+            const itemIndex = parseInt(editModal.dataset.itemIndex);
+            if (isNaN(itemIndex)) {
+                showToast("Erro: Atividade não encontrada.");
+                return;
+            }
+
+            const scheduleCopy = [...schedulesData[currentSpecialty].schedule];
+            const updatedItem = { ...scheduleCopy[itemIndex] };
+
+            updatedItem.activity = document.getElementById('edit-activity').value;
+            updatedItem.time = document.getElementById('edit-time').value;
+            updatedItem.professor = document.getElementById('edit-professor').value;
+            updatedItem.location = document.getElementById('edit-location').value;
+
+            if (currentSpecialty === 'cirurgia') {
+                const selectedStudentIds = Array.from(document.querySelectorAll('#edit-student-ids-checkboxes input:checked')).map(cb => parseInt(cb.value));
+                updatedItem.studentId = selectedStudentIds;
             }
             
-            // SECURITY: This write operation is a critical vulnerability. Without proper server-side rules,
-            // any user can overwrite the entire 'onCallClaims' document, leading to data loss or
-            // denial of service for this feature. Use Firestore Security Rules and/or Cloud Functions for validation.
-            const onCallDocRef = doc(db, 'schedules', 'onCallClaims');
+            scheduleCopy[itemIndex] = updatedItem;
+
             try {
-                await setDoc(onCallDocRef, { claims: updatedOnCallData });
+                const docRef = doc(db, 'schedules', currentSpecialty);
+                await setDoc(docRef, { schedule: scheduleCopy }, { merge: true });
+                showToast("Atividade atualizada com sucesso!");
+                toggleEditModal();
             } catch (error) {
-                console.error("Error updating on-call data:", error);
-                showToast("Erro ao atualizar vaga.");
+                console.error("Error saving activity:", error);
+                showToast("Erro ao salvar a atividade.");
             }
         }
 
-        function clearWeekData() {
-            showConfirm("Tem certeza que deseja limpar todas as marcações desta semana?", () => {
-                const weekPrefix = `${currentSpecialty}-week${currentWeekOrRodizio}`;
-                const keysToDelete = Object.keys(checklistData).filter(key => key.startsWith(weekPrefix));
 
-                if (keysToDelete.length === 0) {
-                    showToast("Nenhuma marcação para limpar nesta semana.");
-                    return;
-                }
-                
-                const newChecklistData = {};
-                for (const key in checklistData) {
-                    if (!key.startsWith(weekPrefix)) {
-                        newChecklistData[key] = checklistData[key];
-                    }
-                }
-                
-                checklistData = newChecklistData;
-
-                saveUserStateToFirebase();
-                renderSchedule();
-                showToast("Marcações da semana limpas!");
-            });
-        }
-        
-        function handleCopyId(displayElement) {
-            displayElement.select();
-            document.execCommand('copy');
-            showToast('ID copiado para a área de transferência!');
-        }
-
-        function handleLoadId(inputElement) {
-            const newId = inputElement.value.trim();
-            if (newId && newId !== userId) {
-                showConfirm(`Carregar dados do ID ${newId}? Suas configurações atuais serão sobrescritas.`, () => {
-                    if (unsubscribeUser) unsubscribeUser();
-                    localStorage.setItem('loadedUserId', newId);
-                    resetLocalState();
-                    initializeUI(); 
-                    setupUserListener(newId);
-                });
-            }
-        }
-        
-        function syncSelectors(source, target) {
-             if(target) target.value = source.value;
-        }
-
+        function syncSelectors(source, target) { if(target) target.value = source.value; }
         // --- Event Listener Setup ---
-
-        sidebarToggle.addEventListener('click', toggleSidebar);
-        sidebarClose.addEventListener('click', toggleSidebar);
-        sidebarOverlay.addEventListener('click', (e) => {
-            if (e.target === sidebarOverlay) toggleSidebar();
-        });
-
+        document.addEventListener('DOMContentLoaded', initializeUI);
         btnCirurgia.addEventListener('click', (e) => { e.preventDefault(); switchSpecialty('cirurgia'); });
         btnPediatria.addEventListener('click', (e) => { e.preventDefault(); switchSpecialty('pediatria'); });
         btnCirurgiaMobile.addEventListener('click', () => switchSpecialty('cirurgia'));
         btnPediatriaMobile.addEventListener('click', () => switchSpecialty('pediatria'));
-
         weekSelectorMain.addEventListener('change', handleWeekChange);
         weekSelectorDesktop.addEventListener('change', handleWeekChange);
-
         studentSelectorMobile.addEventListener('change', handleStudentChange);
         studentSelectorDesktop.addEventListener('change', handleStudentChange);
-
-        clearWeekButtonMobile.addEventListener('click', clearWeekData);
-        clearWeekButtonDesktop.addEventListener('click', clearWeekData);
-
         hideStudyMobile.addEventListener('change', handleHideStudyChange);
         hideStudyDesktop.addEventListener('change', handleHideStudyChange);
-        
-        syncButtonMobile.addEventListener('click', () => {
-            toggleSyncModal(); // Open the modal from the mobile sidebar button
-            toggleSidebar(); // Close the sidebar for better UX
-        });
+        syncButtonMobile.addEventListener('click', () => { toggleSyncModal(); toggleSidebar(); });
         syncButtonModal.addEventListener('click', saveUserStateToFirebase);
-        
         syncModalOpenBtn.addEventListener('click', toggleSyncModal);
         syncModalCloseBtn.addEventListener('click', toggleSyncModal);
-        syncModalOverlay.addEventListener('click', (e) => {
-            if(e.target === syncModalOverlay) toggleSyncModal();
-        });
-
+        syncModalOverlay.addEventListener('click', (e) => { if(e.target === syncModalOverlay) toggleSyncModal(); });
         todayBtn.addEventListener('click', () => {
             const now = new Date();
             const todayStr = now.toISOString().split('T')[0];
-            const todayDay = now.toLocaleDateString('pt-BR', { weekday: 'long' }).toUpperCase();
-            
-            const data = allData[currentSpecialty];
-            const currentWeekInfo = data.weeks.find(w => todayStr >= w.start && todayStr <= w.end);
-
+            const data = schedulesData[currentSpecialty];
+            const currentWeekInfo = data.weeks?.find(w => todayStr >= w.start && todayStr <= w.end);
             if (currentWeekInfo) {
                 currentWeekOrRodizio = currentWeekInfo.id;
                 weekSelectorDesktop.value = currentWeekInfo.id;
                 weekSelectorMain.value = currentWeekInfo.id;
                 updateView();
-                
                 setTimeout(() => {
-                    const dayCol = document.getElementById(`day-col-${todayDay}`);
-                    if (dayCol) {
-                       dayCol.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    }
+                    const todayDay = now.toLocaleDateString('pt-BR', { weekday: 'long' }).toUpperCase();
+                    document.getElementById(`day-col-${todayDay}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 }, 100);
-            } else {
-                showToast('Nenhuma atividade programada para hoje.');
+            } else { showToast('Nenhuma atividade programada para hoje.'); }
+        });
+        copyUserIdModal.addEventListener('click', () => { userIdDisplayModal.select(); document.execCommand('copy'); showToast('ID copiado!'); });
+        loadUserIdModal.addEventListener('click', () => {
+            const newId = userIdInputModal.value.trim();
+            if (newId && newId !== userId) {
+                showConfirm(`Carregar dados do ID ${newId}?`, () => {
+                    if (unsubscribeUser) unsubscribeUser();
+                    localStorage.setItem('loadedUserId', newId);
+                    setupUserListener(newId);
+                });
             }
         });
         
-        copyUserIdModal.addEventListener('click', () => handleCopyId(userIdDisplayModal));
-
-        loadUserIdModal.addEventListener('click', () => handleLoadId(userIdInputModal));
-        
-        // --- Initialization ---
-
-        setInterval(() => {
-            renderSchedule();
-        }, 60000);
-
         let saveTimeout;
-        window.addEventListener('beforeunload', () => {
-           if (userId) saveUserStateToFirebase();
-        });
-
-        function debouncedSave() {
-            clearTimeout(saveTimeout);
-            saveTimeout = setTimeout(saveUserStateToFirebase, 2000);
-        }
-
+        function debouncedSave() { clearTimeout(saveTimeout); saveTimeout = setTimeout(saveUserStateToFirebase, 2000); }
         scheduleGrid.addEventListener('change', debouncedSave);
         weekSelectorMain.addEventListener('change', debouncedSave);
         weekSelectorDesktop.addEventListener('change', debouncedSave);
@@ -1107,7 +873,11 @@
         hideStudyMobile.addEventListener('change', debouncedSave);
         hideStudyDesktop.addEventListener('change', debouncedSave);
 
-        fetchData();
+        // NEW: Edit Modal Listeners
+        editModalCloseBtn.addEventListener('click', toggleEditModal);
+        editModalCancelBtn.addEventListener('click', toggleEditModal);
+        editModalSaveBtn.addEventListener('click', saveActivityChanges);
+        editModalOverlay.addEventListener('click', e => { if(e.target === editModalOverlay) toggleEditModal(); });
     </script>
 </body>
 </html>
