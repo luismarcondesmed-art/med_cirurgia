@@ -614,6 +614,9 @@
         }
         
         function toggleTipsModal(show = false) {
+            if(show) {
+                tipsModalTitle.textContent = `Dicas para o Módulo: ${currentSpecialty.charAt(0).toUpperCase() + currentSpecialty.slice(1)}`;
+            }
             tipsModalOverlay.classList.toggle('is-open', show);
         }
         
@@ -637,7 +640,7 @@
 
         // --- Gemini API Integration ---
         async function callGemini(prompt) {
-            const apiKey = "AIzaSyAHB_GyF9KrJQE9RvWPYX9Sac6UH3JkOEc"; // Canvas will provide this
+            const apiKey = ""; // Canvas will provide this
             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
 
             const payload = {
@@ -1562,5 +1565,4 @@
     </script>
 </body>
 </html>
-
 
