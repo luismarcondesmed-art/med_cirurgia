@@ -2,7 +2,7 @@
 <html lang="pt-BR" class="dark">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale-1.0">
     <title>Cronograma Interativo de Estágios</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📖</text></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -436,7 +436,8 @@
                 
                 initializeUI();
                 initializeAuth();
-                setupSharedOnCallListener(); // Set up the shared listener once
+                // FIX: setupSharedOnCallListener is now called inside onAuthStateChanged
+                // setupSharedOnCallListener(); 
 
             } catch (error) {
                 console.error("Error during initial data fetch:", error);
@@ -444,7 +445,6 @@
                 allData.pediatria = mockSchedule.pediatria;
                 initializeUI();
                 initializeAuth();
-                setupSharedOnCallListener();
             }
         }
         
@@ -455,6 +455,12 @@
                     if (!userId || userId !== activeUserId) {
                         setupUserListener(activeUserId);
                     }
+                    // FIX: This is the correct place to initialize listeners that require auth
+                    setupSharedOnCallListener();
+                } else {
+                    // User signed out, clean up listeners if they exist
+                    if(unsubscribeShared) unsubscribeShared();
+                    if(unsubscribeUser) unsubscribeUser();
                 }
             });
 
@@ -545,6 +551,13 @@
                 weekSelectorMain.value = currentWeekOrRodizio;
                 
                 updateView();
+
+                // DESIGN IMPROVEMENT: Scroll to today on first load
+                if (!document.body.dataset.scrolledToToday) {
+                    scrollToToday();
+                    document.body.dataset.scrolledToToday = true;
+                }
+
             }, (error) => {
                 console.error("Error in user snapshot listener:", error);
             });
@@ -734,8 +747,19 @@
                     const isChecked = checklistData[activityId] || false;
                     
                     const card = document.createElement('div');
-                    card.className = `activity-card rounded-lg p-4 border-l-4 shadow-md bg-[#2D2D2D] border-[#2899F5]`;
+                    card.className = `activity-card rounded-lg p-4 border-l-4 shadow-md bg-[#2D2D2D]`;
                      if (isChecked) card.classList.add('checked');
+                    
+                    // DESIGN IMPROVEMENT: Add border colors based on activity type
+                    const activityUpper = item.activity.toUpperCase();
+                    if (activityUpper.includes('PLANTÃO') || activityUpper.includes('PA PEDIATRIA')) {
+                        card.classList.add('border-red-500');
+                    } else if (activityUpper.includes('HORÁRIO ESTUDO')) {
+                        card.classList.add('border-amber-500');
+                    } else {
+                        card.classList.add('border-blue-500');
+                    }
+
 
                     const now = new Date();
                     const currentTime = now.getHours() * 100 + now.getMinutes();
@@ -750,8 +774,7 @@
                         card.classList.add('current-activity');
                     }
 
-                    // BUG FIX: Broaden the check for on-call activities
-                    const activityUpper = item.activity.toUpperCase();
+                    // Broaden the check for on-call activities
                     if (activityUpper.includes('PLANTÃO') || activityUpper.includes('PA PEDIATRIA')) {
                         const onCallId = activityId;
                         const totalSlots = item.slots || 2;
@@ -962,6 +985,36 @@
              if(target) target.value = source.value;
         }
 
+        function scrollToToday(smooth = false) {
+            const now = new Date();
+            const todayStr = now.toISOString().split('T')[0];
+            const data = allData[currentSpecialty];
+            const currentWeekInfo = data.weeks.find(w => todayStr >= w.start && todayStr <= w.end);
+
+            if (currentWeekInfo) {
+                // If we are not on the correct week, switch to it
+                if(currentWeekOrRodizio !== currentWeekInfo.id) {
+                    currentWeekOrRodizio = currentWeekInfo.id;
+                    weekSelectorDesktop.value = currentWeekInfo.id;
+                    weekSelectorMain.value = currentWeekInfo.id;
+                    updateView();
+                }
+                
+                // Use a timeout to ensure the DOM has been updated after a potential view change
+                setTimeout(() => {
+                    const todayDay = now.toLocaleDateString('pt-BR', { weekday: 'long' }).toUpperCase();
+                    const dayCol = document.getElementById(`day-col-${todayDay}`);
+                    if (dayCol) {
+                       dayCol.scrollIntoView({ behavior: smooth ? 'smooth' : 'auto', block: 'start' });
+                    }
+                }, 100);
+            } else {
+                if(smooth) { // Only show toast if the action was user-initiated
+                    showToast('Nenhuma atividade programada para hoje.');
+                }
+            }
+        }
+
         // --- Event Listener Setup ---
 
         sidebarToggle.addEventListener('click', toggleSidebar);
@@ -996,30 +1049,7 @@
             if(e.target === syncModalOverlay) toggleSyncModal();
         });
 
-        todayBtn.addEventListener('click', () => {
-            const now = new Date();
-            const todayStr = now.toISOString().split('T')[0];
-            const todayDay = now.toLocaleDateString('pt-BR', { weekday: 'long' }).toUpperCase();
-            
-            const data = allData[currentSpecialty];
-            const currentWeekInfo = data.weeks.find(w => todayStr >= w.start && todayStr <= w.end);
-
-            if (currentWeekInfo) {
-                currentWeekOrRodizio = currentWeekInfo.id;
-                weekSelectorDesktop.value = currentWeekInfo.id;
-                weekSelectorMain.value = currentWeekInfo.id;
-                updateView();
-                
-                setTimeout(() => {
-                    const dayCol = document.getElementById(`day-col-${todayDay}`);
-                    if (dayCol) {
-                       dayCol.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    }
-                }, 100);
-            } else {
-                showToast('Nenhuma atividade programada para hoje.');
-            }
-        });
+        todayBtn.addEventListener('click', () => scrollToToday(true));
         
         copyUserIdBtnMobile.addEventListener('click', () => handleCopyId(userIdDisplayMobile));
         copyUserIdModal.addEventListener('click', () => handleCopyId(userIdDisplayModal));
@@ -1055,3 +1085,4 @@
     </script>
 </body>
 </html>
+
