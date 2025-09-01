@@ -63,21 +63,21 @@
             border-radius: 10px;
             border: 2px solid #2B2B2B;
         }
-        #sidebar-overlay, #confirm-modal-overlay, #sync-modal-overlay, #gemini-modal-overlay, #tips-modal-overlay {
+        #sidebar-overlay, #confirm-modal-overlay, #sync-modal-overlay, #gemini-modal-overlay, #tips-modal-overlay, #suggestion-modal-overlay {
             transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
             visibility: hidden;
             opacity: 0;
         }
-        #sidebar-overlay.is-open, #confirm-modal-overlay.is-open, #sync-modal-overlay.is-open, #gemini-modal-overlay.is-open, #tips-modal-overlay.is-open {
+        #sidebar-overlay.is-open, #confirm-modal-overlay.is-open, #sync-modal-overlay.is-open, #gemini-modal-overlay.is-open, #tips-modal-overlay.is-open, #suggestion-modal-overlay.is-open {
             visibility: visible;
             opacity: 1;
         }
-        #sidebar-mobile, #confirm-modal, #sync-modal, #gemini-modal, #tips-modal {
+        #sidebar-mobile, #confirm-modal, #sync-modal, #gemini-modal, #tips-modal, #suggestion-modal {
             transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
             transform: scale(0.95);
             opacity: 0;
         }
-        #sidebar-overlay.is-open #sidebar-mobile, #confirm-modal-overlay.is-open #confirm-modal, #sync-modal-overlay.is-open #sync-modal, #gemini-modal-overlay.is-open #gemini-modal, #tips-modal-overlay.is-open #tips-modal {
+        #sidebar-overlay.is-open #sidebar-mobile, #confirm-modal-overlay.is-open #confirm-modal, #sync-modal-overlay.is-open #sync-modal, #gemini-modal-overlay.is-open #gemini-modal, #tips-modal-overlay.is-open #tips-modal, #suggestion-modal-overlay.is-open #suggestion-modal {
             transform: scale(1);
             opacity: 1;
         }
@@ -111,6 +111,9 @@
         @keyframes rotation {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
+        }
+        .admin-only {
+            display: none;
         }
     </style>
 </head>
@@ -168,14 +171,18 @@
                     <img id="student-image-desktop" src="https://i.imgur.com/5AW2oEL.png" alt="Foto do Grupo" class="w-full h-auto mx-auto rounded-lg object-cover border-4 border-gray-600 mb-4">
                     <select id="student-selector-desktop" class="w-full p-3 bg-[#2D2D2D] border border-gray-600 rounded-md shadow-sm focus:ring-[#2899F5] focus:border-[#2899F5]"></select>
                 </div>
+                <div class="bg-[#2B2B2B] p-6 rounded-lg shadow-lg text-center">
+                    <h3 class="text-lg font-semibold mb-4">Assistente de IA</h3>
+                    <button id="generate-study-plan-desktop" class="w-full p-2 bg-purple-600 hover:bg-purple-700 rounded-md font-semibold transition-colors text-white text-sm">✨ Gerar Plano de Estudo</button>
+                    <button id="add-tips-btn-desktop" class="w-full mt-4 p-2 bg-teal-600 hover:bg-teal-700 rounded-md font-semibold transition-colors text-white text-sm admin-only">🧠 Adicionar Dicas da Turma</button>
+                </div>
                  <div class="bg-[#2B2B2B] p-6 rounded-lg shadow-lg text-center">
                     <h3 class="text-lg font-semibold mb-4">Opções</h3>
                     <div class="flex items-center justify-center gap-2 text-sm">
                         <input type="checkbox" id="hide-study-desktop" class="h-4 w-4 rounded bg-gray-700 border-gray-600 text-blue-500 focus:ring-blue-600">
                         <label for="hide-study-desktop">Ocultar horários de estudo</label>
                     </div>
-                     <button id="add-tips-btn-desktop" class="w-full mt-4 p-2 bg-teal-600 hover:bg-teal-700 rounded-md font-semibold transition-colors text-white text-sm">🧠 Adicionar Dicas da Turma</button>
-                    <button id="generate-study-plan-desktop" class="w-full mt-4 p-2 bg-purple-600 hover:bg-purple-700 rounded-md font-semibold transition-colors text-white text-sm">✨ Gerar Plano de Estudo</button>
+                    <button id="suggest-change-btn-desktop" class="w-full mt-4 p-2 bg-gray-600 hover:bg-gray-700 rounded-md font-semibold transition-colors text-white text-sm">🔧 Sugerir Alteração</button>
                     <button id="clearWeekButton-desktop" class="w-full mt-4 p-2 bg-red-600 hover:bg-red-700 rounded-md font-semibold transition-colors text-white text-sm">Limpar marcações</button>
                 </div>
             </aside>
@@ -209,6 +216,11 @@
                 <select id="student-selector-mobile" class="w-full p-3 bg-[#2D2D2D] border border-gray-600 rounded-md shadow-sm focus:ring-[#2899F5] focus:border-[#2899F5]"></select>
             </div>
              <div class="bg-[#2B2B2B] p-6 rounded-lg shadow-lg text-center">
+                <h3 class="text-lg font-semibold mb-4">Assistente de IA</h3>
+                <button id="generate-study-plan-mobile" class="w-full p-2 bg-purple-600 hover:bg-purple-700 rounded-md font-semibold transition-colors text-white text-sm">✨ Gerar Plano de Estudo</button>
+                <button id="add-tips-btn-mobile" class="w-full mt-4 p-2 bg-teal-600 hover:bg-teal-700 rounded-md font-semibold transition-colors text-white text-sm admin-only">🧠 Adicionar Dicas da Turma</button>
+            </div>
+            <div class="bg-[#2B2B2B] p-6 rounded-lg shadow-lg text-center">
                 <h3 class="text-lg font-semibold mb-4">Sincronização</h3>
                 <button id="sync-button-mobile" class="w-full p-2 bg-blue-600 hover:bg-blue-700 rounded-md font-semibold transition-colors text-white text-sm mb-4">Sincronizar Dados Pessoais</button>
                 <p class="text-xs text-gray-400 mb-2">Seu ID de Usuário:</p>
@@ -223,8 +235,7 @@
                     <input type="checkbox" id="hide-study-mobile" class="h-4 w-4 rounded bg-gray-700 border-gray-600 text-blue-500 focus:ring-blue-600">
                     <label for="hide-study-mobile">Ocultar horários de estudo</label>
                 </div>
-                 <button id="add-tips-btn-mobile" class="w-full mt-4 p-2 bg-teal-600 hover:bg-teal-700 rounded-md font-semibold transition-colors text-white text-sm">🧠 Adicionar Dicas da Turma</button>
-                 <button id="generate-study-plan-mobile" class="w-full mt-4 p-2 bg-purple-600 hover:bg-purple-700 rounded-md font-semibold transition-colors text-white text-sm">✨ Gerar Plano de Estudo</button>
+                 <button id="suggest-change-btn-mobile" class="w-full mt-4 p-2 bg-gray-600 hover:bg-gray-700 rounded-md font-semibold transition-colors text-white text-sm">🔧 Sugerir Alteração</button>
                 <button id="clearWeekButton-mobile" class="w-full mt-4 p-2 bg-red-600 hover:bg-red-700 rounded-md font-semibold transition-colors text-white text-sm">Limpar marcações</button>
             </div>
         </aside>
@@ -292,6 +303,28 @@
         </div>
     </div>
 
+    <!-- Suggestion Modal -->
+    <div id="suggestion-modal-overlay" class="fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center p-4">
+        <div id="suggestion-modal" class="relative w-full max-w-lg bg-[#2B2B2B] rounded-2xl shadow-2xl p-6 flex flex-col max-h-[90vh]">
+            <div class="flex items-center justify-between mb-4 flex-shrink-0">
+                 <h3 id="suggestion-modal-title" class="text-xl font-semibold">🔧 Sugerir Alteração no Cronograma</h3>
+                 <button id="suggestion-modal-close-btn" class="p-2 rounded-full hover:bg-gray-700">
+                    <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <textarea id="suggestion-textarea" class="w-full flex-grow bg-[#1B1B1B] rounded-md p-3 text-sm text-gray-300 border border-gray-600 focus:ring-2 focus:ring-orange-500 focus:border-orange-500" placeholder="Descreva a alteração que você gostaria de sugerir. Por exemplo: 'A atividade X de segunda-feira foi cancelada' ou 'O ambulatório de terça agora começa às 14h'."></textarea>
+            <div class="mt-4 flex justify-end gap-3 flex-shrink-0">
+                <button id="suggestion-modal-cancel-btn" class="px-6 py-2 bg-gray-600 hover:bg-gray-700 rounded-md font-semibold transition-colors">Cancelar</button>
+                <button id="suggestion-modal-save-btn" class="px-6 py-2 bg-orange-600 hover:bg-orange-700 rounded-md font-semibold transition-colors flex items-center gap-2">
+                    <span id="suggestion-save-text">Enviar Sugestão</span>
+                    <div id="suggestion-save-loader" class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin hidden"></div>
+                </button>
+            </div>
+        </div>
+    </div>
+
 
     <!-- "Today" Button -->
     <button id="today-btn" class="fixed bottom-6 right-6 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-3 rounded-full shadow-lg z-30">
@@ -319,7 +352,7 @@
         // Import necessary Firebase functions
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-        import { getFirestore, doc, onSnapshot, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { getFirestore, doc, onSnapshot, setDoc, addDoc, collection, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
         // Your web app's Firebase configuration
         const firebaseConfig = {
@@ -337,6 +370,9 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
+        
+        // --- Admin Configuration ---
+        const ADMIN_UID = "r5NLb0GqtcRuTmeVt3g3gRoGirl2"; // <-- IMPORTANTE: Troque esta string pelo seu ID de usuário do Firebase para ter acesso de admin
         
         // --- Global State Variables ---
         let userId = null;
@@ -434,6 +470,18 @@
         const tipsSaveLoader = document.getElementById('tips-save-loader');
         const tipsModalTitle = document.getElementById('tips-modal-title');
 
+        // Suggestion Modal Elements
+        const suggestionModalOverlay = document.getElementById('suggestion-modal-overlay');
+        const suggestionModalCloseBtn = document.getElementById('suggestion-modal-close-btn');
+        const suggestChangeBtnDesktop = document.getElementById('suggest-change-btn-desktop');
+        const suggestChangeBtnMobile = document.getElementById('suggest-change-btn-mobile');
+        const suggestionTextarea = document.getElementById('suggestion-textarea');
+        const suggestionModalSaveBtn = document.getElementById('suggestion-modal-save-btn');
+        const suggestionModalCancelBtn = document.getElementById('suggestion-modal-cancel-btn');
+        const suggestionSaveText = document.getElementById('suggestion-save-text');
+        const suggestionSaveLoader = document.getElementById('suggestion-save-loader');
+        const suggestionModalTitle = document.getElementById('suggestion-modal-title');
+
 
         // --- UI Functions ---
 
@@ -479,18 +527,26 @@
         
         function toggleTipsModal(show = false) {
             if(show) {
-                const weekInfo = allData[currentSpecialty]?.weeks.find(w => w.id == currentWeekOrRodizio);
-                tipsModalTitle.textContent = `Dicas para: ${weekInfo?.title || 'Semana Atual'}`;
-                const tipsKey = `${currentSpecialty}-${currentWeekOrRodizio}`;
+                tipsModalTitle.textContent = `Dicas para o Módulo: ${currentSpecialty.charAt(0).toUpperCase() + currentSpecialty.slice(1)}`;
+                const tipsKey = currentSpecialty;
                 tipsTextarea.value = sharedTipsData[tipsKey] || '';
             }
             tipsModalOverlay.classList.toggle('is-open', show);
+        }
+        
+        function toggleSuggestionModal(show = false) {
+            if(show) {
+                const weekInfo = allData[currentSpecialty]?.weeks.find(w => w.id == currentWeekOrRodizio);
+                suggestionModalTitle.textContent = `Sugestão para: ${weekInfo?.title || 'Semana Atual'}`;
+                suggestionTextarea.value = '';
+            }
+            suggestionModalOverlay.classList.toggle('is-open', show);
         }
 
 
         // --- Gemini API Integration ---
         async function callGemini(prompt) {
-            const apiKey = ""; // Canvas will provide this
+            const apiKey = "AIzaSyAHB_GyF9KrJQE9RvWPYX9Sac6UH3JkOEc"; // Canvas will provide this
             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
 
             const payload = {
@@ -588,6 +644,7 @@
                     const activeUserId = localStorage.getItem('loadedUserId') || user.uid;
                     if (!userId || userId !== activeUserId) {
                         setupUserListener(activeUserId);
+                        updateAdminUI(activeUserId);
                     }
                 }
             });
@@ -698,7 +755,6 @@
                 const newData = docSnap.exists() ? docSnap.data() : {};
                  if (JSON.stringify(sharedTipsData) !== JSON.stringify(newData)) {
                     sharedTipsData = newData;
-                    // No need to re-render, just update data for next AI call
                 }
             }, (error) => console.error("Error in tips listener:", error));
         }
@@ -710,6 +766,13 @@
             updateUILayout();
             populateSelectors();
             updateView();
+        }
+
+        function updateAdminUI(currentUserId) {
+            const isAdmin = currentUserId === ADMIN_UID;
+            document.querySelectorAll('.admin-only').forEach(el => {
+                el.style.display = isAdmin ? 'block' : 'none';
+            });
         }
         
         function resetLocalState() {
@@ -1012,7 +1075,7 @@
             geminiModalLoader.style.display = 'flex';
             toggleGeminiModal(true);
 
-            const tipsKey = `${currentSpecialty}-${currentWeekOrRodizio}`;
+            const tipsKey = currentSpecialty;
             const userTips = sharedTipsData[tipsKey] || '';
             
             let prompt = `Você é um preceptor de medicina experiente. Forneça uma dica rápida e focada para um estudante de medicina sobre a atividade: "${item.activity}", supervisionada por ${item.professor}. O que o aluno deve focar para aproveitar ao máximo essa oportunidade? Responda em um parágrafo curto e direto.`;
@@ -1042,13 +1105,13 @@
                 .map(item => `- ${item.day}: ${item.activity} (${item.time}) com ${item.professor}`)
                 .join('\n');
                 
-            const tipsKey = `${currentSpecialty}-${currentWeekOrRodizio}`;
+            const tipsKey = currentSpecialty;
             const userTips = sharedTipsData[tipsKey] || '';
 
             let prompt = `Você é um assistente de estudos sênior para um interno de medicina. Sua tarefa é criar um plano de estudos inteligente e prático para a semana de "${weekInfo.title}", com base nas seguintes atividades agendadas:\n${weekActivities}\n\n`;
 
             if(userTips){
-                prompt += `**Atenção:** Leve em consideração as seguintes dicas e informações fornecidas por alunos mais experientes. Elas são CRUCIAIS e devem ser priorizadas na sua análise:\n"${userTips}"\n\n`;
+                prompt += `**Atenção:** Leve em consideração as seguintes dicas e informações fornecidas por alunos mais experientes para todo o módulo de ${currentSpecialty}. Elas são CRUCIAIS e devem ser priorizadas na sua análise:\n"${userTips}"\n\n`;
             }
 
             prompt += `Por favor, gere o plano seguindo estas diretrizes:\n1. **Análise e Foco:** Identifique os temas clínicos e cirúrgicos mais importantes da semana, usando as dicas dos veteranos como guia principal.\n2. **Estrutura Realista:** Organize as sugestões de estudo por ambiente (ex: Ambulatório, Enfermaria, Centro Cirúrgico), se a atividade permitir essa distinção.\n3. **Conteúdo Atualizado:** Baseie todas as recomendações em diretrizes e artigos publicados nos últimos 5 anos.\n4. **Recursos Adicionais:** Para cada tema principal, sugira uma bibliografia útil (capítulos de livros como Sabiston, Schwartz, Nelson, etc.) e, se possível, um link para um artigo de revisão de alta qualidade (ex: UpToDate, Medscape, NEJM, etc.).\n5. **Formato:** Use HTML simples para a resposta, com <h3> para os títulos, <ul> e <li> para listas, e <a> para links.`;
@@ -1106,7 +1169,7 @@
             tipsSaveText.classList.add('hidden');
             tipsSaveLoader.classList.remove('hidden');
 
-            const tipsKey = `${currentSpecialty}-${currentWeekOrRodizio}`;
+            const tipsKey = currentSpecialty;
             const newTips = tipsTextarea.value;
 
             const tipsDocRef = doc(db, 'schedules', 'sharedTips');
@@ -1120,6 +1183,35 @@
             } finally {
                 tipsSaveText.classList.remove('hidden');
                 tipsSaveLoader.classList.add('hidden');
+            }
+        }
+
+        async function saveSuggestion() {
+            const suggestionText = suggestionTextarea.value.trim();
+            if(!suggestionText) {
+                showToast("Por favor, descreva sua sugestão.");
+                return;
+            }
+
+            suggestionSaveText.classList.add('hidden');
+            suggestionSaveLoader.classList.remove('hidden');
+            
+            try {
+                await addDoc(collection(db, "suggestions"), {
+                    userId: userId,
+                    specialty: currentSpecialty,
+                    week: currentWeekOrRodizio,
+                    suggestion: suggestionText,
+                    createdAt: serverTimestamp()
+                });
+                showToast("Sugestão enviada com sucesso!");
+                toggleSuggestionModal(false);
+            } catch (error) {
+                 console.error("Error sending suggestion:", error);
+                showToast("Erro ao enviar sugestão.");
+            } finally {
+                suggestionSaveText.classList.remove('hidden');
+                suggestionSaveLoader.classList.add('hidden');
             }
         }
 
@@ -1219,6 +1311,14 @@
         });
         tipsModalSaveBtn.addEventListener('click', saveTips);
 
+        suggestChangeBtnDesktop.addEventListener('click', () => toggleSuggestionModal(true));
+        suggestChangeBtnMobile.addEventListener('click', () => toggleSuggestionModal(true));
+        suggestionModalCloseBtn.addEventListener('click', () => toggleSuggestionModal(false));
+        suggestionModalCancelBtn.addEventListener('click', () => toggleSuggestionModal(false));
+        suggestionModalOverlay.addEventListener('click', (e) => {
+            if(e.target === suggestionModalOverlay) toggleSuggestionModal(false);
+        });
+        suggestionModalSaveBtn.addEventListener('click', saveSuggestion);
         
         generateStudyPlanBtnDesktop.addEventListener('click', handleStudyPlanClick);
         generateStudyPlanBtnMobile.addEventListener('click', handleStudyPlanClick);
