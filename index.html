@@ -52,32 +52,32 @@
             gap: 1rem;
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
         }
-        aside::-webkit-scrollbar, main::-webkit-scrollbar {
+        aside::-webkit-scrollbar, main::-webkit-scrollbar, .modal-scroll::-webkit-scrollbar {
             width: 8px;
         }
-        aside::-webkit-scrollbar-track, main::-webkit-scrollbar-track {
+        aside::-webkit-scrollbar-track, main::-webkit-scrollbar-track, .modal-scroll::-webkit-scrollbar-track {
             background: #2B2B2B;
         }
-        aside::-webkit-scrollbar-thumb, main::-webkit-scrollbar-thumb {
+        aside::-webkit-scrollbar-thumb, main::-webkit-scrollbar-thumb, .modal-scroll::-webkit-scrollbar-thumb {
             background-color: #4A4A4A;
             border-radius: 10px;
             border: 2px solid #2B2B2B;
         }
-        #sidebar-overlay, #confirm-modal-overlay, #sync-modal-overlay {
+        #sidebar-overlay, #confirm-modal-overlay, #sync-modal-overlay, #gemini-modal-overlay, #tips-modal-overlay {
             transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
             visibility: hidden;
             opacity: 0;
         }
-        #sidebar-overlay.is-open, #confirm-modal-overlay.is-open, #sync-modal-overlay.is-open {
+        #sidebar-overlay.is-open, #confirm-modal-overlay.is-open, #sync-modal-overlay.is-open, #gemini-modal-overlay.is-open, #tips-modal-overlay.is-open {
             visibility: visible;
             opacity: 1;
         }
-        #sidebar-mobile, #confirm-modal, #sync-modal {
+        #sidebar-mobile, #confirm-modal, #sync-modal, #gemini-modal, #tips-modal {
             transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
             transform: scale(0.95);
             opacity: 0;
         }
-        #sidebar-overlay.is-open #sidebar-mobile, #confirm-modal-overlay.is-open #confirm-modal, #sync-modal-overlay.is-open #sync-modal {
+        #sidebar-overlay.is-open #sidebar-mobile, #confirm-modal-overlay.is-open #confirm-modal, #sync-modal-overlay.is-open #sync-modal, #gemini-modal-overlay.is-open #gemini-modal, #tips-modal-overlay.is-open #tips-modal {
             transform: scale(1);
             opacity: 1;
         }
@@ -96,6 +96,21 @@
         #toast-notification.show {
             transform: translateY(0);
             opacity: 1;
+        }
+         /* Gemini Loader */
+        .gemini-loader {
+            width: 48px;
+            height: 48px;
+            border: 5px solid #FFF;
+            border-bottom-color: transparent;
+            border-radius: 50%;
+            display: inline-block;
+            box-sizing: border-box;
+            animation: rotation 1s linear infinite;
+        }
+        @keyframes rotation {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
     </style>
 </head>
@@ -159,6 +174,8 @@
                         <input type="checkbox" id="hide-study-desktop" class="h-4 w-4 rounded bg-gray-700 border-gray-600 text-blue-500 focus:ring-blue-600">
                         <label for="hide-study-desktop">Ocultar horários de estudo</label>
                     </div>
+                     <button id="add-tips-btn-desktop" class="w-full mt-4 p-2 bg-teal-600 hover:bg-teal-700 rounded-md font-semibold transition-colors text-white text-sm">🧠 Adicionar Dicas da Turma</button>
+                    <button id="generate-study-plan-desktop" class="w-full mt-4 p-2 bg-purple-600 hover:bg-purple-700 rounded-md font-semibold transition-colors text-white text-sm">✨ Gerar Plano de Estudo</button>
                     <button id="clearWeekButton-desktop" class="w-full mt-4 p-2 bg-red-600 hover:bg-red-700 rounded-md font-semibold transition-colors text-white text-sm">Limpar marcações</button>
                 </div>
             </aside>
@@ -206,6 +223,8 @@
                     <input type="checkbox" id="hide-study-mobile" class="h-4 w-4 rounded bg-gray-700 border-gray-600 text-blue-500 focus:ring-blue-600">
                     <label for="hide-study-mobile">Ocultar horários de estudo</label>
                 </div>
+                 <button id="add-tips-btn-mobile" class="w-full mt-4 p-2 bg-teal-600 hover:bg-teal-700 rounded-md font-semibold transition-colors text-white text-sm">🧠 Adicionar Dicas da Turma</button>
+                 <button id="generate-study-plan-mobile" class="w-full mt-4 p-2 bg-purple-600 hover:bg-purple-700 rounded-md font-semibold transition-colors text-white text-sm">✨ Gerar Plano de Estudo</button>
                 <button id="clearWeekButton-mobile" class="w-full mt-4 p-2 bg-red-600 hover:bg-red-700 rounded-md font-semibold transition-colors text-white text-sm">Limpar marcações</button>
             </div>
         </aside>
@@ -230,6 +249,49 @@
             </div>
         </div>
     </div>
+
+    <!-- Gemini Modal -->
+    <div id="gemini-modal-overlay" class="fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center p-4">
+        <div id="gemini-modal" class="relative w-full max-w-2xl bg-[#2B2B2B] rounded-2xl shadow-2xl p-6 flex flex-col max-h-[90vh]">
+            <div class="flex items-center justify-between mb-4 flex-shrink-0">
+                 <h3 id="gemini-modal-title" class="text-xl font-semibold">✨ Assistente de Estudos</h3>
+                 <button id="gemini-modal-close-btn" class="p-2 rounded-full hover:bg-gray-700">
+                    <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <div id="gemini-modal-content" class="overflow-y-auto text-gray-300 prose prose-invert prose-sm pr-2 modal-scroll">
+                <!-- Gemini content will be injected here -->
+            </div>
+            <div id="gemini-modal-loader" class="flex items-center justify-center p-8">
+                <div class="gemini-loader"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Tips Modal -->
+    <div id="tips-modal-overlay" class="fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center p-4">
+        <div id="tips-modal" class="relative w-full max-w-lg bg-[#2B2B2B] rounded-2xl shadow-2xl p-6 flex flex-col max-h-[90vh]">
+            <div class="flex items-center justify-between mb-4 flex-shrink-0">
+                 <h3 id="tips-modal-title" class="text-xl font-semibold">🧠 Dicas da Turma</h3>
+                 <button id="tips-modal-close-btn" class="p-2 rounded-full hover:bg-gray-700">
+                    <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <textarea id="tips-textarea" class="w-full flex-grow bg-[#1B1B1B] rounded-md p-3 text-sm text-gray-300 border border-gray-600 focus:ring-2 focus:ring-teal-500 focus:border-teal-500" placeholder="Cole aqui dicas de veteranos, detalhes sobre os preceptores, o que focar em cada atividade, etc. Esta informação será usada pela IA e compartilhada com a turma."></textarea>
+            <div class="mt-4 flex justify-end gap-3 flex-shrink-0">
+                <button id="tips-modal-cancel-btn" class="px-6 py-2 bg-gray-600 hover:bg-gray-700 rounded-md font-semibold transition-colors">Cancelar</button>
+                <button id="tips-modal-save-btn" class="px-6 py-2 bg-teal-600 hover:bg-teal-700 rounded-md font-semibold transition-colors flex items-center gap-2">
+                    <span id="tips-save-text">Salvar Dicas</span>
+                    <div id="tips-save-loader" class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin hidden"></div>
+                </button>
+            </div>
+        </div>
+    </div>
+
 
     <!-- "Today" Button -->
     <button id="today-btn" class="fixed bottom-6 right-6 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-3 rounded-full shadow-lg z-30">
@@ -278,15 +340,17 @@
         
         // --- Global State Variables ---
         let userId = null;
-        let unsubscribeUser; // Listener for user-specific data
-        let unsubscribeShared; // Listener for shared data
-        let allData = {}; // To store schedule data from JSON files
+        let unsubscribeUser;
+        let unsubscribeOnCall;
+        let unsubscribeTips;
+        let allData = {};
         let currentSpecialty = 'cirurgia';
         let currentWeekOrRodizio = '1';
         let currentStudent = 'all';
-        let checklistData = {}; // To store the checked state of activities
+        let checklistData = {};
         let hideStudyTime = false;
-        let onCallClaimData = {}; // NEW: To store on-call claimed slots data
+        let onCallClaimData = {}; 
+        let sharedTipsData = {};
 
         // --- DOM Element References ---
         const scheduleGrid = document.getElementById('schedule-grid');
@@ -349,6 +413,28 @@
         const confirmBtnYes = document.getElementById('confirm-btn-yes');
         const confirmBtnNo = document.getElementById('confirm-btn-no');
 
+        // Gemini Modal Elements
+        const geminiModalOverlay = document.getElementById('gemini-modal-overlay');
+        const geminiModalCloseBtn = document.getElementById('gemini-modal-close-btn');
+        const geminiModalTitle = document.getElementById('gemini-modal-title');
+        const geminiModalContent = document.getElementById('gemini-modal-content');
+        const geminiModalLoader = document.getElementById('gemini-modal-loader');
+        const generateStudyPlanBtnDesktop = document.getElementById('generate-study-plan-desktop');
+        const generateStudyPlanBtnMobile = document.getElementById('generate-study-plan-mobile');
+        
+        // Tips Modal Elements
+        const tipsModalOverlay = document.getElementById('tips-modal-overlay');
+        const tipsModalCloseBtn = document.getElementById('tips-modal-close-btn');
+        const addTipsBtnDesktop = document.getElementById('add-tips-btn-desktop');
+        const addTipsBtnMobile = document.getElementById('add-tips-btn-mobile');
+        const tipsTextarea = document.getElementById('tips-textarea');
+        const tipsModalSaveBtn = document.getElementById('tips-modal-save-btn');
+        const tipsModalCancelBtn = document.getElementById('tips-modal-cancel-btn');
+        const tipsSaveText = document.getElementById('tips-save-text');
+        const tipsSaveLoader = document.getElementById('tips-save-loader');
+        const tipsModalTitle = document.getElementById('tips-modal-title');
+
+
         // --- UI Functions ---
 
         function showToast(message) {
@@ -387,6 +473,54 @@
             syncModalOverlay.classList.toggle('is-open');
         }
 
+        function toggleGeminiModal(show = false) {
+            geminiModalOverlay.classList.toggle('is-open', show);
+        }
+        
+        function toggleTipsModal(show = false) {
+            if(show) {
+                const weekInfo = allData[currentSpecialty]?.weeks.find(w => w.id == currentWeekOrRodizio);
+                tipsModalTitle.textContent = `Dicas para: ${weekInfo?.title || 'Semana Atual'}`;
+                const tipsKey = `${currentSpecialty}-${currentWeekOrRodizio}`;
+                tipsTextarea.value = sharedTipsData[tipsKey] || '';
+            }
+            tipsModalOverlay.classList.toggle('is-open', show);
+        }
+
+
+        // --- Gemini API Integration ---
+        async function callGemini(prompt) {
+            const apiKey = ""; // Canvas will provide this
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+
+            const payload = {
+                contents: [{ parts: [{ text: prompt }] }],
+            };
+            
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`API call failed with status: ${response.status}`);
+                }
+
+                const result = await response.json();
+                const candidate = result.candidates?.[0];
+
+                if (candidate && candidate.content?.parts?.[0]?.text) {
+                    return candidate.content.parts[0].text;
+                } else {
+                    return "Não foi possível obter uma resposta do assistente.";
+                }
+            } catch (error) {
+                console.error("Gemini API call error:", error);
+                return "Ocorreu um erro ao contatar o assistente de estudos. Tente novamente.";
+            }
+        }
 
         // --- Data Handling and Firebase ---
 
@@ -436,7 +570,7 @@
                 
                 initializeUI();
                 initializeAuth();
-                setupSharedOnCallListener(); // Set up the shared listener once
+                setupSharedListeners();
 
             } catch (error) {
                 console.error("Error during initial data fetch:", error);
@@ -444,7 +578,7 @@
                 allData.pediatria = mockSchedule.pediatria;
                 initializeUI();
                 initializeAuth();
-                setupSharedOnCallListener();
+                setupSharedListeners();
             }
         }
         
@@ -472,7 +606,6 @@
             if (!userId) return;
             const userDocRef = doc(db, 'users', userId);
             try {
-                // Only save user-specific data here
                 await setDoc(userDocRef, {
                     checklistData,
                     currentStudent,
@@ -501,7 +634,6 @@
 
                 if (docSnap.exists()) {
                     const data = docSnap.data();
-                    // Only update user-specific state from this listener
                     if (JSON.stringify(checklistData) !== JSON.stringify(data.checklistData || {})) {
                         checklistData = data.checklistData || {};
                         stateChanged = true;
@@ -532,7 +664,6 @@
                 document.body.dataset.initialized = true;
 
                 updateActiveSpecialtyButtons();
-
                 hideStudyDesktop.checked = hideStudyTime;
                 hideStudyMobile.checked = hideStudyTime;
 
@@ -550,21 +681,28 @@
             });
         }
         
-        function setupSharedOnCallListener() {
+        function setupSharedListeners() {
             const onCallDocRef = doc(db, 'schedules', 'onCallClaims');
-            if (unsubscribeShared) unsubscribeShared();
-            
-            unsubscribeShared = onSnapshot(onCallDocRef, (docSnap) => {
+            if (unsubscribeOnCall) unsubscribeOnCall();
+            unsubscribeOnCall = onSnapshot(onCallDocRef, (docSnap) => {
                 const newData = docSnap.exists() ? docSnap.data().claims || {} : {};
                 if (JSON.stringify(onCallClaimData) !== JSON.stringify(newData)) {
                     onCallClaimData = newData;
-                    // Only re-render if the data actually changed to prevent loops
                     renderSchedule();
                 }
-            }, (error) => {
-                console.error("Error in shared snapshot listener:", error);
-            });
+            }, (error) => console.error("Error in on-call listener:", error));
+            
+            const tipsDocRef = doc(db, 'schedules', 'sharedTips');
+            if (unsubscribeTips) unsubscribeTips();
+            unsubscribeTips = onSnapshot(tipsDocRef, (docSnap) => {
+                const newData = docSnap.exists() ? docSnap.data() : {};
+                 if (JSON.stringify(sharedTipsData) !== JSON.stringify(newData)) {
+                    sharedTipsData = newData;
+                    // No need to re-render, just update data for next AI call
+                }
+            }, (error) => console.error("Error in tips listener:", error));
         }
+        
         
         // --- Core Application Logic ---
         
@@ -579,7 +717,6 @@
             currentSpecialty = 'cirurgia';
             currentStudent = 'all';
             hideStudyTime = false;
-            // Do not reset onCallClaimData as it's shared
             const data = allData[currentSpecialty];
             currentWeekOrRodizio = (data?.weeks?.[0]?.id) || '1';
         }
@@ -598,12 +735,7 @@
             const data = allData[currentSpecialty];
             currentWeekOrRodizio = (data?.weeks?.[0]?.id) || '1';
             
-            // Reset student based on new specialty to avoid invalid state
-            if (newSpecialty === 'pediatria') {
-                currentStudent = data?.students?.[0]?.id || 'p1';
-            } else {
-                currentStudent = 'all';
-            }
+            currentStudent = data?.students?.[0]?.id || 'all';
 
             updateActiveSpecialtyButtons();
             updateUILayout();
@@ -648,7 +780,6 @@
         function updateUILayout() {
             const isCirurgia = currentSpecialty === 'cirurgia';
             
-            // BUG FIX: The student selector should always be visible
             studentContainerDesktop.style.display = 'block';
             studentContainerMobile.style.display = 'block';
             
@@ -682,8 +813,8 @@
             if (!data) return;
             let weekData = data.schedule.filter(item => item.week == currentWeekOrRodizio);
 
-            if (currentSpecialty === 'cirurgia') {
-                weekData = weekData.filter(item => currentStudent === 'all' || (item.studentId && item.studentId.includes(parseInt(currentStudent))));
+            if (currentSpecialty === 'cirurgia' && currentStudent !== 'all') {
+                 weekData = weekData.filter(item => item.studentId && item.studentId.includes(parseInt(currentStudent)));
             }
             
             let filteredData = hideStudyTime ? weekData.filter(item => !item.activity.toLowerCase().includes('horário estudo')) : weekData;
@@ -750,15 +881,11 @@
                         card.classList.add('current-activity');
                     }
 
-                    // BUG FIX: Broaden the check for on-call activities
                     const activityUpper = item.activity.toUpperCase();
                     if (activityUpper.includes('PLANTÃO') || activityUpper.includes('PA PEDIATRIA')) {
                         const onCallId = activityId;
                         const totalSlots = item.slots || 2;
-                        
-                        // Use the shared state
                         const slots = onCallClaimData[onCallId] || new Array(totalSlots).fill(null);
-                        
                         const currentStudentData = allData[currentSpecialty].students.find(s => s.id == currentStudent);
                         const currentUserSlot = slots.find(slot => slot && currentStudentData && slot.id == currentStudentData.id);
                         const hasEmptySlot = slots.some(slot => slot === null);
@@ -788,7 +915,12 @@
                                     <p class="font-bold text-md activity-title">${item.activity}</p>
                                     <p class="text-sm text-gray-400 font-medium mt-1">${item.time}</p>
                                 </div>
-                                <input type="checkbox" id="${activityId}" class="ml-4 mt-1 h-5 w-5 rounded bg-gray-700 border-gray-600 text-blue-500 focus:ring-blue-600" ${isChecked ? 'checked' : ''}>
+                                <div class="flex items-center">
+                                    <button class="gemini-summary-btn p-1 rounded-full hover:bg-gray-600 mr-2" title="✨ Dica do Preceptor">
+                                        <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 7.5V6.108c0-1.135.845-2.098 1.976-2.192.373-.03.748-.057 1.123-.08M15.75 18H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08M15.75 18.75v-1.875a3.375 3.375 0 00-3.375-3.375h-1.5a1.125 1.125 0 01-1.125-1.125v-1.5A3.375 3.375 0 006.375 7.5H5.25m11.9-3.664A2.251 2.251 0 0015 2.25h-1.5a2.251 2.251 0 00-2.15 1.586m5.8 0c.065.21.1.433.1.664v.75h-6v-.75c0-.231.035-.454.1-.664M6.75 7.5H4.875c-.621 0-1.125.504-1.125 1.125v12c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V16.5a9 9 0 00-9-9z" /></svg>
+                                    </button>
+                                    <input type="checkbox" id="${activityId}" class="h-5 w-5 rounded bg-gray-700 border-gray-600 text-blue-500 focus:ring-blue-600" ${isChecked ? 'checked' : ''}>
+                                </div>
                             </div>
                             ${slotsHtml}
                             ${buttonHtml}
@@ -798,11 +930,10 @@
                         if (actionButton) {
                             actionButton.addEventListener('click', () => handleOnCallAction(onCallId, actionButton.dataset.action, totalSlots));
                         }
-                        card.querySelector(`#${activityId}`).addEventListener('change', handleChecklistChange);
 
                     } else { // Regular activity card
                         let studentHtml = '';
-                        if (currentSpecialty === 'cirurgia' && item.studentId) {
+                        if (currentSpecialty === 'cirurgia' && item.studentId && currentStudent === 'all') {
                             const involvedStudents = allData.cirurgia.students
                                 .filter(s => s.id !== 'all' && item.studentId.includes(s.id))
                                 .map(s => s.name.split(' ')[0])
@@ -813,12 +944,17 @@
                         const locationUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.location + ', Curitiba, Brazil')}`;
 
                         card.innerHTML = `
-                            <div class="flex items-start justify-between">
+                             <div class="flex items-start justify-between">
                                 <div class="flex-1">
                                     <p class="font-bold text-md activity-title">${item.activity}</p>
                                     <p class="text-sm text-gray-400 font-medium mt-1">${item.time}</p>
                                 </div>
-                                <input type="checkbox" id="${activityId}" class="ml-4 mt-1 h-5 w-5 rounded bg-gray-700 border-gray-600 text-blue-500 focus:ring-blue-600" ${isChecked ? 'checked' : ''}>
+                                <div class="flex items-center">
+                                     <button class="gemini-summary-btn p-1 rounded-full hover:bg-gray-600 mr-2" title="✨ Dica do Preceptor">
+                                        <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 7.5V6.108c0-1.135.845-2.098 1.976-2.192.373-.03.748-.057 1.123-.08M15.75 18H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08M15.75 18.75v-1.875a3.375 3.375 0 00-3.375-3.375h-1.5a1.125 1.125 0 01-1.125-1.125v-1.5A3.375 3.375 0 006.375 7.5H5.25m11.9-3.664A2.251 2.251 0 0015 2.25h-1.5a2.251 2.251 0 00-2.15 1.586m5.8 0c.065.21.1.433.1.664v.75h-6v-.75c0-.231.035-.454.1-.664M6.75 7.5H4.875c-.621 0-1.125.504-1.125 1.125v12c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V16.5a9 9 0 00-9-9z" /></svg>
+                                    </button>
+                                    <input type="checkbox" id="${activityId}" class="h-5 w-5 rounded bg-gray-700 border-gray-600 text-blue-500 focus:ring-blue-600" ${isChecked ? 'checked' : ''}>
+                                </div>
                             </div>
                             <div class="mt-3 border-t border-gray-700 pt-3 text-sm">
                                 <p><strong>Professor:</strong> ${item.professor}</p>
@@ -826,9 +962,10 @@
                                 ${studentHtml}
                             </div>
                         `;
-                        card.querySelector(`#${activityId}`).addEventListener('change', handleChecklistChange);
                     }
                     
+                    card.querySelector(`#${activityId}`).addEventListener('change', handleChecklistChange);
+                    card.querySelector('.gemini-summary-btn').addEventListener('click', () => handleSummaryClick(item));
                     dayColumn.appendChild(card);
                 });
                 fragment.appendChild(dayColumn);
@@ -869,13 +1006,66 @@
             renderSchedule();
         }
 
+        async function handleSummaryClick(item) {
+            geminiModalTitle.textContent = `Dica Rápida: ${item.activity}`;
+            geminiModalContent.innerHTML = '';
+            geminiModalLoader.style.display = 'flex';
+            toggleGeminiModal(true);
+
+            const tipsKey = `${currentSpecialty}-${currentWeekOrRodizio}`;
+            const userTips = sharedTipsData[tipsKey] || '';
+            
+            let prompt = `Você é um preceptor de medicina experiente. Forneça uma dica rápida e focada para um estudante de medicina sobre a atividade: "${item.activity}", supervisionada por ${item.professor}. O que o aluno deve focar para aproveitar ao máximo essa oportunidade? Responda em um parágrafo curto e direto.`;
+            
+            if(userTips) {
+                prompt += `\n\nContexto Adicional (Dicas de Veteranos - use esta informação como prioridade): "${userTips}"`;
+            }
+
+            const summary = await callGemini(prompt);
+            
+            geminiModalContent.innerHTML = summary.replace(/\n/g, '<br>');
+            geminiModalLoader.style.display = 'none';
+        }
+        
+        async function handleStudyPlanClick() {
+            const data = allData[currentSpecialty];
+            const weekInfo = data.weeks.find(w => w.id == currentWeekOrRodizio);
+            if (!weekInfo) return;
+
+            geminiModalTitle.textContent = `Plano de Estudos: ${weekInfo.title}`;
+            geminiModalContent.innerHTML = '';
+            geminiModalLoader.style.display = 'flex';
+            toggleGeminiModal(true);
+            
+            const weekActivities = data.schedule
+                .filter(item => item.week == currentWeekOrRodizio)
+                .map(item => `- ${item.day}: ${item.activity} (${item.time}) com ${item.professor}`)
+                .join('\n');
+                
+            const tipsKey = `${currentSpecialty}-${currentWeekOrRodizio}`;
+            const userTips = sharedTipsData[tipsKey] || '';
+
+            let prompt = `Você é um assistente de estudos sênior para um interno de medicina. Sua tarefa é criar um plano de estudos inteligente e prático para a semana de "${weekInfo.title}", com base nas seguintes atividades agendadas:\n${weekActivities}\n\n`;
+
+            if(userTips){
+                prompt += `**Atenção:** Leve em consideração as seguintes dicas e informações fornecidas por alunos mais experientes. Elas são CRUCIAIS e devem ser priorizadas na sua análise:\n"${userTips}"\n\n`;
+            }
+
+            prompt += `Por favor, gere o plano seguindo estas diretrizes:\n1. **Análise e Foco:** Identifique os temas clínicos e cirúrgicos mais importantes da semana, usando as dicas dos veteranos como guia principal.\n2. **Estrutura Realista:** Organize as sugestões de estudo por ambiente (ex: Ambulatório, Enfermaria, Centro Cirúrgico), se a atividade permitir essa distinção.\n3. **Conteúdo Atualizado:** Baseie todas as recomendações em diretrizes e artigos publicados nos últimos 5 anos.\n4. **Recursos Adicionais:** Para cada tema principal, sugira uma bibliografia útil (capítulos de livros como Sabiston, Schwartz, Nelson, etc.) e, se possível, um link para um artigo de revisão de alta qualidade (ex: UpToDate, Medscape, NEJM, etc.).\n5. **Formato:** Use HTML simples para a resposta, com <h3> para os títulos, <ul> e <li> para listas, e <a> para links.`;
+
+            const plan = await callGemini(prompt);
+
+            geminiModalContent.innerHTML = plan;
+            geminiModalLoader.style.display = 'none';
+        }
+
+
         async function handleOnCallAction(onCallId, action, totalSlots) {
             if (currentSpecialty === 'cirurgia' && currentStudent === 'all') {
                 showToast("Por favor, selecione um aluno para reivindicar uma vaga.");
                 return;
             }
-
-            // Create a deep copy to avoid modifying the global state directly before saving
+            
             const updatedOnCallData = JSON.parse(JSON.stringify(onCallClaimData));
             if (!updatedOnCallData[onCallId]) {
                 updatedOnCallData[onCallId] = new Array(totalSlots).fill(null);
@@ -903,14 +1093,33 @@
                 }
             }
             
-            // Save the entire updated object to Firestore
             const onCallDocRef = doc(db, 'schedules', 'onCallClaims');
             try {
                 await setDoc(onCallDocRef, { claims: updatedOnCallData });
-                // The listener will automatically update the UI
             } catch (error) {
                 console.error("Error updating on-call data:", error);
                 showToast("Erro ao atualizar vaga.");
+            }
+        }
+
+        async function saveTips() {
+            tipsSaveText.classList.add('hidden');
+            tipsSaveLoader.classList.remove('hidden');
+
+            const tipsKey = `${currentSpecialty}-${currentWeekOrRodizio}`;
+            const newTips = tipsTextarea.value;
+
+            const tipsDocRef = doc(db, 'schedules', 'sharedTips');
+            try {
+                await setDoc(tipsDocRef, { [tipsKey]: newTips }, { merge: true });
+                showToast("Dicas salvas com sucesso!");
+                toggleTipsModal(false);
+            } catch (error) {
+                console.error("Error saving tips:", error);
+                showToast("Erro ao salvar as dicas.");
+            } finally {
+                tipsSaveText.classList.remove('hidden');
+                tipsSaveLoader.classList.add('hidden');
             }
         }
 
@@ -996,6 +1205,25 @@
             if(e.target === syncModalOverlay) toggleSyncModal();
         });
 
+        geminiModalCloseBtn.addEventListener('click', () => toggleGeminiModal(false));
+        geminiModalOverlay.addEventListener('click', (e) => {
+            if (e.target === geminiModalOverlay) toggleGeminiModal(false);
+        });
+        
+        addTipsBtnDesktop.addEventListener('click', () => toggleTipsModal(true));
+        addTipsBtnMobile.addEventListener('click', () => toggleTipsModal(true));
+        tipsModalCloseBtn.addEventListener('click', () => toggleTipsModal(false));
+        tipsModalCancelBtn.addEventListener('click', () => toggleTipsModal(false));
+        tipsModalOverlay.addEventListener('click', (e) => {
+            if(e.target === tipsModalOverlay) toggleTipsModal(false);
+        });
+        tipsModalSaveBtn.addEventListener('click', saveTips);
+
+        
+        generateStudyPlanBtnDesktop.addEventListener('click', handleStudyPlanClick);
+        generateStudyPlanBtnMobile.addEventListener('click', handleStudyPlanClick);
+
+
         todayBtn.addEventListener('click', () => {
             const now = new Date();
             const todayStr = now.toISOString().split('T')[0];
@@ -1055,3 +1283,4 @@
     </script>
 </body>
 </html>
+
