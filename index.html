@@ -393,7 +393,7 @@
         const db = getFirestore(app);
         
         // --- Admin Configuration ---
-        const ADMIN_UID = "COLE_SEU_ID_DE_ADMINISTRADOR_AQUI"; // <-- IMPORTANTE: Troque esta string pelo seu ID de usuário do Firebase para ter acesso de admin
+        const ADMIN_UID = "r5NLb0GqtcRuTmeVt3g3gRoGirl2"; // <-- IMPORTANTE: Troque esta string pelo seu ID de usuário do Firebase para ter acesso de admin
         
         // --- Global State Variables ---
         let userId = null;
@@ -579,7 +579,7 @@
 
         // --- Gemini API Integration ---
         async function callGemini(prompt) {
-            const apiKey = ""; // Canvas will provide this
+            const apiKey = "AIzaSyBMb-UfMT4zOay6kdh8PYtBFnIV8clNlok"; // Canvas will provide this
             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
 
             const payload = {
@@ -1455,4 +1455,5 @@
     </script>
 </body>
 </html>
+
 
