@@ -439,12 +439,7 @@
         async function initializeAuth() {
             onAuthStateChanged(auth, async (user) => {
                 if (user) {
-                    // This is the point where we are SURE we have a user
-                    
-                    // 1. Fetch data now that we are authenticated
-                    fetchData();
-
-                    // 2. Check for admin status
+                    // STEP 1: Determine admin status FIRST.
                     const adminRef = doc(db, 'admins', user.uid);
                     try {
                         const adminSnap = await getDoc(adminRef);
@@ -453,13 +448,16 @@
                         console.error("Error checking admin status:", e);
                         isAdmin = false;
                     }
+
+                    // STEP 2: NOW that we know the user's role, attach data listeners.
+                    fetchData();
                     
-                    // 3. Set up user-specific settings listener
+                    // STEP 3: Finally, set up the user-specific settings listener.
                     const activeUserId = localStorage.getItem('loadedUserId') || user.uid;
                     if (!userId || userId !== activeUserId) {
                         setupUserListener(activeUserId);
                     } else {
-                        renderSchedule(); // Re-render in case admin status changed view
+                        renderSchedule();
                     }
                 }
             });
@@ -501,8 +499,7 @@
                     if (hideStudyTime !== (data.hideStudyTime || false)) { hideStudyTime = data.hideStudyTime || false; stateChanged = true; }
                     if (currentWeekOrRodizio !== (data.currentWeekOrRodizio || '1')) { currentWeekOrRodizio = data.currentWeekOrRodizio || '1'; stateChanged = true; }
                 } else {
-                    saveUserStateToFirebase(); 
-                    return; 
+                    saveUserStateToFirebase();
                 }
                 
                 // This flag ensures the UI doesn't re-render with defaults before Firestore data loads
