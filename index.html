@@ -121,6 +121,8 @@
         #gemini-modal-content strong, #gemini-modal-content b { color: #f9fafb; }
         .suggestion-item.resolved { opacity: 0.6; }
         .suggestion-item.resolved .suggestion-text { text-decoration: line-through; }
+        .tip-item.approved { opacity: 0.6; }
+        .tip-item.approved .tip-text { text-decoration: line-through; }
     </style>
 </head>
 <body class="bg-[#1B1B1B] text-[#F3F3F3]">
@@ -155,13 +157,9 @@
                 <span class="font-semibold whitespace-nowrap opacity-0 w-0 group-hover:ml-4 group-hover:opacity-100 group-hover:w-auto transition-all duration-300 ease-in-out">Assistente IA</span>
             </button>
             <div class="admin-only">
-                <button id="add-tips-btn-desktop" class="nav-btn w-full flex items-center py-3 px-6 justify-center group-hover:justify-start text-gray-300 hover:bg-gray-700 hover:text-white rounded-r-lg">
-                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" /></svg>
-                    <span class="font-semibold whitespace-nowrap opacity-0 w-0 group-hover:ml-4 group-hover:opacity-100 group-hover:w-auto transition-all duration-300 ease-in-out">Editar Dicas</span>
-                </button>
-                 <button id="view-suggestions-btn-desktop" class="nav-btn w-full flex items-center py-3 px-6 justify-center group-hover:justify-start text-gray-300 hover:bg-gray-700 hover:text-white rounded-r-lg">
-                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" /></svg>
-                    <span class="font-semibold whitespace-nowrap opacity-0 w-0 group-hover:ml-4 group-hover:opacity-100 group-hover:w-auto transition-all duration-300 ease-in-out">Ver Sugestões</span>
+                 <button id="admin-panel-btn-desktop" class="nav-btn w-full flex items-center py-3 px-6 justify-center group-hover:justify-start text-gray-300 hover:bg-gray-700 hover:text-white rounded-r-lg">
+                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M10.343 3.94c.09-.542.56-1.007 1.11-1.11a12.004 12.004 0 011.066 0c.55.103 1.02.568 1.11 1.11.09.542.09 1.097 0 1.639-.09.542-.56 1.007-1.11 1.11a12.004 12.004 0 01-1.066 0c-.55-.103-1.02-.568-1.11-1.11a12.004 12.004 0 010-1.639zM10.343 18.06c.09.542.56 1.007 1.11 1.11a12.004 12.004 0 011.066 0c.55.103 1.02.568 1.11 1.11.09.542.09 1.097 0 1.639-.09.542-.56 1.007-1.11 1.11a12.004 12.004 0 01-1.066 0c-.55-.103-1.02-.568-1.11-1.11a12.004 12.004 0 010-1.639zM7.007 11c-.55.103-1.02.568-1.11 1.11a12.004 12.004 0 000 1.066c.103.55.568 1.02 1.11 1.11.542.09 1.097.09 1.639 0 .542-.09 1.007-.56 1.11-1.11a12.004 12.004 0 000-1.066c-.103-.55-.568-1.02-1.11-1.11a12.004 12.004 0 00-1.639 0z" /></svg>
+                    <span class="font-semibold whitespace-nowrap opacity-0 w-0 group-hover:ml-4 group-hover:opacity-100 group-hover:w-auto transition-all duration-300 ease-in-out">Administrador</span>
                 </button>
             </div>
             <div class="border-t border-gray-700 mx-4 my-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
@@ -175,11 +173,26 @@
     </aside>
 
     <div class="lg:pl-20"> <!-- Main content offset for the sidebar -->
-        <header class="lg:hidden text-center p-4 relative border-b border-gray-700 bg-[#2B2B2B] flex-shrink-0 flex items-center justify-center">
-            <button id="sidebar-toggle" class="absolute left-4 top-1/2 -translate-y-1/2 p-2 rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500">
+        <header class="lg:hidden text-center p-4 relative border-b border-gray-700 bg-[#2B2B2B] flex-shrink-0 flex items-center justify-between">
+            <button id="sidebar-toggle" class="p-2 rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
             </button>
             <h1 class="text-lg font-bold">Cronograma</h1>
+            <div class="relative">
+                <button id="mobile-options-toggle" class="p-2 rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"></path></svg>
+                </button>
+                <div id="mobile-options-menu" class="hidden absolute right-0 mt-2 w-56 bg-[#3a3a3a] rounded-md shadow-lg z-50">
+                    <div class="py-1">
+                        <a href="#" id="generate-study-plan-header" class="block px-4 py-2 text-sm text-gray-200 hover:bg-gray-600">✨ Gerar Plano de Estudo</a>
+                         <a href="#" id="send-tip-header" class="block px-4 py-2 text-sm text-gray-200 hover:bg-gray-600">🧠 Enviar Dica da Turma</a>
+                        <div class="admin-only">
+                            <div class="border-t border-gray-600 my-1"></div>
+                            <a href="#" id="admin-panel-header" class="block px-4 py-2 text-sm text-gray-200 hover:bg-gray-600">🔧 Painel do Administrador</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </header>
 
         <div id="content-wrapper" class="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-8 p-4 md:p-8 overflow-hidden h-screen">
@@ -201,6 +214,7 @@
                         <input type="checkbox" id="hide-study-desktop" class="h-4 w-4 rounded bg-gray-700 border-gray-600 text-blue-500 focus:ring-blue-600">
                         <label for="hide-study-desktop">Ocultar horários de estudo</label>
                     </div>
+                    <button id="send-tip-btn-desktop" class="w-full mt-4 p-2 bg-teal-600 hover:bg-teal-700 rounded-md font-semibold transition-colors text-white text-sm">🧠 Enviar Dica da Turma</button>
                     <button id="suggest-change-btn-desktop" class="w-full mt-4 p-2 bg-gray-600 hover:bg-gray-700 rounded-md font-semibold transition-colors text-white text-sm">🔧 Sugerir Alteração</button>
                     <button id="clearWeekButton-desktop" class="w-full mt-4 p-2 bg-red-600 hover:bg-red-700 rounded-md font-semibold transition-colors text-white text-sm">Limpar marcações</button>
                 </div>
@@ -235,11 +249,6 @@
                 <select id="student-selector-mobile" class="w-full p-3 bg-[#2D2D2D] border border-gray-600 rounded-md shadow-sm focus:ring-[#2899F5] focus:border-[#2899F5]"></select>
             </div>
             <div class="bg-[#2B2B2B] p-6 rounded-lg shadow-lg text-center">
-                <h3 class="text-lg font-semibold mb-4">Assistente de IA</h3>
-                <button id="generate-study-plan-mobile" class="w-full p-2 bg-purple-600 hover:bg-purple-700 rounded-md font-semibold transition-colors text-white text-sm">✨ Gerar Plano de Estudo</button>
-                <button id="add-tips-btn-mobile" class="w-full mt-4 p-2 bg-teal-600 hover:bg-teal-700 rounded-md font-semibold transition-colors text-white text-sm admin-only">🧠 Adicionar Dicas da Turma</button>
-            </div>
-            <div class="bg-[#2B2B2B] p-6 rounded-lg shadow-lg text-center">
                 <h3 class="text-lg font-semibold mb-4">Sincronização</h3>
                 <button id="sync-button-mobile" class="w-full p-2 bg-blue-600 hover:bg-blue-700 rounded-md font-semibold transition-colors text-white text-sm mb-4">Sincronizar Dados Pessoais</button>
                 <p class="text-xs text-gray-400 mb-2">Seu ID de Usuário:</p>
@@ -255,6 +264,7 @@
                     <label for="hide-study-mobile">Ocultar horários de estudo</label>
                 </div>
                  <button id="suggest-change-btn-mobile" class="w-full mt-4 p-2 bg-gray-600 hover:bg-gray-700 rounded-md font-semibold transition-colors text-white text-sm">🔧 Sugerir Alteração</button>
+                 <button id="send-tip-btn-mobile" class="w-full mt-4 p-2 bg-teal-600 hover:bg-teal-700 rounded-md font-semibold transition-colors text-white text-sm">🧠 Enviar Dica da Turma</button>
                 <button id="clearWeekButton-mobile" class="w-full mt-4 p-2 bg-red-600 hover:bg-red-700 rounded-md font-semibold transition-colors text-white text-sm">Limpar marcações</button>
             </div>
         </aside>
@@ -300,22 +310,22 @@
         </div>
     </div>
     
-    <!-- Tips Modal -->
+    <!-- Send Tip Modal -->
     <div id="tips-modal-overlay" class="fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center p-4 modal-overlay">
         <div id="tips-modal" class="relative w-full max-w-2xl bg-[#2B2B2B] rounded-2xl shadow-2xl p-6 flex flex-col max-h-[90vh] modal-content">
             <div class="flex items-center justify-between mb-4 flex-shrink-0">
-                 <h3 id="tips-modal-title" class="text-xl font-semibold">🧠 Dicas da Turma</h3>
+                 <h3 id="tips-modal-title" class="text-xl font-semibold">🧠 Enviar Dica da Turma</h3>
                  <button id="tips-modal-close-btn" class="p-2 rounded-full hover:bg-gray-700">
                     <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                     </svg>
                 </button>
             </div>
-            <textarea id="tips-textarea" class="w-full flex-grow bg-[#1B1B1B] rounded-md p-3 text-sm text-gray-300 border border-gray-600 focus:ring-2 focus:ring-teal-500 focus:border-teal-500" placeholder="Cole aqui dicas de veteranos, detalhes sobre os preceptores, o que focar em cada atividade, etc. Esta informação será usada pela IA e compartilhada com a turma."></textarea>
+            <textarea id="tips-textarea" rows="10" class="w-full flex-grow bg-[#1B1B1B] rounded-md p-3 text-sm text-gray-300 border border-gray-600 focus:ring-2 focus:ring-teal-500 focus:border-teal-500" placeholder="Envie dicas de veteranos, detalhes sobre os preceptores, o que focar em cada atividade, etc. Sua dica será revisada por um administrador antes de ser usada pela IA."></textarea>
             <div class="mt-4 flex justify-end gap-3 flex-shrink-0">
                 <button id="tips-modal-cancel-btn" class="px-6 py-2 bg-gray-600 hover:bg-gray-700 rounded-md font-semibold transition-colors">Cancelar</button>
                 <button id="tips-modal-save-btn" class="px-6 py-2 bg-teal-600 hover:bg-teal-700 rounded-md font-semibold transition-colors flex items-center gap-2">
-                    <span id="tips-save-text">Salvar Dicas</span>
+                    <span id="tips-save-text">Enviar Dica</span>
                     <div id="tips-save-loader" class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin hidden"></div>
                 </button>
             </div>
@@ -360,6 +370,26 @@
             </div>
         </div>
     </div>
+    
+    <!-- Admin Panel Modal -->
+    <div id="admin-panel-modal-overlay" class="fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center p-4 modal-overlay">
+        <div id="admin-panel-modal" class="relative w-full max-w-md bg-[#2B2B2B] rounded-2xl shadow-2xl p-6 modal-content">
+             <div class="flex items-center justify-between mb-6">
+                 <h3 class="text-xl font-semibold">Painel do Administrador</h3>
+                 <button id="admin-panel-close-btn" class="p-2 rounded-full hover:bg-gray-700">
+                     <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                 </button>
+            </div>
+            <div class="space-y-4">
+                <button id="edit-schedule-btn" class="w-full p-3 bg-blue-600 hover:bg-blue-700 rounded-md font-semibold transition-colors text-white text-sm">Editar Cronograma Atual</button>
+                <button id="import-json-btn" class="w-full p-3 bg-indigo-600 hover:bg-indigo-700 rounded-md font-semibold transition-colors text-white text-sm">Importar Cronograma via JSON</button>
+                <button id="view-tips-btn" class="w-full p-3 bg-green-600 hover:bg-green-700 rounded-md font-semibold transition-colors text-white text-sm">Ver Dicas Enviadas</button>
+                <button id="view-suggestions-btn-admin" class="w-full p-3 bg-purple-600 hover:bg-purple-700 rounded-md font-semibold transition-colors text-white text-sm">Ver Sugestões de Alteração</button>
+            </div>
+        </div>
+    </div>
 
 
     <!-- "Today" Button -->
@@ -388,7 +418,7 @@
         // Import necessary Firebase functions
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-        import { getFirestore, doc, onSnapshot, setDoc, addDoc, collection, serverTimestamp, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { getFirestore, doc, onSnapshot, setDoc, addDoc, collection, serverTimestamp, query, orderBy, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
         // Your web app's Firebase configuration
         const firebaseConfig = {
@@ -408,7 +438,7 @@
         const db = getFirestore(app);
         
         // --- Admin Configuration ---
-        const ADMIN_UID = "r5NLb0GqtcRuTmeVt3g3gRoGirl2"; // <-- IMPORTANTE: Troque esta string pelo seu ID de usuário do Firebase para ter acesso de admin
+        const ADMIN_UID = "COLE_SEU_ID_DE_ADMINISTRADOR_AQUI"; // <-- IMPORTANTE: Troque esta string pelo seu ID de usuário do Firebase para ter acesso de admin
         
         // --- Global State Variables ---
         let userId = null;
@@ -494,13 +524,14 @@
         const geminiModalContent = document.getElementById('gemini-modal-content');
         const geminiModalLoader = document.getElementById('gemini-modal-loader');
         const generateStudyPlanBtnDesktop = document.getElementById('generate-study-plan-desktop');
-        const generateStudyPlanBtnMobile = document.getElementById('generate-study-plan-mobile');
+        const generateStudyPlanHeader = document.getElementById('generate-study-plan-header');
         
         // Tips Modal Elements
         const tipsModalOverlay = document.getElementById('tips-modal-overlay');
         const tipsModalCloseBtn = document.getElementById('tips-modal-close-btn');
-        const addTipsBtnDesktop = document.getElementById('add-tips-btn-desktop');
-        const addTipsBtnMobile = document.getElementById('add-tips-btn-mobile');
+        const sendTipBtnDesktop = document.getElementById('send-tip-btn-desktop');
+        const sendTipBtnMobile = document.getElementById('send-tip-btn-mobile');
+        const sendTipHeader = document.getElementById('send-tip-header');
         const tipsTextarea = document.getElementById('tips-textarea');
         const tipsModalSaveBtn = document.getElementById('tips-modal-save-btn');
         const tipsModalCancelBtn = document.getElementById('tips-modal-cancel-btn');
@@ -523,8 +554,21 @@
         // Suggestion View Modal Elements
         const suggestionsViewModalOverlay = document.getElementById('suggestions-view-modal-overlay');
         const suggestionsViewModalCloseBtn = document.getElementById('suggestions-view-modal-close-btn');
-        const viewSuggestionsBtnDesktop = document.getElementById('view-suggestions-btn-desktop');
         const suggestionsList = document.getElementById('suggestions-list');
+
+        // Mobile header options
+        const mobileOptionsToggle = document.getElementById('mobile-options-toggle');
+        const mobileOptionsMenu = document.getElementById('mobile-options-menu');
+        
+        // Admin Panel Elements
+        const adminPanelModalOverlay = document.getElementById('admin-panel-modal-overlay');
+        const adminPanelBtnDesktop = document.getElementById('admin-panel-btn-desktop');
+        const adminPanelHeader = document.getElementById('admin-panel-header');
+        const adminPanelCloseBtn = document.getElementById('admin-panel-close-btn');
+        const editScheduleBtn = document.getElementById('edit-schedule-btn');
+        const importJsonBtn = document.getElementById('import-json-btn');
+        const viewTipsBtn = document.getElementById('view-tips-btn');
+        const viewSuggestionsBtnAdmin = document.getElementById('view-suggestions-btn-admin');
 
 
         // --- UI Functions ---
@@ -570,11 +614,6 @@
         }
         
         function toggleTipsModal(show = false) {
-            if(show) {
-                tipsModalTitle.textContent = `Dicas para o Módulo: ${currentSpecialty.charAt(0).toUpperCase() + currentSpecialty.slice(1)}`;
-                const tipsKey = currentSpecialty;
-                tipsTextarea.value = sharedTipsData[tipsKey] || '';
-            }
             tipsModalOverlay.classList.toggle('is-open', show);
         }
         
@@ -590,11 +629,15 @@
         function toggleSuggestionViewModal(show = false) {
             suggestionsViewModalOverlay.classList.toggle('is-open', show);
         }
+        
+        function toggleAdminPanel(show = false) {
+            adminPanelModalOverlay.classList.toggle('is-open', show);
+        }
 
 
         // --- Gemini API Integration ---
         async function callGemini(prompt) {
-            const apiKey = "AIzaSyAHB_GyF9KrJQE9RvWPYX9Sac6UH3JkOEc"; // Canvas will provide this
+            const apiKey = ""; // Canvas will provide this
             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
 
             const payload = {
@@ -629,48 +672,33 @@
         // --- Data Handling and Firebase ---
 
         async function fetchData() {
-            const mockSchedule = {
-                cirurgia: {
-                    weeks: [
-                        { id: '1', title: 'Cirurgia Geral (Teste)', dates: '25/08 - 31/08', start: '2025-08-25', end: '2025-08-31' },
-                        { id: '2', title: 'Cirurgia Vascular (Teste)', dates: '01/09 - 07/09', start: '2025-09-01', end: '2025-09-07' }
-                    ],
-                    students: [
-                        { id: 'all', name: 'Todos os Alunos', imageUrl: 'https://i.imgur.com/5AW2oEL.png' },
-                        { id: 1, name: 'Aluno Teste 1', imageUrl: 'https://placehold.co/400x400/EBF4FF/76A9EA?text=A1' },
-                        { id: 2, name: 'Aluno Teste 2', imageUrl: 'https://placehold.co/400x400/EBF4FF/76A9EA?text=A2' }
-                    ],
-                    schedule: [
-                        { week: '1', day: 'SEGUNDA', time: '08:00 - 12:00', activity: 'Ambulatório Mock', professor: 'Dr. Exemplo', location: 'Hospital de Testes', studentId: [1] },
-                        { week: '1', day: 'TERÇA', time: '13:00 - 17:00', activity: 'Centro Cirúrgico Mock', professor: 'Dra. Simulada', location: 'Hospital de Testes', studentId: [2] },
-                        { week: '2', day: 'QUARTA', time: '09:00 - 11:00', activity: 'PA PLANTÃO', professor: 'Dr. Exemplo', location: 'Sala de Conferências', studentId: [1, 2], slots: 2 }
-                    ]
-                },
-                pediatria: {
-                    weeks: [
-                        { id: '1', title: 'Rodízio Pediatria 1 (Teste)', dates: '25/08 - 31/08', start: '2025-08-25', end: '2025-08-31' },
-                        { id: '2', title: 'Rodízio Pediatria 2 (Teste)', dates: '01/09 - 07/09', start: '2025-09-01', end: '2025-09-07' }
-                    ],
-                    students: [
-                        { id: 'p1', name: 'Ped Aluno 1', imageUrl: 'https://placehold.co/400x400/F4EBF4/A976A9?text=P1' },
-                        { id: 'p2', name: 'Ped Aluno 2', imageUrl: 'https://placehold.co/400x400/F4EBF4/A976A9?text=P2' },
-                        { id: 'p3', name: 'Ped Aluno 3', imageUrl: 'https://placehold.co/400x400/F4EBF4/A976A9?text=P3' }
-                    ],
-                    schedule: [
-                        { week: '1', day: 'QUINTA', time: '10:00 - 12:00', activity: 'PA Pediatria', professor: 'Dra. Criança', location: 'Hospital Infantil de Teste', slots: 2 },
-                        { week: '2', day: 'SEXTA', time: '14:00 - 16:00', activity: 'PA PLANTÃO', professor: 'Dr. Bebê', location: 'Hospital Infantil de Teste', slots: 3 }
-                    ]
-                }
-            };
-
             try {
-                const results = await Promise.allSettled([
-                    fetch('cirurgia_schedule.json').then(res => res.ok ? res.json() : Promise.reject()),
-                    fetch('pediatria_schedule.json').then(res => res.ok ? res.json() : Promise.reject())
-                ]);
+                const cirurgiaDoc = await getDoc(doc(db, "schedules", "cirurgia"));
+                const pediatriaDoc = await getDoc(doc(db, "schedules", "pediatria"));
 
-                allData.cirurgia = results[0].status === 'fulfilled' ? results[0].value : mockSchedule.cirurgia;
-                allData.pediatria = results[1].status === 'fulfilled' ? results[1].value : mockSchedule.pediatria;
+                if (cirurgiaDoc.exists() && pediatriaDoc.exists()) {
+                    allData.cirurgia = cirurgiaDoc.data();
+                    allData.pediatria = pediatriaDoc.data();
+                } else {
+                    console.log("No schedule data in Firestore, falling back to JSON files for initial setup.");
+                    // Fallback to JSON if firestore is empty
+                    const results = await Promise.allSettled([
+                        fetch('cirurgia_schedule.json').then(res => res.ok ? res.json() : Promise.reject()),
+                        fetch('pediatria_schedule.json').then(res => res.ok ? res.json() : Promise.reject())
+                    ]);
+                    allData.cirurgia = results[0].status === 'fulfilled' ? results[0].value : {};
+                    allData.pediatria = results[1].status === 'fulfilled' ? results[1].value : {};
+                    
+                    // Optional: One-time upload to Firestore if it's empty
+                    if (!cirurgiaDoc.exists() && allData.cirurgia.weeks) {
+                        await setDoc(doc(db, "schedules", "cirurgia"), allData.cirurgia);
+                        console.log("Uploaded cirurgia schedule to Firestore.");
+                    }
+                    if (!pediatriaDoc.exists() && allData.pediatria.weeks) {
+                        await setDoc(doc(db, "schedules", "pediatria"), allData.pediatria);
+                        console.log("Uploaded pediatria schedule to Firestore.");
+                    }
+                }
                 
                 initializeUI();
                 initializeAuth();
@@ -678,14 +706,10 @@
 
             } catch (error) {
                 console.error("Error during initial data fetch:", error);
-                allData.cirurgia = mockSchedule.cirurgia;
-                allData.pediatria = mockSchedule.pediatria;
-                initializeUI();
-                initializeAuth();
-                setupSharedListeners();
+                mainContent.innerHTML = `<p class="text-red-500 text-center">Falha ao carregar o cronograma. Verifique sua conexão e as permissões do Firestore.</p>`;
             }
         }
-        
+
         async function initializeAuth() {
             onAuthStateChanged(auth, (user) => {
                 if (user) {
@@ -814,8 +838,7 @@
                 querySnapshot.forEach((doc) => {
                     suggestionsData.push({ id: doc.id, ...doc.data() });
                 });
-                 // If the suggestions view is open, refresh it
-                if (suggestionsViewModalOverlay.classList.contains('is-open')) {
+                 if (suggestionsViewModalOverlay.classList.contains('is-open')) {
                     handleViewSuggestionsClick();
                 }
             }, (error) => {
@@ -873,7 +896,7 @@
 
         function populateSelectors() {
             const data = allData[currentSpecialty];
-            if (!data) return; 
+            if (!data || !data.weeks) return; 
             const weeks = data.weeks;
             const students = data.students;
 
@@ -917,7 +940,10 @@
 
         function updateView() {
             const data = allData[currentSpecialty];
-            if (!data) return;
+            if (!data || !data.weeks || !data.students) {
+                scheduleGrid.innerHTML = `<p class="text-center text-gray-400">Dados do cronograma para "${currentSpecialty}" não encontrados ou incompletos.</p>`;
+                return;
+            };
             const selectedWeekData = data.weeks.find(w => w.id == currentWeekOrRodizio);
             const subtitleText = selectedWeekData ? `${selectedWeekData.title} (${selectedWeekData.dates})` : '';
             
@@ -937,7 +963,10 @@
 
         function renderSchedule() {
             const data = allData[currentSpecialty];
-            if (!data) return;
+            if (!data || !data.schedule) {
+                scheduleGrid.innerHTML = '';
+                return;
+            };
             let weekData = data.schedule.filter(item => item.week == currentWeekOrRodizio);
 
             if (currentSpecialty === 'cirurgia' && currentStudent !== 'all') {
@@ -1412,8 +1441,25 @@
             if (e.target === geminiModalOverlay) toggleGeminiModal(false);
         });
         
-        addTipsBtnDesktop.addEventListener('click', () => toggleTipsModal(true));
-        addTipsBtnMobile.addEventListener('click', () => toggleTipsModal(true));
+        adminPanelBtnDesktop.addEventListener('click', () => toggleAdminPanel(true));
+        adminPanelHeader.addEventListener('click', (e) => {
+            e.preventDefault();
+            toggleAdminPanel(true);
+            mobileOptionsMenu.classList.add('hidden');
+        });
+        adminPanelCloseBtn.addEventListener('click', () => toggleAdminPanel(false));
+        adminPanelModalOverlay.addEventListener('click', (e) => {
+            if(e.target === adminPanelModalOverlay) toggleAdminPanel(false);
+        });
+
+        sendTipBtnDesktop.addEventListener('click', () => toggleTipsModal(true));
+        sendTipBtnMobile.addEventListener('click', () => toggleTipsModal(true));
+        sendTipHeader.addEventListener('click', (e) => {
+            e.preventDefault();
+            toggleTipsModal(true);
+            mobileOptionsMenu.classList.add('hidden');
+        });
+
         tipsModalCloseBtn.addEventListener('click', () => toggleTipsModal(false));
         tipsModalCancelBtn.addEventListener('click', () => toggleTipsModal(false));
         tipsModalOverlay.addEventListener('click', (e) => {
@@ -1431,9 +1477,14 @@
         suggestionModalSaveBtn.addEventListener('click', saveSuggestion);
         
         generateStudyPlanBtnDesktop.addEventListener('click', handleStudyPlanClick);
-        generateStudyPlanBtnMobile.addEventListener('click', handleStudyPlanClick);
+        generateStudyPlanHeader.addEventListener('click', (e) => {
+            e.preventDefault();
+            handleStudyPlanClick();
+            mobileOptionsMenu.classList.add('hidden');
+        });
 
-        viewSuggestionsBtnDesktop.addEventListener('click', handleViewSuggestionsClick);
+        viewSuggestionsBtnAdmin.addEventListener('click', handleViewSuggestionsClick);
+        
         suggestionsViewModalCloseBtn.addEventListener('click', () => toggleSuggestionViewModal(false));
         suggestionsViewModalOverlay.addEventListener('click', (e) => {
             if(e.target === suggestionsViewModalOverlay) toggleSuggestionViewModal(false);
@@ -1471,6 +1522,18 @@
         loadUserIdBtnMobile.addEventListener('click', () => handleLoadId(userIdInputMobile));
         loadUserIdModal.addEventListener('click', () => handleLoadId(userIdInputModal));
         
+        // Mobile Header Options Menu
+        mobileOptionsToggle.addEventListener('click', (e) => {
+            e.stopPropagation();
+            mobileOptionsMenu.classList.toggle('hidden');
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!mobileOptionsMenu.contains(e.target) && !mobileOptionsToggle.contains(e.target)) {
+                mobileOptionsMenu.classList.add('hidden');
+            }
+        });
+
         // --- Initialization ---
 
         setInterval(() => {
