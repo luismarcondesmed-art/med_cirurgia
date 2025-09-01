@@ -97,7 +97,7 @@
             transform: translateY(0);
             opacity: 1;
         }
-        .gemini-loader {
+        .gemini-loader, .main-loader-spinner {
             width: 48px;
             height: 48px;
             border: 5px solid #FFF;
@@ -126,6 +126,12 @@
     </style>
 </head>
 <body class="bg-[#1B1B1B] text-[#F3F3F3]">
+    
+    <!-- Main App Loader -->
+    <div id="main-loader" class="fixed inset-0 bg-[#1B1B1B] z-[100] flex flex-col items-center justify-center">
+        <div class="main-loader-spinner"></div>
+        <p class="mt-4 text-lg text-gray-300">Carregando cronograma...</p>
+    </div>
 
     <!-- Retractable Specialty Sidebar -->
     <aside class="fixed top-0 left-0 h-screen z-30 bg-[#2B2B2B] border-r border-gray-700 w-20 hover:w-56 transition-all duration-300 ease-in-out group hidden lg:flex flex-col">
@@ -157,7 +163,7 @@
                      <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M10.343 3.94c.09-.542.56-1.007 1.11-1.11a12.004 12.004 0 011.066 0c.55.103 1.02.568 1.11 1.11.09.542.09 1.097 0 1.639-.09.542-.56 1.007-1.11 1.11a12.004 12.004 0 01-1.066 0c-.55-.103-1.02-.568-1.11-1.11a12.004 12.004 0 010-1.639zM10.343 18.06c.09.542.56 1.007 1.11 1.11a12.004 12.004 0 011.066 0c.55.103 1.02.568 1.11 1.11.09.542.09 1.097 0 1.639-.09.542-.56 1.007-1.11 1.11a12.004 12.004 0 01-1.066 0c-.55-.103-1.02-.568-1.11-1.11a12.004 12.004 0 010-1.639zM7.007 11c-.55.103-1.02.568-1.11 1.11a12.004 12.004 0 000 1.066c.103.55.568 1.02 1.11 1.11.542.09 1.097.09 1.639 0 .542-.09 1.007-.56 1.11-1.11a12.004 12.004 0 000-1.066c-.103-.55-.568-1.02-1.11-1.11a12.004 12.004 0 00-1.639 0z" /></svg>
                      <span class="font-semibold whitespace-nowrap opacity-0 w-0 group-hover:ml-4 group-hover:opacity-100 group-hover:w-auto transition-all duration-300 ease-in-out">Administrador</span>
                  </button>
-            </div>
+             </div>
              <button id="generate-study-plan-desktop" class="nav-btn w-full flex items-center py-3 px-6 justify-center group-hover:justify-start text-gray-300 hover:bg-gray-700 hover:text-white rounded-r-lg">
                  <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.898 20.572L16.25 21.75l-.648-1.178a3.375 3.375 0 00-2.455-2.456L12 17.25l1.178-.648a3.375 3.375 0 002.455-2.456L16.25 13.5l.648 1.178a3.375 3.375 0 002.456 2.456L20.25 18l-1.178.648a3.375 3.375 0 00-2.456 2.456z" /></svg>
                 <span class="font-semibold whitespace-nowrap opacity-0 w-0 group-hover:ml-4 group-hover:opacity-100 group-hover:w-auto transition-all duration-300 ease-in-out">Assistente IA</span>
@@ -185,7 +191,7 @@
                 <div id="mobile-options-menu" class="hidden absolute right-0 mt-2 w-56 bg-[#3a3a3a] rounded-md shadow-lg z-50">
                     <div class="py-1">
                         <a href="#" id="generate-study-plan-header" class="block px-4 py-2 text-sm text-gray-200 hover:bg-gray-600">✨ Gerar Plano de Estudo</a>
-                         <a href="#" id="send-tip-header" class="block px-4 py-2 text-sm text-gray-200 hover:bg-gray-600">🧠 Enviar Dica da Turma</a>
+                        <a href="#" id="send-tip-header" class="block px-4 py-2 text-sm text-gray-200 hover:bg-gray-600">🧠 Enviar Dica da Turma</a>
                         <div class="admin-only">
                             <div class="border-t border-gray-600 my-1"></div>
                             <a href="#" id="admin-panel-header" class="block px-4 py-2 text-sm text-gray-200 hover:bg-gray-600">🔧 Painel do Administrador</a>
@@ -296,10 +302,10 @@
             <div class="flex items-center justify-between mb-4 flex-shrink-0">
                  <h3 id="gemini-modal-title" class="text-xl font-semibold">✨ Assistente de Estudos</h3>
                  <button id="gemini-modal-close-btn" class="p-2 rounded-full hover:bg-gray-700">
-                    <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
+                     <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                         <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                     </svg>
+                 </button>
             </div>
             <div id="gemini-modal-content" class="overflow-y-auto text-gray-300 pr-2 modal-scroll">
                 <!-- Gemini content will be injected here -->
@@ -316,10 +322,10 @@
             <div class="flex items-center justify-between mb-4 flex-shrink-0">
                  <h3 id="tips-modal-title" class="text-xl font-semibold">🧠 Enviar Dica da Turma</h3>
                  <button id="tips-modal-close-btn" class="p-2 rounded-full hover:bg-gray-700">
-                    <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
+                     <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                         <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                     </svg>
+                 </button>
             </div>
             <textarea id="tips-textarea" rows="10" class="w-full flex-grow bg-[#1B1B1B] rounded-md p-3 text-sm text-gray-300 border border-gray-600 focus:ring-2 focus:ring-teal-500 focus:border-teal-500" placeholder="Envie dicas de veteranos, detalhes sobre os preceptores, o que focar em cada atividade, etc. Sua dica será revisada por um administrador antes de ser usada pela IA."></textarea>
             <div class="mt-4 flex justify-end gap-3 flex-shrink-0">
@@ -338,10 +344,10 @@
             <div class="flex items-center justify-between mb-4 flex-shrink-0">
                  <h3 id="suggestion-modal-title" class="text-xl font-semibold">🔧 Sugerir Alteração no Cronograma</h3>
                  <button id="suggestion-modal-close-btn" class="p-2 rounded-full hover:bg-gray-700">
-                    <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
+                     <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                         <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                     </svg>
+                 </button>
             </div>
             <textarea id="suggestion-textarea" class="w-full flex-grow bg-[#1B1B1B] rounded-md p-3 text-sm text-gray-300 border border-gray-600 focus:ring-2 focus:ring-orange-500 focus:border-orange-500" placeholder="Descreva a alteração que você gostaria de sugerir. Por exemplo: 'A atividade X de segunda-feira foi cancelada' ou 'O ambulatório de terça agora começa às 14h'."></textarea>
             <div class="mt-4 flex justify-end gap-3 flex-shrink-0">
@@ -360,8 +366,8 @@
             <div class="flex items-center justify-between mb-4 flex-shrink-0">
                  <h3 class="text-xl font-semibold">📬 Sugestões dos Alunos</h3>
                  <button id="suggestions-view-modal-close-btn" class="p-2 rounded-full hover:bg-gray-700">
-                      <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                     <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                         <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                      </svg>
                  </button>
             </div>
@@ -377,9 +383,9 @@
              <div class="flex items-center justify-between mb-6">
                  <h3 class="text-xl font-semibold">Painel do Administrador</h3>
                  <button id="admin-panel-close-btn" class="p-2 rounded-full hover:bg-gray-700">
-                       <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                           <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                      </svg>
+                     <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                         <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                     </svg>
                  </button>
             </div>
             <div class="space-y-4">
@@ -415,170 +421,146 @@
 
     <!-- Firebase SDKs -->
     <script type="module">
-        // Import necessary Firebase functions
+        // Import necessary Firebase functions - Updated to a more recent version
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, onSnapshot, setDoc, addDoc, collection, serverTimestamp, query, orderBy, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, doc, onSnapshot, setDoc, addDoc, collection, serverTimestamp, query, getDoc, getDocs, updateDoc, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // Firebase Config - provided by the hosting environment
-        const firebaseConfig = typeof __firebase_config !== 'undefined'
-            ? JSON.parse(__firebase_config)
-            : {}; // NOTE: Add your firebase config here for local development
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-
+        // --- Secure Configuration ---
+        // These variables are expected to be injected by the secure environment.
+        // DO NOT HARDCODE VALUES HERE.
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+        const ADMIN_UID = "r5NLb0GqtcRuTmeVt3g3gRoGirl2"; // For demonstration. In a real app, this should be managed server-side.
 
         // Initialize Firebase
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
         
-        // --- Admin Configuration ---
-        const ADMIN_UID = "r5NLb0GqtcRuTmeVt3g3gRoGirl2"; // <-- IMPORTANTE: Troque esta string pelo seu ID de usuário do Firebase para ter acesso de admin
+        // --- Centralized Application State ---
+        const state = {
+            userId: null,
+            authReady: false,
+            unsubscribeUser: null,
+            unsubscribeOnCall: null,
+            unsubscribeTips: null,
+            unsubscribeSuggestions: null,
+            allData: {},
+            currentSpecialty: 'cirurgia',
+            currentWeekOrRodizio: '1',
+            currentStudent: 'all',
+            checklistData: {},
+            hideStudyTime: false,
+            onCallClaimData: {},
+            sharedTipsData: {},
+            suggestionsData: []
+        };
         
-        // --- Global State Variables ---
-        let userId = null;
-        let unsubscribeUser;
-        let unsubscribeOnCall;
-        let unsubscribeTips;
-        let unsubscribeSuggestions;
-        let allData = {};
-        let currentSpecialty = 'cirurgia';
-        let currentWeekOrRodizio = '1';
-        let currentStudent = 'all';
-        let checklistData = {};
-        let hideStudyTime = false;
-        let onCallClaimData = {}; 
-        let sharedTipsData = {};
-        let suggestionsData = [];
+        // --- Centralized DOM Element References ---
+        const DOM = {
+            mainLoader: document.getElementById('main-loader'),
+            scheduleGrid: document.getElementById('schedule-grid'),
+            mainContent: document.getElementById('main-content'),
+            weekSelectorMain: document.getElementById('week-selector-main'),
+            scheduleSubtitleMain: document.getElementById('schedule-subtitle-main'),
+            weekLabelMain: document.getElementById('week-label-main'),
+            studentSelectorMobile: document.getElementById('student-selector-mobile'),
+            studentImageMobile: document.getElementById('student-image-mobile'),
+            clearWeekButtonMobile: document.getElementById('clearWeekButton-mobile'),
+            studentContainerMobile: document.getElementById('student-selector-container-mobile'),
+            weekSelectorDesktop: document.getElementById('week-selector-desktop'),
+            scheduleSubtitleDesktop: document.getElementById('schedule-subtitle-desktop'),
+            studentSelectorDesktop: document.getElementById('student-selector-desktop'),
+            studentImageDesktop: document.getElementById('student-image-desktop'),
+            clearWeekButtonDesktop: document.getElementById('clearWeekButton-desktop'),
+            studentContainerDesktop: document.getElementById('student-selector-container-desktop'),
+            sidebarOverlay: document.getElementById('sidebar-overlay'),
+            sidebarToggle: document.getElementById('sidebar-toggle'),
+            sidebarClose: document.getElementById('sidebar-close'),
+            btnCirurgia: document.getElementById('btn-cirurgia'),
+            btnPediatria: document.getElementById('btn-pediatria'),
+            btnCirurgiaMobile: document.getElementById('btn-cirurgia-mobile'),
+            btnPediatriaMobile: document.getElementById('btn-pediatria-mobile'),
+            todayBtn: document.getElementById('today-btn'),
+            hideStudyMobile: document.getElementById('hide-study-mobile'),
+            hideStudyDesktop: document.getElementById('hide-study-desktop'),
+            userIdDisplayMobile: document.getElementById('userIdDisplay-mobile'),
+            copyUserIdBtnMobile: document.getElementById('copyUserId-mobile'),
+            userIdInputMobile: document.getElementById('userIdInput-mobile'),
+            loadUserIdBtnMobile: document.getElementById('loadUserId-mobile'),
+            syncModalOverlay: document.getElementById('sync-modal-overlay'),
+            syncModalOpenBtn: document.getElementById('sync-modal-open-btn'),
+            syncModalCloseBtn: document.getElementById('sync-modal-close-btn'),
+            syncButtonModal: document.getElementById('sync-button-modal'),
+            userIdDisplayModal: document.getElementById('userIdDisplay-modal'),
+            copyUserIdModal: document.getElementById('copyUserId-modal'),
+            userIdInputModal: document.getElementById('userIdInput-modal'),
+            loadUserIdModal: document.getElementById('loadUserId-modal'),
+            syncButtonMobile: document.getElementById('sync-button-mobile'),
+            toast: document.getElementById('toast-notification'),
+            toastMessage: document.getElementById('toast-message'),
+            confirmModalOverlay: document.getElementById('confirm-modal-overlay'),
+            confirmMessage: document.getElementById('confirm-message'),
+            confirmBtnYes: document.getElementById('confirm-btn-yes'),
+            confirmBtnNo: document.getElementById('confirm-btn-no'),
+            geminiModalOverlay: document.getElementById('gemini-modal-overlay'),
+            geminiModalCloseBtn: document.getElementById('gemini-modal-close-btn'),
+            geminiModalTitle: document.getElementById('gemini-modal-title'),
+            geminiModalContent: document.getElementById('gemini-modal-content'),
+            geminiModalLoader: document.getElementById('gemini-modal-loader'),
+            generateStudyPlanBtnDesktop: document.getElementById('generate-study-plan-desktop'),
+            generateStudyPlanHeader: document.getElementById('generate-study-plan-header'),
+            tipsModalOverlay: document.getElementById('tips-modal-overlay'),
+            tipsModalCloseBtn: document.getElementById('tips-modal-close-btn'),
+            sendTipBtnDesktop: document.getElementById('send-tip-btn-desktop'),
+            sendTipBtnMobile: document.getElementById('send-tip-btn-mobile'),
+            sendTipHeader: document.getElementById('send-tip-header'),
+            tipsTextarea: document.getElementById('tips-textarea'),
+            tipsModalSaveBtn: document.getElementById('tips-modal-save-btn'),
+            tipsModalCancelBtn: document.getElementById('tips-modal-cancel-btn'),
+            tipsSaveText: document.getElementById('tips-save-text'),
+            tipsSaveLoader: document.getElementById('tips-save-loader'),
+            tipsModalTitle: document.getElementById('tips-modal-title'),
+            suggestionModalOverlay: document.getElementById('suggestion-modal-overlay'),
+            suggestionModalCloseBtn: document.getElementById('suggestion-modal-close-btn'),
+            suggestChangeBtnDesktop: document.getElementById('suggest-change-btn-desktop'),
+            suggestChangeBtnMobile: document.getElementById('suggest-change-btn-mobile'),
+            suggestionTextarea: document.getElementById('suggestion-textarea'),
+            suggestionModalSaveBtn: document.getElementById('suggestion-modal-save-btn'),
+            suggestionModalCancelBtn: document.getElementById('suggestion-modal-cancel-btn'),
+            suggestionSaveText: document.getElementById('suggestion-save-text'),
+            suggestionSaveLoader: document.getElementById('suggestion-save-loader'),
+            suggestionModalTitle: document.getElementById('suggestion-modal-title'),
+            suggestionsViewModalOverlay: document.getElementById('suggestions-view-modal-overlay'),
+            suggestionsViewModalCloseBtn: document.getElementById('suggestions-view-modal-close-btn'),
+            suggestionsList: document.getElementById('suggestions-list'),
+            mobileOptionsToggle: document.getElementById('mobile-options-toggle'),
+            mobileOptionsMenu: document.getElementById('mobile-options-menu'),
+            adminPanelModalOverlay: document.getElementById('admin-panel-modal-overlay'),
+            adminPanelBtnDesktop: document.getElementById('admin-panel-btn-desktop'),
+            adminPanelHeader: document.getElementById('admin-panel-header'),
+            adminPanelCloseBtn: document.getElementById('admin-panel-close-btn'),
+            editScheduleBtn: document.getElementById('edit-schedule-btn'),
+            importJsonBtn: document.getElementById('import-json-btn'),
+            viewTipsBtn: document.getElementById('view-tips-btn'),
+            viewSuggestionsBtnAdmin: document.getElementById('view-suggestions-btn-admin'),
+        };
 
-        // --- DOM Element References ---
-        const scheduleGrid = document.getElementById('schedule-grid');
-        const mainContent = document.getElementById('main-content');
-        
-        const weekSelectorMain = document.getElementById('week-selector-main');
-        const scheduleSubtitleMain = document.getElementById('schedule-subtitle-main');
-        const weekLabelMain = document.getElementById('week-label-main');
-        const weekSelectorContainerMain = document.getElementById('week-selector-container-main');
-
-        const studentSelectorMobile = document.getElementById('student-selector-mobile');
-        const studentImageMobile = document.getElementById('student-image-mobile');
-        const clearWeekButtonMobile = document.getElementById('clearWeekButton-mobile');
-        const studentContainerMobile = document.getElementById('student-selector-container-mobile');
-
-        const weekSelectorContainerDesktop = document.getElementById('week-selector-container-desktop');
-        const weekSelectorDesktop = document.getElementById('week-selector-desktop');
-        const scheduleSubtitleDesktop = document.getElementById('schedule-subtitle-desktop');
-        const studentSelectorDesktop = document.getElementById('student-selector-desktop');
-        const studentImageDesktop = document.getElementById('student-image-desktop');
-        const clearWeekButtonDesktop = document.getElementById('clearWeekButton-desktop');
-        const studentContainerDesktop = document.getElementById('student-selector-container-desktop');
-        
         const daysOfWeek = ['SEGUNDA', 'TERÇA', 'QUARTA', 'QUINTA', 'SEXTA', 'SÁBADO', 'DOMINGO'];
         
-        const sidebarOverlay = document.getElementById('sidebar-overlay');
-        const sidebarToggle = document.getElementById('sidebar-toggle');
-        const sidebarClose = document.getElementById('sidebar-close');
-
-        const btnCirurgia = document.getElementById('btn-cirurgia');
-        const btnPediatria = document.getElementById('btn-pediatria');
-        const btnCirurgiaMobile = document.getElementById('btn-cirurgia-mobile');
-        const btnPediatriaMobile = document.getElementById('btn-pediatria-mobile');
-
-        const todayBtn = document.getElementById('today-btn');
-        
-        const hideStudyMobile = document.getElementById('hide-study-mobile');
-        const hideStudyDesktop = document.getElementById('hide-study-desktop');
-        
-        const userIdDisplayMobile = document.getElementById('userIdDisplay-mobile');
-        const copyUserIdBtnMobile = document.getElementById('copyUserId-mobile');
-        const userIdInputMobile = document.getElementById('userIdInput-mobile');
-        const loadUserIdBtnMobile = document.getElementById('loadUserId-mobile');
-
-        const syncModalOverlay = document.getElementById('sync-modal-overlay');
-        const syncModalOpenBtn = document.getElementById('sync-modal-open-btn');
-        const syncModalCloseBtn = document.getElementById('sync-modal-close-btn');
-        const syncButtonModal = document.getElementById('sync-button-modal');
-        const userIdDisplayModal = document.getElementById('userIdDisplay-modal');
-        const copyUserIdModal = document.getElementById('copyUserId-modal');
-        const userIdInputModal = document.getElementById('userIdInput-modal');
-        const loadUserIdModal = document.getElementById('loadUserId-modal');
-        
-        const syncButtonMobile = document.getElementById('sync-button-mobile');
-
-        const toast = document.getElementById('toast-notification');
-        const toastMessage = document.getElementById('toast-message');
-        const confirmModalOverlay = document.getElementById('confirm-modal-overlay');
-        const confirmMessage = document.getElementById('confirm-message');
-        const confirmBtnYes = document.getElementById('confirm-btn-yes');
-        const confirmBtnNo = document.getElementById('confirm-btn-no');
-
-        // Gemini Modal Elements
-        const geminiModalOverlay = document.getElementById('gemini-modal-overlay');
-        const geminiModalCloseBtn = document.getElementById('gemini-modal-close-btn');
-        const geminiModalTitle = document.getElementById('gemini-modal-title');
-        const geminiModalContent = document.getElementById('gemini-modal-content');
-        const geminiModalLoader = document.getElementById('gemini-modal-loader');
-        const generateStudyPlanBtnDesktop = document.getElementById('generate-study-plan-desktop');
-        const generateStudyPlanHeader = document.getElementById('generate-study-plan-header');
-        
-        // Tips Modal Elements
-        const tipsModalOverlay = document.getElementById('tips-modal-overlay');
-        const tipsModalCloseBtn = document.getElementById('tips-modal-close-btn');
-        const sendTipBtnDesktop = document.getElementById('send-tip-btn-desktop');
-        const sendTipBtnMobile = document.getElementById('send-tip-btn-mobile');
-        const sendTipHeader = document.getElementById('send-tip-header');
-        const tipsTextarea = document.getElementById('tips-textarea');
-        const tipsModalSaveBtn = document.getElementById('tips-modal-save-btn');
-        const tipsModalCancelBtn = document.getElementById('tips-modal-cancel-btn');
-        const tipsSaveText = document.getElementById('tips-save-text');
-        const tipsSaveLoader = document.getElementById('tips-save-loader');
-        const tipsModalTitle = document.getElementById('tips-modal-title');
-
-        // Suggestion Modal Elements
-        const suggestionModalOverlay = document.getElementById('suggestion-modal-overlay');
-        const suggestionModalCloseBtn = document.getElementById('suggestion-modal-close-btn');
-        const suggestChangeBtnDesktop = document.getElementById('suggest-change-btn-desktop');
-        const suggestChangeBtnMobile = document.getElementById('suggest-change-btn-mobile');
-        const suggestionTextarea = document.getElementById('suggestion-textarea');
-        const suggestionModalSaveBtn = document.getElementById('suggestion-modal-save-btn');
-        const suggestionModalCancelBtn = document.getElementById('suggestion-modal-cancel-btn');
-        const suggestionSaveText = document.getElementById('suggestion-save-text');
-        const suggestionSaveLoader = document.getElementById('suggestion-save-loader');
-        const suggestionModalTitle = document.getElementById('suggestion-modal-title');
-
-        // Suggestion View Modal Elements
-        const suggestionsViewModalOverlay = document.getElementById('suggestions-view-modal-overlay');
-        const suggestionsViewModalCloseBtn = document.getElementById('suggestions-view-modal-close-btn');
-        const suggestionsList = document.getElementById('suggestions-list');
-
-        // Mobile header options
-        const mobileOptionsToggle = document.getElementById('mobile-options-toggle');
-        const mobileOptionsMenu = document.getElementById('mobile-options-menu');
-        
-        // Admin Panel Elements
-        const adminPanelModalOverlay = document.getElementById('admin-panel-modal-overlay');
-        const adminPanelBtnDesktop = document.getElementById('admin-panel-btn-desktop');
-        const adminPanelHeader = document.getElementById('admin-panel-header');
-        const adminPanelCloseBtn = document.getElementById('admin-panel-close-btn');
-        const editScheduleBtn = document.getElementById('edit-schedule-btn');
-        const importJsonBtn = document.getElementById('import-json-btn');
-        const viewTipsBtn = document.getElementById('view-tips-btn');
-        const viewSuggestionsBtnAdmin = document.getElementById('view-suggestions-btn-admin');
-
-
         // --- UI Functions ---
 
         function showToast(message) {
-            toastMessage.textContent = message;
-            toast.classList.add('show');
+            DOM.toastMessage.textContent = message;
+            DOM.toast.classList.add('show');
             setTimeout(() => {
-                toast.classList.remove('show');
+                DOM.toast.classList.remove('show');
             }, 3000);
         }
 
         function showConfirm(message, onConfirm) {
-            confirmMessage.textContent = message;
-            confirmModalOverlay.classList.add('is-open');
+            DOM.confirmMessage.textContent = message;
+            DOM.confirmModalOverlay.classList.add('is-open');
 
             const handleYes = () => {
                 onConfirm();
@@ -587,55 +569,24 @@
             const handleNo = () => cleanup();
 
             function cleanup() {
-                confirmModalOverlay.classList.remove('is-open');
-                confirmBtnYes.removeEventListener('click', handleYes);
-                confirmBtnNo.removeEventListener('click', handleNo);
+                DOM.confirmModalOverlay.classList.remove('is-open');
+                DOM.confirmBtnYes.removeEventListener('click', handleYes);
+                DOM.confirmBtnNo.removeEventListener('click', handleNo);
             }
 
-            confirmBtnYes.addEventListener('click', handleYes);
-            confirmBtnNo.addEventListener('click', handleNo);
+            DOM.confirmBtnYes.addEventListener('click', handleYes);
+            DOM.confirmBtnNo.addEventListener('click', handleNo);
         }
 
-        function toggleSidebar() {
-            sidebarOverlay.classList.toggle('is-open');
+        function toggleModal(overlayElement, show = false) {
+             overlayElement.classList.toggle('is-open', show);
         }
-        
-        function toggleSyncModal() {
-            syncModalOverlay.classList.toggle('is-open');
-        }
-
-        function toggleGeminiModal(show = false) {
-            geminiModalOverlay.classList.toggle('is-open', show);
-        }
-        
-        function toggleTipsModal(show = false) {
-            if(show) {
-                tipsModalTitle.textContent = `Dicas para o Módulo: ${currentSpecialty.charAt(0).toUpperCase() + currentSpecialty.slice(1)}`;
-            }
-            tipsModalOverlay.classList.toggle('is-open', show);
-        }
-        
-        function toggleSuggestionModal(show = false) {
-            if(show) {
-                const weekInfo = allData[currentSpecialty]?.weeks?.find(w => w.id == currentWeekOrRodizio);
-                suggestionModalTitle.textContent = `Sugestão para: ${weekInfo?.title || 'Semana Atual'}`;
-                suggestionTextarea.value = '';
-            }
-            suggestionModalOverlay.classList.toggle('is-open', show);
-        }
-
-        function toggleSuggestionViewModal(show = false) {
-            suggestionsViewModalOverlay.classList.toggle('is-open', show);
-        }
-        
-        function toggleAdminPanel(show = false) {
-            adminPanelModalOverlay.classList.toggle('is-open', show);
-        }
-
 
         // --- Gemini API Integration ---
         async function callGemini(prompt) {
-            const apiKey = ""; // API key is injected by the environment
+            // IMPORTANT: The API key is handled by the execution environment.
+            // Do not hardcode it here. An empty string allows the environment to inject it.
+            const apiKey = ""; 
             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
 
             const payload = {
@@ -671,98 +622,58 @@
 
         async function fetchData() {
             try {
-                const scheduleCollectionPath = `artifacts/${appId}/public/data/schedules`;
-                const cirurgiaDocRef = doc(db, scheduleCollectionPath, "cirurgia");
-                const pediatriaDocRef = doc(db, scheduleCollectionPath, "pediatria");
+                const cirurgiaDoc = await getDoc(doc(db, "schedules", "cirurgia"));
+                const pediatriaDoc = await getDoc(doc(db, "schedules", "pediatria"));
 
-                const cirurgiaDoc = await getDoc(cirurgiaDocRef);
-                const pediatriaDoc = await getDoc(pediatriaDocRef);
-
-                // Try to load from Firestore first
-                if (cirurgiaDoc.exists()) {
-                    allData.cirurgia = cirurgiaDoc.data();
-                }
-                if (pediatriaDoc.exists()) {
-                    allData.pediatria = pediatriaDoc.data();
-                }
-
-                // If Firestore is missing data, try to fall back to local JSON and upload
-                if (!cirurgiaDoc.exists() || !pediatriaDoc.exists()) {
-                    console.log("Schedule data missing from Firestore, attempting to fall back to local JSON files for initial setup.");
-                    try {
-                        // This fallback requires cirurgia_schedule.json and pediatria_schedule.json to be hosted alongside index.html
-                        const [cirurgiaRes, pediatriaRes] = await Promise.all([
-                            fetch('cirurgia_schedule.json').catch(e => ({ok: false})), // Prevent Promise.all from failing on one error
-                            fetch('pediatria_schedule.json').catch(e => ({ok: false}))
-                        ]);
-
-                        if (cirurgiaRes.ok && !cirurgiaDoc.exists()) {
-                            const cirurgiaData = await cirurgiaRes.json();
-                            allData.cirurgia = cirurgiaData;
-                            await setDoc(cirurgiaDocRef, cirurgiaData);
-                            console.log("Uploaded cirurgia_schedule.json to Firestore.");
-                        }
-
-                        if (pediatriaRes.ok && !pediatriaDoc.exists()) {
-                            const pediatriaData = await pediatriaRes.json();
-                            allData.pediatria = pediatriaData;
-                            await setDoc(pediatriaDocRef, pediatriaData);
-                            console.log("Uploaded pediatria_schedule.json to Firestore.");
-                        }
-
-                    } catch (fetchError) {
-                        console.error("Could not fetch local JSON files for fallback. The admin needs to import the schedule via the Admin Panel.", fetchError);
-                    }
+                if (cirurgiaDoc.exists() && pediatriaDoc.exists()) {
+                    state.allData.cirurgia = cirurgiaDoc.data();
+                    state.allData.pediatria = pediatriaDoc.data();
+                } else {
+                    console.error("Schedule data not found in Firestore. Please ensure the 'schedules' collection with 'cirurgia' and 'pediatria' documents exists.");
+                     DOM.mainContent.innerHTML = `<p class="text-red-500 text-center">Dados de cronograma não encontrados. Contacte o administrador.</p>`;
                 }
                 
-                // Ensure data objects exist to prevent errors later
-                if (!allData.cirurgia) allData.cirurgia = {};
-                if (!allData.pediatria) allData.pediatria = {};
-
                 initializeUI();
                 await initializeAuth();
                 setupSharedListeners();
 
             } catch (error) {
                 console.error("Error during initial data fetch:", error);
-                mainContent.innerHTML = `<p class="text-red-500 text-center">Falha ao carregar o cronograma. Verifique sua conexão e as permissões do Firestore.</p>`;
+                DOM.mainContent.innerHTML = `<p class="text-red-500 text-center">Falha ao carregar o cronograma. Verifique sua conexão e as permissões do Firestore.</p>`;
+            } finally {
+                DOM.mainLoader.style.display = 'none';
             }
         }
-        
+
         async function initializeAuth() {
+            const auth = getAuth();
+            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                await signInWithCustomToken(auth, __initial_auth_token);
+            } else {
+                await signInAnonymously(auth);
+            }
+
             onAuthStateChanged(auth, (user) => {
-                if (user) {
-                    // Use loadedUserId for viewing other's data, but use actual user.uid for admin checks
+                if (user && !state.authReady) {
                     const activeUserId = localStorage.getItem('loadedUserId') || user.uid;
-                    if (!userId || userId !== activeUserId) {
-                        setupUserListener(activeUserId);
-                    }
-                    updateAdminUI(user.uid);
+                    setupUserListener(activeUserId);
+                    updateAdminUI(activeUserId);
+                    state.authReady = true;
                 }
             });
-
-            try {
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    await signInWithCustomToken(auth, __initial_auth_token);
-                } else {
-                    await signInAnonymously(auth);
-                }
-            } catch (error) {
-                console.error("Authentication failed:", error);
-                mainContent.innerHTML = `<p class="text-red-400 text-center">Falha na autenticação. A sincronização não funcionará.</p>`;
-            }
         }
 
+
         async function saveUserStateToFirebase() {
-            if (!userId) return;
-            const userDocRef = doc(db, `artifacts/${appId}/users/${userId}/userData`, 'state');
+            if (!state.userId) return;
+            const userDocRef = doc(db, 'users', state.userId);
             try {
                 await setDoc(userDocRef, {
-                    checklistData,
-                    currentStudent,
-                    currentSpecialty,
-                    hideStudyTime,
-                    currentWeekOrRodizio,
+                    checklistData: state.checklistData,
+                    currentStudent: state.currentStudent,
+                    currentSpecialty: state.currentSpecialty,
+                    hideStudyTime: state.hideStudyTime,
+                    currentWeekOrRodizio: state.currentWeekOrRodizio,
                 }, { merge: true });
                 showToast("Dados pessoais sincronizados!");
             } catch (error) {
@@ -772,37 +683,37 @@
         }
 
         function setupUserListener(uid) {
-            userId = uid;
-            userIdDisplayMobile.value = uid;
-            userIdDisplayModal.value = uid;
-            const userDocRef = doc(db, `artifacts/${appId}/users/${userId}/userData`, 'state');
+            state.userId = uid;
+            DOM.userIdDisplayMobile.value = uid;
+            DOM.userIdDisplayModal.value = uid;
+            const userDocRef = doc(db, 'users', state.userId);
 
-            if (unsubscribeUser) unsubscribeUser();
+            if (state.unsubscribeUser) state.unsubscribeUser();
 
-            unsubscribeUser = onSnapshot(userDocRef, (docSnap) => {
-                const oldSpecialty = currentSpecialty;
+            state.unsubscribeUser = onSnapshot(userDocRef, (docSnap) => {
+                const oldSpecialty = state.currentSpecialty;
                 let stateChanged = false;
 
                 if (docSnap.exists()) {
                     const data = docSnap.data();
-                    if (JSON.stringify(checklistData) !== JSON.stringify(data.checklistData || {})) {
-                        checklistData = data.checklistData || {};
+                    if (JSON.stringify(state.checklistData) !== JSON.stringify(data.checklistData || {})) {
+                        state.checklistData = data.checklistData || {};
                         stateChanged = true;
                     }
-                    if (currentStudent !== (data.currentStudent || 'all')) {
-                         currentStudent = data.currentStudent || 'all';
-                         stateChanged = true;
-                    }
-                    if (currentSpecialty !== (data.currentSpecialty || 'cirurgia')) {
-                        currentSpecialty = data.currentSpecialty || 'cirurgia';
+                    if (state.currentStudent !== (data.currentStudent || 'all')) {
+                        state.currentStudent = data.currentStudent || 'all';
                         stateChanged = true;
                     }
-                     if (hideStudyTime !== (data.hideStudyTime || false)) {
-                        hideStudyTime = data.hideStudyTime || false;
+                    if (state.currentSpecialty !== (data.currentSpecialty || 'cirurgia')) {
+                        state.currentSpecialty = data.currentSpecialty || 'cirurgia';
                         stateChanged = true;
                     }
-                    if (currentWeekOrRodizio !== (data.currentWeekOrRodizio || '1')) {
-                        currentWeekOrRodizio = data.currentWeekOrRodizio || '1';
+                    if (state.hideStudyTime !== (data.hideStudyTime || false)) {
+                        state.hideStudyTime = data.hideStudyTime || false;
+                        stateChanged = true;
+                    }
+                    if (state.currentWeekOrRodizio !== (data.currentWeekOrRodizio || '1')) {
+                        state.currentWeekOrRodizio = data.currentWeekOrRodizio || '1';
                         stateChanged = true;
                     }
                 } else {
@@ -815,16 +726,16 @@
                 document.body.dataset.initialized = true;
 
                 updateActiveSpecialtyButtons();
-                hideStudyDesktop.checked = hideStudyTime;
-                hideStudyMobile.checked = hideStudyTime;
+                DOM.hideStudyDesktop.checked = state.hideStudyTime;
+                DOM.hideStudyMobile.checked = state.hideStudyTime;
 
-                if (oldSpecialty !== currentSpecialty) {
+                if (oldSpecialty !== state.currentSpecialty) {
                     updateUILayout();
                     populateSelectors();
                 }
 
-                weekSelectorDesktop.value = currentWeekOrRodizio;
-                weekSelectorMain.value = currentWeekOrRodizio;
+                DOM.weekSelectorDesktop.value = state.currentWeekOrRodizio;
+                DOM.weekSelectorMain.value = state.currentWeekOrRodizio;
                 
                 updateView();
             }, (error) => {
@@ -833,24 +744,41 @@
         }
         
         function setupSharedListeners() {
-            const onCallDocRef = doc(db, `artifacts/${appId}/public/data/onCallClaims`, 'singleton');
-            if (unsubscribeOnCall) unsubscribeOnCall();
-            unsubscribeOnCall = onSnapshot(onCallDocRef, (docSnap) => {
+            const onCallDocRef = doc(db, 'schedules', 'onCallClaims');
+            if (state.unsubscribeOnCall) state.unsubscribeOnCall();
+            state.unsubscribeOnCall = onSnapshot(onCallDocRef, (docSnap) => {
                 const newData = docSnap.exists() ? docSnap.data().claims || {} : {};
-                if (JSON.stringify(onCallClaimData) !== JSON.stringify(newData)) {
-                    onCallClaimData = newData;
+                if (JSON.stringify(state.onCallClaimData) !== JSON.stringify(newData)) {
+                    state.onCallClaimData = newData;
                     renderSchedule();
                 }
             }, (error) => console.error("Error in on-call listener:", error));
             
-            const tipsDocRef = doc(db, `artifacts/${appId}/public/data/sharedTips`, 'singleton');
-            if (unsubscribeTips) unsubscribeTips();
-            unsubscribeTips = onSnapshot(tipsDocRef, (docSnap) => {
+            const tipsDocRef = doc(db, 'schedules', 'sharedTips');
+            if (state.unsubscribeTips) state.unsubscribeTips();
+            state.unsubscribeTips = onSnapshot(tipsDocRef, (docSnap) => {
                 const newData = docSnap.exists() ? docSnap.data() : {};
-                 if (JSON.stringify(sharedTipsData) !== JSON.stringify(newData)) {
-                    sharedTipsData = newData;
-                }
+                 if (JSON.stringify(state.sharedTipsData) !== JSON.stringify(newData)) {
+                     state.sharedTipsData = newData;
+                 }
             }, (error) => console.error("Error in tips listener:", error));
+
+            const suggestionsColRef = collection(db, 'suggestions');
+            const q = query(suggestionsColRef); 
+            if (state.unsubscribeSuggestions) state.unsubscribeSuggestions();
+            state.unsubscribeSuggestions = onSnapshot(q, (querySnapshot) => {
+                 state.suggestionsData = [];
+                 querySnapshot.forEach((doc) => {
+                     state.suggestionsData.push({ id: doc.id, ...doc.data() });
+                 });
+                 // Sort in memory to avoid needing a composite index
+                 state.suggestionsData.sort((a, b) => (b.createdAt?.toMillis() || 0) - (a.createdAt?.toMillis() || 0));
+                 if (DOM.suggestionsViewModalOverlay.classList.contains('is-open')) {
+                     handleViewSuggestionsClick();
+                 }
+            }, (error) => {
+                console.error("Error fetching suggestions:", error);
+            });
         }
         
         
@@ -867,56 +795,32 @@
             document.querySelectorAll('.admin-only').forEach(el => {
                 el.style.display = isAdmin ? 'block' : 'none';
             });
-
-            // Disconnect the existing listener if the user is not an admin or logs out.
-            if (unsubscribeSuggestions) {
-                unsubscribeSuggestions();
-                unsubscribeSuggestions = null;
-            }
-
-            // Set up the suggestions listener only if the user is an administrator.
-            if (isAdmin) {
-                const suggestionsColRef = collection(db, `artifacts/${appId}/public/data/suggestions`);
-                const q = query(suggestionsColRef, orderBy('createdAt', 'desc'));
-                unsubscribeSuggestions = onSnapshot(q, (querySnapshot) => {
-                    suggestionsData = [];
-                    querySnapshot.forEach((doc) => {
-                        suggestionsData.push({ id: doc.id, ...doc.data() });
-                    });
-                     if (suggestionsViewModalOverlay.classList.contains('is-open')) {
-                        handleViewSuggestionsClick();
-                    }
-                }, (error) => {
-                    console.error("Error fetching suggestions:", error);
-                    // Do not show a toast here as it might confuse non-admins if executed.
-                });
-            }
         }
         
         function resetLocalState() {
-            checklistData = {};
-            currentSpecialty = 'cirurgia';
-            currentStudent = 'all';
-            hideStudyTime = false;
-            const data = allData[currentSpecialty];
-            currentWeekOrRodizio = (data?.weeks?.[0]?.id) || '1';
+            state.checklistData = {};
+            state.currentSpecialty = 'cirurgia';
+            state.currentStudent = 'all';
+            state.hideStudyTime = false;
+            const data = state.allData[state.currentSpecialty];
+            state.currentWeekOrRodizio = (data?.weeks?.[0]?.id) || '1';
         }
 
         function updateActiveSpecialtyButtons() {
-            const isCirurgia = currentSpecialty === 'cirurgia';
-            btnCirurgia.classList.toggle('active', isCirurgia);
-            btnPediatria.classList.toggle('active', !isCirurgia);
-            btnCirurgiaMobile.classList.toggle('active', isCirurgia);
-            btnPediatriaMobile.classList.toggle('active', !isCirurgia);
+            const isCirurgia = state.currentSpecialty === 'cirurgia';
+            DOM.btnCirurgia.classList.toggle('active', isCirurgia);
+            DOM.btnPediatria.classList.toggle('active', !isCirurgia);
+            DOM.btnCirurgiaMobile.classList.toggle('active', isCirurgia);
+            DOM.btnPediatriaMobile.classList.toggle('active', !isCirurgia);
         }
 
         function switchSpecialty(newSpecialty) {
-            if (newSpecialty === currentSpecialty) return;
-            currentSpecialty = newSpecialty;
-            const data = allData[currentSpecialty];
-            currentWeekOrRodizio = (data?.weeks?.[0]?.id) || '1';
+            if (newSpecialty === state.currentSpecialty) return;
+            state.currentSpecialty = newSpecialty;
+            const data = state.allData[state.currentSpecialty];
+            state.currentWeekOrRodizio = (data?.weeks?.[0]?.id) || '1';
             
-            currentStudent = data?.students?.[0]?.id || 'all';
+            state.currentStudent = data?.students?.[0]?.id || 'all';
 
             updateActiveSpecialtyButtons();
             updateUILayout();
@@ -926,25 +830,19 @@
         }
 
         function populateSelectors() {
-            const data = allData[currentSpecialty];
+            const data = state.allData[state.currentSpecialty];
             if (!data || !data.weeks) return; 
             const weeks = data.weeks;
             const students = data.students;
-
-            const selector = weekSelectorDesktop;
-            const mobileSelector = weekSelectorMain;
             
-            selector.innerHTML = '';
-            mobileSelector.innerHTML = '';
-            studentSelectorDesktop.innerHTML = '';
-            studentSelectorMobile.innerHTML = '';
+            [DOM.weekSelectorDesktop, DOM.weekSelectorMain, DOM.studentSelectorDesktop, DOM.studentSelectorMobile].forEach(sel => sel.innerHTML = '');
             
             weeks.forEach(week => {
                 const option = document.createElement('option');
                 option.value = week.id;
-                option.textContent = `${currentSpecialty === 'pediatria' ? 'Rodízio' : 'Semana'} ${week.id}: ${week.title}`;
-                selector.appendChild(option.cloneNode(true));
-                mobileSelector.appendChild(option.cloneNode(true));
+                option.textContent = `${state.currentSpecialty === 'pediatria' ? 'Rodízio' : 'Semana'} ${week.id}: ${week.title}`;
+                DOM.weekSelectorDesktop.appendChild(option.cloneNode(true));
+                DOM.weekSelectorMain.appendChild(option.cloneNode(true));
             });
 
             if (students) {
@@ -952,63 +850,59 @@
                     const option = document.createElement('option');
                     option.value = student.id;
                     option.textContent = student.name;
-                    studentSelectorDesktop.appendChild(option.cloneNode(true));
-                    studentSelectorMobile.appendChild(option.cloneNode(true));
+                    DOM.studentSelectorDesktop.appendChild(option.cloneNode(true));
+                    DOM.studentSelectorMobile.appendChild(option.cloneNode(true));
                 });
             }
         }
         
         function updateUILayout() {
-            const isCirurgia = currentSpecialty === 'cirurgia';
+            const isCirurgia = state.currentSpecialty === 'cirurgia';
             
-            studentContainerDesktop.style.display = 'block';
-            studentContainerMobile.style.display = 'block';
+            DOM.studentContainerDesktop.style.display = 'block';
+            DOM.studentContainerMobile.style.display = 'block';
             
             const weekLabel = isCirurgia ? 'Selecione a Semana' : 'Selecione o Rodízio';
             document.getElementById('week-label-desktop').textContent = weekLabel;
-            weekLabelMain.textContent = weekLabel;
+            DOM.weekLabelMain.textContent = weekLabel;
         }
 
         function updateView() {
-            const data = allData[currentSpecialty];
+            const data = state.allData[state.currentSpecialty];
             if (!data || !data.weeks || !data.students) {
-                scheduleGrid.innerHTML = `<p class="text-center text-gray-400 col-span-full">Dados do cronograma para "${currentSpecialty}" não encontrados. O administrador precisa importar o arquivo JSON.</p>`;
-                scheduleSubtitleDesktop.textContent = '';
-                scheduleSubtitleMain.textContent = '';
+                DOM.scheduleGrid.innerHTML = `<p class="text-center text-gray-400">Dados do cronograma para "${state.currentSpecialty}" não encontrados ou incompletos.</p>`;
                 return;
             };
-            const selectedWeekData = data.weeks.find(w => w.id == currentWeekOrRodizio);
+            const selectedWeekData = data.weeks.find(w => w.id == state.currentWeekOrRodizio);
             const subtitleText = selectedWeekData ? `${selectedWeekData.title} (${selectedWeekData.dates})` : '';
             
-            scheduleSubtitleDesktop.textContent = subtitleText;
-            scheduleSubtitleMain.textContent = subtitleText;
+            DOM.scheduleSubtitleDesktop.textContent = subtitleText;
+            DOM.scheduleSubtitleMain.textContent = subtitleText;
             
-            const selectedStudent = data.students.find(s => s.id == currentStudent);
+            const selectedStudent = data.students.find(s => s.id == state.currentStudent);
             if (selectedStudent) {
-                studentImageMobile.src = selectedStudent.imageUrl || 'https://i.imgur.com/5AW2oEL.png';
-                studentImageDesktop.src = selectedStudent.imageUrl || 'https://i.imgur.com/5AW2oEL.png';
-                studentSelectorMobile.value = currentStudent;
-                studentSelectorDesktop.value = currentStudent;
+                DOM.studentImageMobile.src = selectedStudent.imageUrl || 'https://i.imgur.com/5AW2oEL.png';
+                DOM.studentImageDesktop.src = selectedStudent.imageUrl || 'https://i.imgur.com/5AW2oEL.png';
+                DOM.studentSelectorMobile.value = state.currentStudent;
+                DOM.studentSelectorDesktop.value = state.currentStudent;
             }
             
             renderSchedule();
         }
 
         function renderSchedule() {
-            const data = allData[currentSpecialty];
-            if (!data || !data.schedule) {
-                scheduleGrid.innerHTML = '';
-                return;
-            };
-            let weekData = data.schedule.filter(item => item.week == currentWeekOrRodizio);
+            const data = state.allData[state.currentSpecialty];
+            DOM.scheduleGrid.innerHTML = ''; // Clear previous content
 
-            if (currentSpecialty === 'cirurgia' && currentStudent !== 'all') {
-                 weekData = weekData.filter(item => item.studentId && item.studentId.includes(parseInt(currentStudent)));
+            if (!data || !data.schedule) return;
+
+            let weekData = data.schedule.filter(item => item.week == state.currentWeekOrRodizio);
+
+            if (state.currentSpecialty === 'cirurgia' && state.currentStudent !== 'all') {
+                weekData = weekData.filter(item => item.studentId && item.studentId.includes(parseInt(state.currentStudent)));
             }
             
-            let filteredData = hideStudyTime ? weekData.filter(item => !item.activity.toLowerCase().includes('horário estudo')) : weekData;
-
-            const fragment = document.createDocumentFragment();
+            let filteredData = state.hideStudyTime ? weekData.filter(item => !item.activity.toLowerCase().includes('horário estudo')) : weekData;
 
             const groupedByDay = filteredData.reduce((acc, item) => {
                 if (!acc[item.day]) acc[item.day] = [];
@@ -1017,8 +911,7 @@
             }, {});
 
             const orderedDays = daysOfWeek.filter(day => groupedByDay[day]);
-
-            const weekInfo = data.weeks.find(w => w.id == currentWeekOrRodizio);
+            const weekInfo = data.weeks.find(w => w.id == state.currentWeekOrRodizio);
 
             orderedDays.forEach(day => {
                 const activitiesForDay = groupedByDay[day].sort((a, b) => a.time.localeCompare(b.time));
@@ -1040,169 +933,176 @@
                             ${day.charAt(0) + day.slice(1).toLowerCase()}
                             <span class="block text-sm font-normal text-gray-400 mt-1">${formattedDate}</span>
                         `;
-                    } else {
-                         dayHeader.textContent = day.charAt(0) + day.slice(1).toLowerCase();
                     }
                 } else {
-                    dayHeader.textContent = day.charAt(0) + day.slice(1).toLowerCase();
+                     dayHeader.textContent = day.charAt(0) + day.slice(1).toLowerCase();
                 }
-
                 dayColumn.appendChild(dayHeader);
 
-                activitiesForDay.forEach((item) => {
-                    const activityId = `${currentSpecialty}-week${currentWeekOrRodizio}-day${day}-time${item.time.replace(/[\s:-]/g, '')}-${item.activity.replace(/[^a-zA-Z0-9]/g, '').substring(0, 10)}`;
-                    const isChecked = checklistData[activityId] || false;
-                    
-                    const card = document.createElement('div');
-                    card.className = `activity-card rounded-lg p-4 border-l-4 shadow-md bg-[#2D2D2D] border-[#2899F5]`;
-                     if (isChecked) card.classList.add('checked');
-
-                    const now = new Date();
-                    const currentTime = now.getHours() * 100 + now.getMinutes();
-                    const [startTimeStr, endTimeStr] = item.time.split(' - ');
-                    const startTime = parseInt(startTimeStr.replace(':', ''), 10);
-                    const endTime = parseInt(endTimeStr.replace(':', ''), 10);
-                    
-                    const today = now.toLocaleDateString('pt-BR', { weekday: 'long' }).toUpperCase();
-                    const isTodayInWeek = weekInfo && new Date() >= new Date(weekInfo.start) && new Date() <= new Date(weekInfo.end + 'T23:59:59');
-
-                    if (isTodayInWeek && day === today && currentTime >= startTime && currentTime <= endTime) {
-                        card.classList.add('current-activity');
-                    }
-
-                    const activityUpper = item.activity.toUpperCase();
-                    if (activityUpper.includes('PLANTÃO') || activityUpper.includes('PA PEDIATRIA')) {
-                        const onCallId = activityId;
-                        const totalSlots = item.slots || 2;
-                        const slots = onCallClaimData[onCallId] || new Array(totalSlots).fill(null);
-                        const currentStudentData = allData[currentSpecialty].students.find(s => s.id == currentStudent);
-                        const currentUserSlot = slots.find(slot => slot && currentStudentData && slot.id == currentStudentData.id);
-                        const hasEmptySlot = slots.some(slot => slot === null);
-
-                        let slotsHtml = '<ul class="mt-3 border-t border-gray-700 pt-3 text-sm space-y-1">';
-                        slots.forEach((slot, index) => {
-                            slotsHtml += `<li class="flex items-center gap-2 ${slot ? 'text-green-400' : 'text-gray-500'}">
-                                <span class="font-semibold">${index + 1}.</span>
-                                <span>${slot ? slot.name : 'Vaga disponível'}</span>
-                            </li>`;
-                        });
-                        slotsHtml += '</ul>';
-
-                        let buttonHtml = '';
-                        const isDisabled = currentSpecialty === 'cirurgia' && currentStudent === 'all';
-                        if (currentUserSlot) {
-                            buttonHtml = `<button data-action="leave" class="w-full mt-4 p-2 bg-yellow-600 hover:bg-yellow-700 rounded-md font-semibold transition-colors text-white text-sm">Sair do Plantão</button>`;
-                        } else if (hasEmptySlot) {
-                            buttonHtml = `<button data-action="claim" class="w-full mt-4 p-2 bg-blue-600 hover:bg-blue-700 rounded-md font-semibold transition-colors text-white text-sm ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}" ${isDisabled ? 'disabled' : ''}>Reivindicar Vaga</button>`;
-                        } else {
-                            buttonHtml = `<p class="text-center text-xs text-gray-400 mt-4">Todas as vagas preenchidas.</p>`;
-                        }
-                        
-                        card.innerHTML = `
-                            <div class="flex items-start justify-between">
-                                <div class="flex-1">
-                                    <p class="font-bold text-md activity-title">${item.activity}</p>
-                                    <p class="text-sm text-gray-400 font-medium mt-1">${item.time}</p>
-                                </div>
-                                <div class="flex items-center">
-                                    <button class="gemini-summary-btn p-1 rounded-full hover:bg-gray-600 mr-2" title="✨ Dica do Preceptor">
-                                        <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.898 20.572L16.25 21.75l-.648-1.178a3.375 3.375 0 00-2.455-2.456L12 17.25l1.178-.648a3.375 3.375 0 002.455-2.456L16.25 13.5l.648 1.178a3.375 3.375 0 002.456 2.456L20.25 18l-1.178.648a3.375 3.375 0 00-2.456 2.456z" /></svg>
-                                    </button>
-                                    <input type="checkbox" id="${activityId}" class="h-5 w-5 rounded bg-gray-700 border-gray-600 text-blue-500 focus:ring-blue-600" ${isChecked ? 'checked' : ''}>
-                                </div>
-                            </div>
-                            ${slotsHtml}
-                            ${buttonHtml}
-                        `;
-                        
-                        const actionButton = card.querySelector('button[data-action]');
-                        if (actionButton) {
-                            actionButton.addEventListener('click', () => handleOnCallAction(onCallId, actionButton.dataset.action, totalSlots));
-                        }
-
-                    } else { // Regular activity card
-                        let studentHtml = '';
-                        if (currentSpecialty === 'cirurgia' && item.studentId && currentStudent === 'all') {
-                            const involvedStudents = allData.cirurgia.students
-                                .filter(s => s.id !== 'all' && item.studentId.includes(s.id))
-                                .map(s => s.name.split(' ')[0])
-                                .join(', ');
-                                studentHtml = `<p class="mt-2 text-xs text-gray-500"><strong>Alunos:</strong> ${involvedStudents}</p>`;
-                        }
-                        
-                        const locationUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.location + ', Curitiba, Brazil')}`;
-
-                        card.innerHTML = `
-                             <div class="flex items-start justify-between">
-                                 <div class="flex-1">
-                                     <p class="font-bold text-md activity-title">${item.activity}</p>
-                                     <p class="text-sm text-gray-400 font-medium mt-1">${item.time}</p>
-                                 </div>
-                                 <div class="flex items-center">
-                                      <button class="gemini-summary-btn p-1 rounded-full hover:bg-gray-600 mr-2" title="✨ Dica do Preceptor">
-                                         <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.898 20.572L16.25 21.75l-.648-1.178a3.375 3.375 0 00-2.455-2.456L12 17.25l1.178-.648a3.375 3.375 0 002.455-2.456L16.25 13.5l.648 1.178a3.375 3.375 0 002.456 2.456L20.25 18l-1.178.648a3.375 3.375 0 00-2.456 2.456z" /></svg>
-                                     </button>
-                                     <input type="checkbox" id="${activityId}" class="h-5 w-5 rounded bg-gray-700 border-gray-600 text-blue-500 focus:ring-blue-600" ${isChecked ? 'checked' : ''}>
-                                 </div>
-                             </div>
-                             <div class="mt-3 border-t border-gray-700 pt-3 text-sm">
-                                 <p><strong>Professor:</strong> ${item.professor}</p>
-                                 <p><strong>Local:</strong> <a href="${locationUrl}" target="_blank" class="text-blue-400 hover:underline">${item.location}</a></p>
-                                 ${studentHtml}
-                             </div>
-                        `;
-                    }
-                    
-                    card.querySelector(`#${activityId}`).addEventListener('change', handleChecklistChange);
-                    card.querySelector('.gemini-summary-btn').addEventListener('click', () => handleSummaryClick(item));
+                activitiesForDay.forEach(item => {
+                    const card = createActivityCard(item, day, weekInfo);
                     dayColumn.appendChild(card);
                 });
-                fragment.appendChild(dayColumn);
+                DOM.scheduleGrid.appendChild(dayColumn);
             });
+        }
 
-            scheduleGrid.innerHTML = '';
-            scheduleGrid.appendChild(fragment);
+        function createActivityCard(item, day, weekInfo) {
+            const activityId = `${state.currentSpecialty}-week${state.currentWeekOrRodizio}-day${day}-time${item.time.replace(/[\s:-]/g, '')}-${item.activity.replace(/[^a-zA-Z0-9]/g, '').substring(0, 10)}`;
+            const isChecked = state.checklistData[activityId] || false;
+            
+            const card = document.createElement('div');
+            card.className = `activity-card rounded-lg p-4 border-l-4 shadow-md bg-[#2D2D2D] border-[#2899F5]`;
+            if (isChecked) card.classList.add('checked');
+
+            const now = new Date();
+            const currentTime = now.getHours() * 100 + now.getMinutes();
+            const [startTimeStr, endTimeStr] = item.time.split(' - ');
+            const startTime = parseInt(startTimeStr.replace(':', ''), 10);
+            const endTime = parseInt(endTimeStr.replace(':', ''), 10);
+            
+            const today = now.toLocaleDateString('pt-BR', { weekday: 'long' }).toUpperCase();
+            const isTodayInWeek = weekInfo && new Date() >= new Date(weekInfo.start) && new Date() <= new Date(weekInfo.end + 'T23:59:59');
+
+            if (isTodayInWeek && day === today && currentTime >= startTime && currentTime <= endTime) {
+                card.classList.add('current-activity');
+            }
+
+            const activityUpper = item.activity.toUpperCase();
+            const isOnCall = activityUpper.includes('PLANTÃO') || activityUpper.includes('PA PEDIATRIA');
+
+            card.innerHTML = isOnCall ? createOnCallCardHTML(item, activityId, isChecked) : createRegularCardHTML(item, activityId, isChecked);
+            
+            // Attach event listeners
+            card.querySelector(`#${activityId}`).addEventListener('change', handleChecklistChange);
+            card.querySelector('.gemini-summary-btn').addEventListener('click', () => handleSummaryClick(item));
+            
+            if (isOnCall) {
+                const actionButton = card.querySelector('button[data-action]');
+                if (actionButton) {
+                    actionButton.addEventListener('click', () => handleOnCallAction(activityId, actionButton.dataset.action, item.slots || 2));
+                }
+            }
+            
+            return card;
+        }
+
+        function createRegularCardHTML(item, activityId, isChecked) {
+            let studentHtml = '';
+            if (state.currentSpecialty === 'cirurgia' && item.studentId && state.currentStudent === 'all') {
+                const involvedStudents = state.allData.cirurgia.students
+                    .filter(s => s.id !== 'all' && item.studentId.includes(s.id))
+                    .map(s => s.name.split(' ')[0])
+                    .join(', ');
+                studentHtml = `<p class="mt-2 text-xs text-gray-500"><strong>Alunos:</strong> ${involvedStudents}</p>`;
+            }
+            
+            const locationUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.location + ', Curitiba, Brazil')}`;
+
+            return `
+                 <div class="flex items-start justify-between">
+                     <div class="flex-1">
+                         <p class="font-bold text-md activity-title">${item.activity}</p>
+                         <p class="text-sm text-gray-400 font-medium mt-1">${item.time}</p>
+                     </div>
+                     <div class="flex items-center">
+                         <button class="gemini-summary-btn p-1 rounded-full hover:bg-gray-600 mr-2" title="✨ Dica do Preceptor">
+                             <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.898 20.572L16.25 21.75l-.648-1.178a3.375 3.375 0 00-2.455-2.456L12 17.25l1.178-.648a3.375 3.375 0 002.455-2.456L16.25 13.5l.648 1.178a3.375 3.375 0 002.456 2.456L20.25 18l-1.178.648a3.375 3.375 0 00-2.456 2.456z" /></svg>
+                         </button>
+                         <input type="checkbox" id="${activityId}" class="h-5 w-5 rounded bg-gray-700 border-gray-600 text-blue-500 focus:ring-blue-600" ${isChecked ? 'checked' : ''}>
+                     </div>
+                 </div>
+                 <div class="mt-3 border-t border-gray-700 pt-3 text-sm">
+                     <p><strong>Professor:</strong> ${item.professor}</p>
+                     <p><strong>Local:</strong> <a href="${locationUrl}" target="_blank" class="text-blue-400 hover:underline">${item.location}</a></p>
+                     ${studentHtml}
+                 </div>
+            `;
+        }
+
+        function createOnCallCardHTML(item, onCallId, isChecked) {
+             const totalSlots = item.slots || 2;
+             const slots = state.onCallClaimData[onCallId] || new Array(totalSlots).fill(null);
+             const currentStudentData = state.allData[state.currentSpecialty].students.find(s => s.id == state.currentStudent);
+             const currentUserSlot = slots.find(slot => slot && currentStudentData && slot.id == currentStudentData.id);
+             const hasEmptySlot = slots.some(slot => slot === null);
+
+             let slotsHtml = '<ul class="mt-3 border-t border-gray-700 pt-3 text-sm space-y-1">';
+             slots.forEach((slot, index) => {
+                 slotsHtml += `<li class="flex items-center gap-2 ${slot ? 'text-green-400' : 'text-gray-500'}">
+                     <span class="font-semibold">${index + 1}.</span>
+                     <span>${slot ? slot.name : 'Vaga disponível'}</span>
+                 </li>`;
+             });
+             slotsHtml += '</ul>';
+
+             let buttonHtml = '';
+             const isDisabled = state.currentSpecialty === 'cirurgia' && state.currentStudent === 'all';
+             if (currentUserSlot) {
+                 buttonHtml = `<button data-action="leave" class="w-full mt-4 p-2 bg-yellow-600 hover:bg-yellow-700 rounded-md font-semibold transition-colors text-white text-sm">Sair do Plantão</button>`;
+             } else if (hasEmptySlot) {
+                 buttonHtml = `<button data-action="claim" class="w-full mt-4 p-2 bg-blue-600 hover:bg-blue-700 rounded-md font-semibold transition-colors text-white text-sm ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}" ${isDisabled ? 'disabled' : ''}>Reivindicar Vaga</button>`;
+             } else {
+                 buttonHtml = `<p class="text-center text-xs text-gray-400 mt-4">Todas as vagas preenchidas.</p>`;
+             }
+             
+             return `
+                 <div class="flex items-start justify-between">
+                     <div class="flex-1">
+                         <p class="font-bold text-md activity-title">${item.activity}</p>
+                         <p class="text-sm text-gray-400 font-medium mt-1">${item.time}</p>
+                     </div>
+                     <div class="flex items-center">
+                         <button class="gemini-summary-btn p-1 rounded-full hover:bg-gray-600 mr-2" title="✨ Dica do Preceptor">
+                            <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.898 20.572L16.25 21.75l-.648-1.178a3.375 3.375 0 00-2.455-2.456L12 17.25l1.178-.648a3.375 3.375 0 002.455-2.456L16.25 13.5l.648 1.178a3.375 3.375 0 002.456 2.456L20.25 18l-1.178.648a3.375 3.375 0 00-2.456 2.456z" /></svg>
+                         </button>
+                         <input type="checkbox" id="${onCallId}" class="h-5 w-5 rounded bg-gray-700 border-gray-600 text-blue-500 focus:ring-blue-600" ${isChecked ? 'checked' : ''}>
+                     </div>
+                 </div>
+                 ${slotsHtml}
+                 ${buttonHtml}
+             `;
         }
         
         // --- Event Handlers ---
 
         function handleWeekChange(e) {
-            currentWeekOrRodizio = e.target.value;
-            syncSelectors(e.target, e.target.id.includes('desktop') ? weekSelectorMain : weekSelectorDesktop);
+            state.currentWeekOrRodizio = e.target.value;
+            syncSelectors(e.target, e.target.id.includes('desktop') ? DOM.weekSelectorMain : DOM.weekSelectorDesktop);
             updateView();
         }
 
         function handleStudentChange(e) {
-            currentStudent = e.target.value;
-            syncSelectors(e.target, e.target.id.includes('mobile') ? studentSelectorDesktop : studentSelectorMobile);
+            state.currentStudent = e.target.value;
+            syncSelectors(e.target, e.target.id.includes('mobile') ? DOM.studentSelectorDesktop : DOM.studentSelectorMobile);
             updateView();
             
             if (e.target.id.includes('mobile')) {
-                setTimeout(() => toggleSidebar(), 300);
+                setTimeout(() => toggleModal(DOM.sidebarOverlay, false), 300);
             }
         }
 
         function handleChecklistChange(event) {
             const checkbox = event.target;
             const activityId = checkbox.id;
-            checklistData[activityId] = checkbox.checked;
+            state.checklistData[activityId] = checkbox.checked;
             
             checkbox.closest('.activity-card').classList.toggle('checked', checkbox.checked);
         }
 
         function handleHideStudyChange(e) {
-            hideStudyTime = e.target.checked;
+            state.hideStudyTime = e.target.checked;
             renderSchedule();
         }
 
         async function handleSummaryClick(item) {
-            geminiModalTitle.textContent = `Dica Rápida: ${item.activity}`;
-            geminiModalContent.innerHTML = '';
-            geminiModalLoader.style.display = 'flex';
-            toggleGeminiModal(true);
+            DOM.geminiModalTitle.textContent = `Dica Rápida: ${item.activity}`;
+            DOM.geminiModalContent.innerHTML = '';
+            DOM.geminiModalLoader.style.display = 'flex';
+            toggleModal(DOM.geminiModalOverlay, true);
 
-            const tipsKey = currentSpecialty;
-            const userTips = sharedTipsData[tipsKey] || '';
+            const tipsKey = state.currentSpecialty;
+            const userTips = state.sharedTipsData[tipsKey] || '';
             
             let prompt = `Você é um preceptor de medicina experiente. Forneça uma dica rápida e focada para um estudante de medicina sobre a atividade: "${item.activity}", supervisionada por ${item.professor}. O que o aluno deve focar para aproveitar ao máximo essa oportunidade? Responda em um parágrafo curto e direto.`;
             
@@ -1212,59 +1112,55 @@
 
             const summary = await callGemini(prompt);
             
-            geminiModalContent.innerHTML = summary.replace(/\n/g, '<br>');
-            geminiModalLoader.style.display = 'none';
+            DOM.geminiModalContent.innerHTML = summary.replace(/\n/g, '<br>');
+            DOM.geminiModalLoader.style.display = 'none';
         }
         
         async function handleStudyPlanClick() {
-            const data = allData[currentSpecialty];
-            if(!data || !data.weeks) {
-                showToast("Dados do cronograma não carregados.");
-                return;
-            }
-            const weekInfo = data.weeks.find(w => w.id == currentWeekOrRodizio);
+            const data = state.allData[state.currentSpecialty];
+            const weekInfo = data.weeks.find(w => w.id == state.currentWeekOrRodizio);
             if (!weekInfo) return;
 
-            geminiModalTitle.textContent = `Plano de Estudos: ${weekInfo.title}`;
-            geminiModalContent.innerHTML = '';
-            geminiModalLoader.style.display = 'flex';
-            toggleGeminiModal(true);
+            DOM.geminiModalTitle.textContent = `Plano de Estudos: ${weekInfo.title}`;
+            DOM.geminiModalContent.innerHTML = '';
+            DOM.geminiModalLoader.style.display = 'flex';
+            toggleModal(DOM.geminiModalOverlay, true);
             
             const weekActivities = data.schedule
-                .filter(item => item.week == currentWeekOrRodizio)
+                .filter(item => item.week == state.currentWeekOrRodizio)
                 .map(item => `- ${item.day}: ${item.activity} (${item.time}) com ${item.professor}`)
                 .join('\n');
                 
-            const tipsKey = currentSpecialty;
-            const userTips = sharedTipsData[tipsKey] || '';
+            const tipsKey = state.currentSpecialty;
+            const userTips = state.sharedTipsData[tipsKey] || '';
 
             let prompt = `Você é um assistente de estudos sênior para um interno de medicina. Sua tarefa é criar um plano de estudos inteligente e prático para a semana de "${weekInfo.title}", com base nas seguintes atividades agendadas:\n${weekActivities}\n\n`;
 
             if(userTips){
-                prompt += `**Atenção:** Leve em consideração as seguintes dicas e informações fornecidas por alunos mais experientes para todo o módulo de ${currentSpecialty}. Elas são CRUCIAIS e devem ser priorizadas na sua análise:\n"${userTips}"\n\n`;
+                prompt += `**Atenção:** Leve em consideração as seguintes dicas e informações fornecidas por alunos mais experientes para todo o módulo de ${state.currentSpecialty}. Elas são CRUCIAIS e devem ser priorizadas na sua análise:\n"${userTips}"\n\n`;
             }
 
             prompt += `Por favor, gere o plano seguindo estas diretrizes:\n1. **Análise e Foco:** Identifique os temas clínicos e cirúrgicos mais importantes da semana, usando as dicas dos veteranos como guia principal.\n2. **Estrutura Realista:** Organize as sugestões de estudo por ambiente (ex: Ambulatório, Enfermaria, Centro Cirúrgico), se a atividade permitir essa distinção.\n3. **Conteúdo Atualizado:** Baseie todas as recomendações em diretrizes e artigos publicados nos últimos 5 anos.\n4. **Recursos Adicionais:** Para cada tema principal, sugira uma bibliografia útil (capítulos de livros como Sabiston, Schwartz, Nelson, etc.) e, se possível, um link para um artigo de revisão de alta qualidade (ex: UpToDate, Medscape, NEJM, etc.).\n5. **Formato:** Use HTML para a resposta. O texto principal deve ser branco ou um cinza bem claro. Use <h3> para títulos, <ul> e <li> para listas, e <a> para links. Os links devem ser de uma cor azul clara para contrastar bem com o fundo escuro.`;
 
             const plan = await callGemini(prompt);
 
-            geminiModalContent.innerHTML = plan;
-            geminiModalLoader.style.display = 'none';
+            DOM.geminiModalContent.innerHTML = plan;
+            DOM.geminiModalLoader.style.display = 'none';
         }
 
 
         async function handleOnCallAction(onCallId, action, totalSlots) {
-            if (currentSpecialty === 'cirurgia' && currentStudent === 'all') {
+            if (state.currentSpecialty === 'cirurgia' && state.currentStudent === 'all') {
                 showToast("Por favor, selecione um aluno para reivindicar uma vaga.");
                 return;
             }
             
-            const updatedOnCallData = JSON.parse(JSON.stringify(onCallClaimData));
+            const updatedOnCallData = JSON.parse(JSON.stringify(state.onCallClaimData));
             if (!updatedOnCallData[onCallId]) {
                 updatedOnCallData[onCallId] = new Array(totalSlots).fill(null);
             }
             const slots = updatedOnCallData[onCallId];
-            const currentStudentData = allData[currentSpecialty]?.students.find(s => s.id == currentStudent);
+            const currentStudentData = state.allData[state.currentSpecialty].students.find(s => s.id == state.currentStudent);
             
             if (!currentStudentData) {
                 showToast("Aluno não encontrado. Tente novamente.");
@@ -1286,7 +1182,7 @@
                 }
             }
             
-            const onCallDocRef = doc(db, `artifacts/${appId}/public/data/onCallClaims`, 'singleton');
+            const onCallDocRef = doc(db, 'schedules', 'onCallClaims');
             try {
                 await setDoc(onCallDocRef, { claims: updatedOnCallData });
             } catch (error) {
@@ -1296,60 +1192,60 @@
         }
 
         async function saveTips() {
-            tipsSaveText.classList.add('hidden');
-            tipsSaveLoader.classList.remove('hidden');
+            DOM.tipsSaveText.classList.add('hidden');
+            DOM.tipsSaveLoader.classList.remove('hidden');
 
-            const tipsKey = currentSpecialty;
-            const newTips = tipsTextarea.value;
+            const tipsKey = state.currentSpecialty;
+            const newTips = DOM.tipsTextarea.value;
 
-            const tipsDocRef = doc(db, `artifacts/${appId}/public/data/sharedTips`, 'singleton');
+            const tipsDocRef = doc(db, 'schedules', 'sharedTips');
             try {
                 await setDoc(tipsDocRef, { [tipsKey]: newTips }, { merge: true });
                 showToast("Dicas salvas com sucesso!");
-                toggleTipsModal(false);
+                toggleModal(DOM.tipsModalOverlay, false);
             } catch (error) {
                 console.error("Error saving tips:", error);
                 showToast("Erro ao salvar as dicas.");
             } finally {
-                tipsSaveText.classList.remove('hidden');
-                tipsSaveLoader.classList.add('hidden');
+                DOM.tipsSaveText.classList.remove('hidden');
+                DOM.tipsSaveLoader.classList.add('hidden');
             }
         }
 
         async function saveSuggestion() {
-            const suggestionText = suggestionTextarea.value.trim();
+            const suggestionText = DOM.suggestionTextarea.value.trim();
             if(!suggestionText) {
                 showToast("Por favor, descreva sua sugestão.");
                 return;
             }
 
-            suggestionSaveText.classList.add('hidden');
-            suggestionSaveLoader.classList.remove('hidden');
+            DOM.suggestionSaveText.classList.add('hidden');
+            DOM.suggestionSaveLoader.classList.remove('hidden');
             
             try {
-                await addDoc(collection(db, `artifacts/${appId}/public/data/suggestions`), {
-                    userId: userId,
-                    specialty: currentSpecialty,
-                    week: currentWeekOrRodizio,
+                await addDoc(collection(db, "suggestions"), {
+                    userId: state.userId,
+                    specialty: state.currentSpecialty,
+                    week: state.currentWeekOrRodizio,
                     suggestion: suggestionText,
                     createdAt: serverTimestamp(),
                     resolved: false
                 });
                 showToast("Sugestão enviada com sucesso!");
-                toggleSuggestionModal(false);
+                toggleModal(DOM.suggestionModalOverlay, false);
             } catch (error) {
                  console.error("Error sending suggestion:", error);
                 showToast("Erro ao enviar sugestão.");
             } finally {
-                suggestionSaveText.classList.remove('hidden');
-                suggestionSaveLoader.classList.add('hidden');
+                DOM.suggestionSaveText.classList.remove('hidden');
+                DOM.suggestionSaveLoader.classList.add('hidden');
             }
         }
         
         async function handleResolveSuggestion(suggestionId) {
-            const suggestionRef = doc(db, `artifacts/${appId}/public/data/suggestions`, suggestionId);
+            const suggestionRef = doc(db, 'suggestions', suggestionId);
             try {
-                await setDoc(suggestionRef, { resolved: true }, { merge: true });
+                await updateDoc(suggestionRef, { resolved: true });
                 showToast("Sugestão marcada como resolvida.");
             } catch (error) {
                 console.error("Error resolving suggestion:", error);
@@ -1358,12 +1254,12 @@
         }
 
         function handleViewSuggestionsClick() {
-            suggestionsList.innerHTML = ''; 
+            DOM.suggestionsList.innerHTML = ''; 
 
-            if (suggestionsData.length === 0) {
-                suggestionsList.innerHTML = '<p>Nenhuma sugestão nova.</p>';
+            if (state.suggestionsData.length === 0) {
+                DOM.suggestionsList.innerHTML = '<p>Nenhuma sugestão nova.</p>';
             } else {
-                const listHtml = suggestionsData.map(sug => {
+                const listHtml = state.suggestionsData.map(sug => {
                     const date = sug.createdAt?.toDate().toLocaleString('pt-BR') || 'Data indisponível';
                     const isResolved = sug.resolved || false;
                     return `
@@ -1379,22 +1275,22 @@
                         </div>
                     `;
                 }).join('');
-                suggestionsList.innerHTML = listHtml;
+                DOM.suggestionsList.innerHTML = listHtml;
 
-                suggestionsList.querySelectorAll('.resolve-suggestion-btn').forEach(btn => {
+                DOM.suggestionsList.querySelectorAll('.resolve-suggestion-btn').forEach(btn => {
                     btn.addEventListener('click', (e) => {
                         const suggestionId = e.target.dataset.id;
                         handleResolveSuggestion(suggestionId);
                     });
                 });
             }
-            toggleSuggestionViewModal(true);
+            toggleModal(DOM.suggestionsViewModalOverlay, true);
         }
 
         function clearWeekData() {
             showConfirm("Tem certeza que deseja limpar todas as marcações desta semana?", () => {
-                const weekPrefix = `${currentSpecialty}-week${currentWeekOrRodizio}`;
-                const keysToDelete = Object.keys(checklistData).filter(key => key.startsWith(weekPrefix));
+                const weekPrefix = `${state.currentSpecialty}-week${state.currentWeekOrRodizio}`;
+                const keysToDelete = Object.keys(state.checklistData).filter(key => key.startsWith(weekPrefix));
 
                 if (keysToDelete.length === 0) {
                     showToast("Nenhuma marcação para limpar nesta semana.");
@@ -1402,13 +1298,13 @@
                 }
                 
                 const newChecklistData = {};
-                for (const key in checklistData) {
+                for (const key in state.checklistData) {
                     if (!key.startsWith(weekPrefix)) {
-                        newChecklistData[key] = checklistData[key];
+                        newChecklistData[key] = state.checklistData[key];
                     }
                 }
                 
-                checklistData = newChecklistData;
+                state.checklistData = newChecklistData;
 
                 saveUserStateToFirebase();
                 renderSchedule();
@@ -1424,9 +1320,9 @@
 
         function handleLoadId(inputElement) {
             const newId = inputElement.value.trim();
-            if (newId && newId !== userId) {
+            if (newId && newId !== state.userId) {
                 showConfirm(`Carregar dados do ID ${newId}? Suas configurações atuais serão sobrescritas.`, () => {
-                    if (unsubscribeUser) unsubscribeUser();
+                    if (state.unsubscribeUser) state.unsubscribeUser();
                     localStorage.setItem('loadedUserId', newId);
                     resetLocalState();
                     initializeUI(); 
@@ -1441,204 +1337,167 @@
 
         // --- Event Listener Setup ---
 
-        sidebarToggle.addEventListener('click', toggleSidebar);
-        sidebarClose.addEventListener('click', toggleSidebar);
-        sidebarOverlay.addEventListener('click', (e) => {
-            if (e.target === sidebarOverlay) toggleSidebar();
-        });
+        function setupEventListeners() {
+            DOM.sidebarToggle.addEventListener('click', () => toggleModal(DOM.sidebarOverlay, true));
+            DOM.sidebarClose.addEventListener('click', () => toggleModal(DOM.sidebarOverlay, false));
+            DOM.sidebarOverlay.addEventListener('click', (e) => {
+                if (e.target === DOM.sidebarOverlay) toggleModal(DOM.sidebarOverlay, false);
+            });
 
-        btnCirurgia.addEventListener('click', (e) => { e.preventDefault(); switchSpecialty('cirurgia'); });
-        btnPediatria.addEventListener('click', (e) => { e.preventDefault(); switchSpecialty('pediatria'); });
-        btnCirurgiaMobile.addEventListener('click', () => switchSpecialty('cirurgia'));
-        btnPediatriaMobile.addEventListener('click', () => switchSpecialty('pediatria'));
+            DOM.btnCirurgia.addEventListener('click', (e) => { e.preventDefault(); switchSpecialty('cirurgia'); });
+            DOM.btnPediatria.addEventListener('click', (e) => { e.preventDefault(); switchSpecialty('pediatria'); });
+            DOM.btnCirurgiaMobile.addEventListener('click', () => switchSpecialty('cirurgia'));
+            DOM.btnPediatriaMobile.addEventListener('click', () => switchSpecialty('pediatria'));
 
-        weekSelectorMain.addEventListener('change', handleWeekChange);
-        weekSelectorDesktop.addEventListener('change', handleWeekChange);
+            DOM.weekSelectorMain.addEventListener('change', handleWeekChange);
+            DOM.weekSelectorDesktop.addEventListener('change', handleWeekChange);
+            DOM.studentSelectorMobile.addEventListener('change', handleStudentChange);
+            DOM.studentSelectorDesktop.addEventListener('change', handleStudentChange);
 
-        studentSelectorMobile.addEventListener('change', handleStudentChange);
-        studentSelectorDesktop.addEventListener('change', handleStudentChange);
+            DOM.clearWeekButtonMobile.addEventListener('click', clearWeekData);
+            DOM.clearWeekButtonDesktop.addEventListener('click', clearWeekData);
 
-        clearWeekButtonMobile.addEventListener('click', clearWeekData);
-        clearWeekButtonDesktop.addEventListener('click', clearWeekData);
-
-        hideStudyMobile.addEventListener('change', handleHideStudyChange);
-        hideStudyDesktop.addEventListener('change', handleHideStudyChange);
-        
-        syncButtonMobile.addEventListener('click', saveUserStateToFirebase);
-        syncButtonModal.addEventListener('click', saveUserStateToFirebase);
-        
-        syncModalOpenBtn.addEventListener('click', toggleSyncModal);
-        syncModalCloseBtn.addEventListener('click', toggleSyncModal);
-        syncModalOverlay.addEventListener('click', (e) => {
-            if(e.target === syncModalOverlay) toggleSyncModal();
-        });
-
-        geminiModalCloseBtn.addEventListener('click', () => toggleGeminiModal(false));
-        geminiModalOverlay.addEventListener('click', (e) => {
-            if (e.target === geminiModalOverlay) toggleGeminiModal(false);
-        });
-        
-        adminPanelBtnDesktop.addEventListener('click', () => toggleAdminPanel(true));
-        adminPanelHeader.addEventListener('click', (e) => {
-            e.preventDefault();
-            toggleAdminPanel(true);
-            mobileOptionsMenu.classList.add('hidden');
-        });
-        adminPanelCloseBtn.addEventListener('click', () => toggleAdminPanel(false));
-        adminPanelModalOverlay.addEventListener('click', (e) => {
-            if(e.target === adminPanelModalOverlay) toggleAdminPanel(false);
-        });
-
-        sendTipBtnDesktop.addEventListener('click', () => toggleTipsModal(true));
-        sendTipBtnMobile.addEventListener('click', () => toggleTipsModal(true));
-        sendTipHeader.addEventListener('click', (e) => {
-            e.preventDefault();
-            toggleTipsModal(true);
-            mobileOptionsMenu.classList.add('hidden');
-        });
-
-        tipsModalCloseBtn.addEventListener('click', () => toggleTipsModal(false));
-        tipsModalCancelBtn.addEventListener('click', () => toggleTipsModal(false));
-        tipsModalOverlay.addEventListener('click', (e) => {
-            if(e.target === tipsModalOverlay) toggleTipsModal(false);
-        });
-        tipsModalSaveBtn.addEventListener('click', saveTips);
-
-        suggestChangeBtnDesktop.addEventListener('click', () => toggleSuggestionModal(true));
-        suggestChangeBtnMobile.addEventListener('click', () => toggleSuggestionModal(true));
-        suggestionModalCloseBtn.addEventListener('click', () => toggleSuggestionModal(false));
-        suggestionModalCancelBtn.addEventListener('click', () => toggleSuggestionModal(false));
-        suggestionModalOverlay.addEventListener('click', (e) => {
-            if(e.target === suggestionModalOverlay) toggleSuggestionModal(false);
-        });
-        suggestionModalSaveBtn.addEventListener('click', saveSuggestion);
-        
-        generateStudyPlanBtnDesktop.addEventListener('click', handleStudyPlanClick);
-        generateStudyPlanHeader.addEventListener('click', (e) => {
-            e.preventDefault();
-            handleStudyPlanClick();
-            mobileOptionsMenu.classList.add('hidden');
-        });
-
-        viewSuggestionsBtnAdmin.addEventListener('click', handleViewSuggestionsClick);
-        
-        suggestionsViewModalCloseBtn.addEventListener('click', () => toggleSuggestionViewModal(false));
-        suggestionsViewModalOverlay.addEventListener('click', (e) => {
-            if(e.target === suggestionsViewModalOverlay) toggleSuggestionViewModal(false);
-        });
-
-        async function handleImportJson() {
-            const fileInput = document.createElement('input');
-            fileInput.type = 'file';
-            fileInput.accept = '.json';
-            fileInput.onchange = async (e) => {
-                const file = e.target.files[0];
-                if (!file) {
-                    showToast('Nenhum arquivo selecionado.');
-                    return;
-                }
-                const reader = new FileReader();
-                reader.onload = async (event) => {
-                    try {
-                        const jsonData = JSON.parse(event.target.result);
-                        if (!jsonData.weeks || !jsonData.schedule || !jsonData.students) {
-                            throw new Error('JSON inválido. Faltam chaves essenciais.');
-                        }
-                        showConfirm(`Isso substituirá o cronograma de "${currentSpecialty}". Deseja continuar?`, async () => {
-                            toggleAdminPanel(false);
-                            showToast('Importando cronograma...');
-                            const scheduleDocRef = doc(db, `artifacts/${appId}/public/data/schedules`, currentSpecialty);
-                            await setDoc(scheduleDocRef, jsonData);
-                            showToast('Importado com sucesso! Recarregando...');
-                            setTimeout(() => window.location.reload(), 2000);
-                        });
-                    } catch (error) {
-                        console.error("Error importing JSON:", error);
-                        showToast(`Erro ao importar: ${error.message}`);
-                    }
-                };
-                reader.readAsText(file);
-            };
-            fileInput.click();
-        }
-
-        editScheduleBtn.addEventListener('click', () => {
-            showToast('Função de edição direta ainda não implementada.');
-            toggleAdminPanel(false);
-        });
-        importJsonBtn.addEventListener('click', handleImportJson);
-
-
-        todayBtn.addEventListener('click', () => {
-            const now = new Date();
-            const todayStr = now.toISOString().split('T')[0];
-            const todayDay = now.toLocaleDateString('pt-BR', { weekday: 'long' }).toUpperCase();
+            DOM.hideStudyMobile.addEventListener('change', handleHideStudyChange);
+            DOM.hideStudyDesktop.addEventListener('change', handleHideStudyChange);
             
-            const data = allData[currentSpecialty];
-            if(!data || !data.weeks) return;
-            const currentWeekInfo = data.weeks.find(w => todayStr >= w.start && todayStr <= w.end);
+            DOM.syncButtonMobile.addEventListener('click', saveUserStateToFirebase);
+            DOM.syncButtonModal.addEventListener('click', saveUserStateToFirebase);
+            
+            DOM.syncModalOpenBtn.addEventListener('click', () => toggleModal(DOM.syncModalOverlay, true));
+            DOM.syncModalCloseBtn.addEventListener('click', () => toggleModal(DOM.syncModalOverlay, false));
+            DOM.syncModalOverlay.addEventListener('click', (e) => {
+                if(e.target === DOM.syncModalOverlay) toggleModal(DOM.syncModalOverlay, false);
+            });
 
-            if (currentWeekInfo) {
-                currentWeekOrRodizio = currentWeekInfo.id;
-                weekSelectorDesktop.value = currentWeekInfo.id;
-                weekSelectorMain.value = currentWeekInfo.id;
-                updateView();
+            DOM.geminiModalCloseBtn.addEventListener('click', () => toggleModal(DOM.geminiModalOverlay, false));
+            DOM.geminiModalOverlay.addEventListener('click', (e) => {
+                if (e.target === DOM.geminiModalOverlay) toggleModal(DOM.geminiModalOverlay, false);
+            });
+            
+            DOM.adminPanelBtnDesktop.addEventListener('click', () => toggleModal(DOM.adminPanelModalOverlay, true));
+            DOM.adminPanelHeader.addEventListener('click', (e) => {
+                e.preventDefault();
+                toggleModal(DOM.adminPanelModalOverlay, true);
+                DOM.mobileOptionsMenu.classList.add('hidden');
+            });
+            DOM.adminPanelCloseBtn.addEventListener('click', () => toggleModal(DOM.adminPanelModalOverlay, false));
+            DOM.adminPanelModalOverlay.addEventListener('click', (e) => {
+                if(e.target === DOM.adminPanelModalOverlay) toggleModal(DOM.adminPanelModalOverlay, false);
+            });
+
+            const openTipsModal = (e) => {
+                if(e) e.preventDefault();
+                DOM.tipsModalTitle.textContent = `Dicas para o Módulo: ${state.currentSpecialty.charAt(0).toUpperCase() + state.currentSpecialty.slice(1)}`;
+                toggleModal(DOM.tipsModalOverlay, true);
+                if (DOM.mobileOptionsMenu) DOM.mobileOptionsMenu.classList.add('hidden');
+            };
+            DOM.sendTipBtnDesktop.addEventListener('click', openTipsModal);
+            DOM.sendTipBtnMobile.addEventListener('click', openTipsModal);
+            DOM.sendTipHeader.addEventListener('click', openTipsModal);
+            DOM.tipsModalCloseBtn.addEventListener('click', () => toggleModal(DOM.tipsModalOverlay, false));
+            DOM.tipsModalCancelBtn.addEventListener('click', () => toggleModal(DOM.tipsModalOverlay, false));
+            DOM.tipsModalOverlay.addEventListener('click', (e) => {
+                if(e.target === DOM.tipsModalOverlay) toggleModal(DOM.tipsModalOverlay, false);
+            });
+            DOM.tipsModalSaveBtn.addEventListener('click', saveTips);
+
+            const openSuggestionModal = () => {
+                const weekInfo = state.allData[state.currentSpecialty]?.weeks.find(w => w.id == state.currentWeekOrRodizio);
+                DOM.suggestionModalTitle.textContent = `Sugestão para: ${weekInfo?.title || 'Semana Atual'}`;
+                DOM.suggestionTextarea.value = '';
+                toggleModal(DOM.suggestionModalOverlay, true);
+            };
+            DOM.suggestChangeBtnDesktop.addEventListener('click', openSuggestionModal);
+            DOM.suggestChangeBtnMobile.addEventListener('click', openSuggestionModal);
+            DOM.suggestionModalCloseBtn.addEventListener('click', () => toggleModal(DOM.suggestionModalOverlay, false));
+            DOM.suggestionModalCancelBtn.addEventListener('click', () => toggleModal(DOM.suggestionModalOverlay, false));
+            DOM.suggestionModalOverlay.addEventListener('click', (e) => {
+                if(e.target === DOM.suggestionModalOverlay) toggleModal(DOM.suggestionModalOverlay, false);
+            });
+            DOM.suggestionModalSaveBtn.addEventListener('click', saveSuggestion);
+            
+            DOM.generateStudyPlanBtnDesktop.addEventListener('click', handleStudyPlanClick);
+            DOM.generateStudyPlanHeader.addEventListener('click', (e) => {
+                e.preventDefault();
+                handleStudyPlanClick();
+                DOM.mobileOptionsMenu.classList.add('hidden');
+            });
+
+            DOM.viewSuggestionsBtnAdmin.addEventListener('click', handleViewSuggestionsClick);
+            
+            DOM.suggestionsViewModalCloseBtn.addEventListener('click', () => toggleModal(DOM.suggestionsViewModalOverlay, false));
+            DOM.suggestionsViewModalOverlay.addEventListener('click', (e) => {
+                if(e.target === DOM.suggestionsViewModalOverlay) toggleModal(DOM.suggestionsViewModalOverlay, false);
+            });
+
+            DOM.todayBtn.addEventListener('click', () => {
+                const now = new Date();
+                const todayStr = now.toISOString().split('T')[0];
+                const todayDay = now.toLocaleDateString('pt-BR', { weekday: 'long' }).toUpperCase();
                 
-                setTimeout(() => {
-                    const dayCol = document.getElementById(`day-col-${todayDay}`);
-                    if (dayCol) {
-                       dayCol.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    }
-                }, 100);
-            } else {
-                showToast('Nenhuma atividade programada para hoje.');
-            }
-        });
-        
-        copyUserIdBtnMobile.addEventListener('click', () => handleCopyId(userIdDisplayMobile));
-        copyUserIdModal.addEventListener('click', () => handleCopyId(userIdDisplayModal));
+                const data = state.allData[state.currentSpecialty];
+                const currentWeekInfo = data.weeks.find(w => todayStr >= w.start && todayStr <= w.end);
 
-        loadUserIdBtnMobile.addEventListener('click', () => handleLoadId(userIdInputMobile));
-        loadUserIdModal.addEventListener('click', () => handleLoadId(userIdInputModal));
-        
-        // Mobile Header Options Menu
-        mobileOptionsToggle.addEventListener('click', (e) => {
-            e.stopPropagation();
-            mobileOptionsMenu.classList.toggle('hidden');
-        });
+                if (currentWeekInfo) {
+                    state.currentWeekOrRodizio = currentWeekInfo.id;
+                    DOM.weekSelectorDesktop.value = currentWeekInfo.id;
+                    DOM.weekSelectorMain.value = currentWeekInfo.id;
+                    updateView();
+                    
+                    setTimeout(() => {
+                        const dayCol = document.getElementById(`day-col-${todayDay}`);
+                        if (dayCol) {
+                           dayCol.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        }
+                    }, 100);
+                } else {
+                    showToast('Nenhuma atividade programada para hoje.');
+                }
+            });
+            
+            DOM.copyUserIdBtnMobile.addEventListener('click', () => handleCopyId(DOM.userIdDisplayMobile));
+            DOM.copyUserIdModal.addEventListener('click', () => handleCopyId(DOM.userIdDisplayModal));
 
-        document.addEventListener('click', (e) => {
-            if (!mobileOptionsMenu.contains(e.target) && !mobileOptionsToggle.contains(e.target)) {
-                mobileOptionsMenu.classList.add('hidden');
-            }
-        });
+            DOM.loadUserIdBtnMobile.addEventListener('click', () => handleLoadId(DOM.userIdInputMobile));
+            DOM.loadUserIdModal.addEventListener('click', () => handleLoadId(DOM.userIdInputModal));
+            
+            DOM.mobileOptionsToggle.addEventListener('click', (e) => {
+                e.stopPropagation();
+                DOM.mobileOptionsMenu.classList.toggle('hidden');
+            });
+
+            document.addEventListener('click', (e) => {
+                if (!DOM.mobileOptionsMenu.contains(e.target) && !DOM.mobileOptionsToggle.contains(e.target)) {
+                    DOM.mobileOptionsMenu.classList.add('hidden');
+                }
+            });
+
+            // Debounced save for frequent changes
+            let saveTimeout;
+            const debouncedSave = () => {
+                clearTimeout(saveTimeout);
+                saveTimeout = setTimeout(saveUserStateToFirebase, 2000);
+            };
+            
+            ['change', 'input'].forEach(evt => {
+                DOM.scheduleGrid.addEventListener(evt, debouncedSave);
+                DOM.weekSelectorMain.addEventListener(evt, debouncedSave);
+                DOM.weekSelectorDesktop.addEventListener(evt, debouncedSave);
+                DOM.studentSelectorMobile.addEventListener(evt, debouncedSave);
+                DOM.studentSelectorDesktop.addEventListener(evt, debouncedSave);
+                DOM.hideStudyMobile.addEventListener(evt, debouncedSave);
+                DOM.hideStudyDesktop.addEventListener(evt, debouncedSave);
+            });
+
+            // Interval to update the 'current activity' highlight
+            setInterval(renderSchedule, 60000);
+        }
 
         // --- Initialization ---
-
-        setInterval(() => {
-            renderSchedule();
-        }, 60000);
-
-        let saveTimeout;
-        window.addEventListener('beforeunload', () => {
-           if (userId) saveUserStateToFirebase();
+        document.addEventListener('DOMContentLoaded', () => {
+            setupEventListeners();
+            fetchData();
         });
-
-        function debouncedSave() {
-            clearTimeout(saveTimeout);
-            saveTimeout = setTimeout(saveUserStateToFirebase, 2000);
-        }
-
-        scheduleGrid.addEventListener('change', debouncedSave);
-        weekSelectorMain.addEventListener('change', debouncedSave);
-        weekSelectorDesktop.addEventListener('change', debouncedSave);
-        studentSelectorMobile.addEventListener('change', debouncedSave);
-        studentSelectorDesktop.addEventListener('change', debouncedSave);
-        hideStudyMobile.addEventListener('change', debouncedSave);
-        hideStudyDesktop.addEventListener('change', debouncedSave);
-
-        fetchData();
     </script>
 </body>
 </html>
-
