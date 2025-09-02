@@ -251,32 +251,35 @@
             </div>
         </div>
     </div>
-    
-    <!-- NEW: Edit Activity Modal -->
+
+    <!-- Admin Edit Modal -->
     <div id="edit-modal-overlay" class="fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center p-4">
-        <div id="edit-modal" class="relative w-full max-w-md bg-[#2B2B2B] rounded-2xl shadow-2xl p-6">
-            <h3 class="text-lg font-semibold mb-4 text-center">Editar Atividade</h3>
-            <form id="edit-form" class="space-y-4">
-                <div>
-                    <label for="edit-activity" class="block text-sm font-medium text-gray-300">Atividade</label>
-                    <input type="text" id="edit-activity" class="mt-1 w-full p-2 bg-[#1B1B1B] border border-gray-600 rounded-md shadow-sm">
-                </div>
-                <div>
-                    <label for="edit-time" class="block text-sm font-medium text-gray-300">Horário (ex: 08:00 - 12:00)</label>
-                    <input type="text" id="edit-time" class="mt-1 w-full p-2 bg-[#1B1B1B] border border-gray-600 rounded-md shadow-sm">
-                </div>
-                <div>
-                    <label for="edit-professor" class="block text-sm font-medium text-gray-300">Professor</label>
-                    <input type="text" id="edit-professor" class="mt-1 w-full p-2 bg-[#1B1B1B] border border-gray-600 rounded-md shadow-sm">
-                </div>
-                <div>
-                    <label for="edit-location" class="block text-sm font-medium text-gray-300">Local</label>
-                    <input type="text" id="edit-location" class="mt-1 w-full p-2 bg-[#1B1B1B] border border-gray-600 rounded-md shadow-sm">
-                </div>
-            </form>
-            <div class="flex justify-center gap-4 mt-6">
-                <button id="edit-btn-save" class="px-6 py-2 bg-green-600 hover:bg-green-700 rounded-md font-semibold transition-colors">Salvar</button>
+        <div id="edit-modal" class="relative w-full max-w-lg bg-[#2B2B2B] rounded-2xl shadow-2xl p-6 flex flex-col gap-4">
+            <h3 class="text-xl font-bold text-center">Editar Atividade</h3>
+            <input type="hidden" id="edit-activity-identifier">
+            <div>
+                <label for="edit-activity" class="block text-sm font-medium mb-1">Atividade</label>
+                <input type="text" id="edit-activity" class="w-full p-2 bg-[#1B1B1B] rounded-md border border-gray-600">
+            </div>
+            <div>
+                <label for="edit-time" class="block text-sm font-medium mb-1">Horário (ex: 08:00 - 12:00)</label>
+                <input type="text" id="edit-time" class="w-full p-2 bg-[#1B1B1B] rounded-md border border-gray-600">
+            </div>
+            <div>
+                <label for="edit-professor" class="block text-sm font-medium mb-1">Professor</label>
+                <input type="text" id="edit-professor" class="w-full p-2 bg-[#1B1B1B] rounded-md border border-gray-600">
+            </div>
+            <div>
+                <label for="edit-location" class="block text-sm font-medium mb-1">Local</label>
+                <input type="text" id="edit-location" class="w-full p-2 bg-[#1B1B1B] rounded-md border border-gray-600">
+            </div>
+             <div>
+                <label for="edit-studentId" class="block text-sm font-medium mb-1">IDs dos Alunos (separados por vírgula, para Cirurgia)</label>
+                <input type="text" id="edit-studentId" class="w-full p-2 bg-[#1B1B1B] rounded-md border border-gray-600">
+            </div>
+            <div class="flex justify-end gap-4 mt-4">
                 <button id="edit-btn-cancel" class="px-6 py-2 bg-gray-600 hover:bg-gray-700 rounded-md font-semibold transition-colors">Cancelar</button>
+                <button id="edit-btn-save" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 rounded-md font-semibold transition-colors">Salvar</button>
             </div>
         </div>
     </div>
@@ -300,25 +303,28 @@
           measurementId: "G-6RNMK13MMK"
         };
 
-
         // Initialize Firebase
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
+
+        // --- Admin Configuration ---
+        const ADMIN_ID = "r5NLb0GqtcRuTmeVt3g3gRoGirl2"; // <<< IMPORTANTE: SUBSTITUA PELO SEU ID
         
         // --- Global State Variables ---
-        const ADMIN_USER_ID = "r5NLb0GqtcRuTmeVt3g3gRoGirl2"; // IMPORTANT: Replace with the admin's actual Firebase Auth User ID.
         let userId = null;
         let isAdmin = false;
         let unsubscribeUser; // Listener for user-specific data
-        let unsubscribeShared; // Listener for shared data
-        let allData = {}; // To store schedule data from JSON files
+        let unsubscribeShared; // Listener for shared on-call data
+        let unsubscribeCirurgiaSchedule; // Listener for cirurgia schedule
+        let unsubscribePediatriaSchedule; // Listener for pediatria schedule
+        let allData = {}; // To store schedule data from FIRESTORE
         let currentSpecialty = 'cirurgia';
         let currentWeekOrRodizio = '1';
         let currentStudent = 'all';
         let checklistData = {}; // To store the checked state of activities
         let hideStudyTime = false;
-        let onCallClaimData = {}; // NEW: To store on-call claimed slots data
+        let onCallClaimData = {}; // To store on-call claimed slots data
 
         // --- DOM Element References ---
         const scheduleGrid = document.getElementById('schedule-grid');
@@ -380,13 +386,17 @@
         const confirmMessage = document.getElementById('confirm-message');
         const confirmBtnYes = document.getElementById('confirm-btn-yes');
         const confirmBtnNo = document.getElementById('confirm-btn-no');
-        
-        // NEW: Edit Modal Elements
+
+        // Admin Edit Modal Elements
         const editModalOverlay = document.getElementById('edit-modal-overlay');
-        const editModal = document.getElementById('edit-modal');
-        const editForm = document.getElementById('edit-form');
-        const editBtnSave = document.getElementById('edit-btn-save');
+        const editActivityIdentifier = document.getElementById('edit-activity-identifier');
+        const editActivityInput = document.getElementById('edit-activity');
+        const editTimeInput = document.getElementById('edit-time');
+        const editProfessorInput = document.getElementById('edit-professor');
+        const editLocationInput = document.getElementById('edit-location');
+        const editStudentIdInput = document.getElementById('edit-studentId');
         const editBtnCancel = document.getElementById('edit-btn-cancel');
+        const editBtnSave = document.getElementById('edit-btn-save');
 
         // --- UI Functions ---
 
@@ -425,113 +435,96 @@
         function toggleSyncModal() {
             syncModalOverlay.classList.toggle('is-open');
         }
+        
+        function toggleEditModal() {
+            editModalOverlay.classList.toggle('is-open');
+        }
 
 
         // --- Data Handling and Firebase ---
 
-        async function fetchData() {
-            const mockSchedule = {
-                cirurgia: {
-                    weeks: [
-                        { id: '1', title: 'Cirurgia Geral (Teste)', dates: '25/08 - 31/08', start: '2025-08-25', end: '2025-08-31' },
-                        { id: '2', title: 'Cirurgia Vascular (Teste)', dates: '01/09 - 07/09', start: '2025-09-01', end: '2025-09-07' }
-                    ],
-                    students: [
-                        { id: 'all', name: 'Todos os Alunos', imageUrl: 'https://i.imgur.com/5AW2oEL.png' },
-                        { id: 1, name: 'Aluno Teste 1', imageUrl: 'https://placehold.co/400x400/EBF4FF/76A9EA?text=A1' },
-                        { id: 2, name: 'Aluno Teste 2', imageUrl: 'https://placehold.co/400x400/EBF4FF/76A9EA?text=A2' }
-                    ],
-                    schedule: [
-                        { week: '1', day: 'SEGUNDA', time: '08:00 - 12:00', activity: 'Ambulatório Mock', professor: 'Dr. Exemplo', location: 'Hospital de Testes', studentId: [1] },
-                        { week: '1', day: 'TERÇA', time: '13:00 - 17:00', activity: 'Centro Cirúrgico Mock', professor: 'Dra. Simulada', location: 'Hospital de Testes', studentId: [2] },
-                        { week: '2', day: 'QUARTA', time: '09:00 - 11:00', activity: 'PA PLANTÃO', professor: 'Dr. Exemplo', location: 'Sala de Conferências', studentId: [1, 2], slots: 2 }
-                    ]
-                },
-                pediatria: {
-                    weeks: [
-                        { id: '1', title: 'Rodízio Pediatria 1 (Teste)', dates: '25/08 - 31/08', start: '2025-08-25', end: '2025-08-31' },
-                        { id: '2', title: 'Rodízio Pediatria 2 (Teste)', dates: '01/09 - 07/09', start: '2025-09-01', end: '2025-09-07' }
-                    ],
-                    students: [
-                        { id: 'p1', name: 'Ped Aluno 1', imageUrl: 'https://placehold.co/400x400/F4EBF4/A976A9?text=P1' },
-                        { id: 'p2', name: 'Ped Aluno 2', imageUrl: 'https://placehold.co/400x400/F4EBF4/A976A9?text=P2' },
-                        { id: 'p3', name: 'Ped Aluno 3', imageUrl: 'https://placehold.co/400x400/F4EBF4/A976A9?text=P3' }
-                    ],
-                    schedule: [
-                        { week: '1', day: 'QUINTA', time: '10:00 - 12:00', activity: 'PA Pediatria', professor: 'Dra. Criança', location: 'Hospital Infantil de Teste', slots: 2 },
-                        { week: '2', day: 'SEXTA', time: '14:00 - 16:00', activity: 'PA PLANTÃO', professor: 'Dr. Bebê', location: 'Hospital Infantil de Teste', slots: 3 }
-                    ]
+        const mockSchedule = {
+            cirurgia: {
+                weeks: [
+                    { id: '1', title: 'Cirurgia Geral (Teste)', dates: '25/08 - 31/08', start: '2025-08-25', end: '2025-08-31' },
+                    { id: '2', title: 'Cirurgia Vascular (Teste)', dates: '01/09 - 07/09', start: '2025-09-01', end: '2025-09-07' }
+                ],
+                students: [
+                    { id: 'all', name: 'Todos os Alunos', imageUrl: 'https://i.imgur.com/5AW2oEL.png' },
+                    { id: 1, name: 'Aluno Teste 1', imageUrl: 'https://placehold.co/400x400/EBF4FF/76A9EA?text=A1' },
+                    { id: 2, name: 'Aluno Teste 2', imageUrl: 'https://placehold.co/400x400/EBF4FF/76A9EA?text=A2' }
+                ],
+                schedule: [
+                    { week: '1', day: 'SEGUNDA', time: '08:00 - 12:00', activity: 'Ambulatório Mock', professor: 'Dr. Exemplo', location: 'Hospital de Testes', studentId: [1] },
+                    { week: '1', day: 'TERÇA', time: '13:00 - 17:00', activity: 'Centro Cirúrgico Mock', professor: 'Dra. Simulada', location: 'Hospital de Testes', studentId: [2] },
+                    { week: '2', day: 'QUARTA', time: '09:00 - 11:00', activity: 'PA PLANTÃO', professor: 'Dr. Exemplo', location: 'Sala de Conferências', studentId: [1, 2], slots: 2 }
+                ]
+            },
+            pediatria: {
+                weeks: [
+                    { id: '1', title: 'Rodízio Pediatria 1 (Teste)', dates: '25/08 - 31/08', start: '2025-08-25', end: '2025-08-31' },
+                    { id: '2', title: 'Rodízio Pediatria 2 (Teste)', dates: '01/09 - 07/09', start: '2025-09-01', end: '2025-09-07' }
+                ],
+                students: [
+                    { id: 'p1', name: 'Ped Aluno 1', imageUrl: 'https://placehold.co/400x400/F4EBF4/A976A9?text=P1' },
+                    { id: 'p2', name: 'Ped Aluno 2', imageUrl: 'https://placehold.co/400x400/F4EBF4/A976A9?text=P2' },
+                    { id: 'p3', name: 'Ped Aluno 3', imageUrl: 'https://placehold.co/400x400/F4EBF4/A976A9?text=P3' }
+                ],
+                schedule: [
+                    { week: '1', day: 'QUINTA', time: '10:00 - 12:00', activity: 'PA Pediatria', professor: 'Dra. Criança', location: 'Hospital Infantil de Teste', slots: 2 },
+                    { week: '2', day: 'SEXTA', time: '14:00 - 16:00', activity: 'PA PLANTÃO', professor: 'Dr. Bebê', location: 'Hospital Infantil de Teste', slots: 3 }
+                ]
+            }
+        };
+
+        function initializeScheduleListener(specialty) {
+            const scheduleDocRef = doc(db, 'schedules', specialty);
+            
+            const listener = onSnapshot(scheduleDocRef, (docSnap) => {
+                if (docSnap.exists()) {
+                    allData[specialty] = docSnap.data();
+                } else {
+                    // If data doesn't exist in Firestore, upload the mock data
+                    // This should only happen once, on the very first run
+                    console.log(`No schedule found for ${specialty} in Firestore. Uploading mock data.`);
+                    allData[specialty] = mockSchedule[specialty];
+                    setDoc(scheduleDocRef, mockSchedule[specialty]);
                 }
-            };
+                
+                // Only render if this is the active specialty
+                if(specialty === currentSpecialty) {
+                    initializeUI();
+                }
+            }, (error) => {
+                console.error(`Error listening to ${specialty} schedule:`, error);
+                // Fallback to mock data on error
+                allData[specialty] = mockSchedule[specialty];
+                if(specialty === currentSpecialty) {
+                    initializeUI();
+                }
+            });
 
-            try {
-                const results = await Promise.allSettled([
-                    fetch('cirurgia_schedule.json').then(res => res.ok ? res.json() : Promise.reject()),
-                    fetch('pediatria_schedule.json').then(res => res.ok ? res.json() : Promise.reject())
-                ]);
-
-                allData.cirurgia = results[0].status === 'fulfilled' ? results[0].value : mockSchedule.cirurgia;
-                allData.pediatria = results[1].status === 'fulfilled' ? results[1].value : mockSchedule.pediatria;
-                
-                // Add unique IDs to each schedule item for stable editing
-                Object.values(allData).forEach(specialty => {
-                    if (specialty.schedule) {
-                        specialty.schedule.forEach(item => {
-                            if (!item.uniqueId) { // Avoid adding if it already exists
-                                item.uniqueId = `activity-${Math.random().toString(36).substr(2, 9)}`;
-                            }
-                        });
-                    }
-                });
-                
-                initializeUI();
-                initializeAuth();
-                
-            } catch (error) {
-                console.error("Error during initial data fetch:", error);
-                allData.cirurgia = mockSchedule.cirurgia;
-                allData.pediatria = mockSchedule.pediatria;
-                initializeUI();
-                initializeAuth();
+            if (specialty === 'cirurgia') {
+                if (unsubscribeCirurgiaSchedule) unsubscribeCirurgiaSchedule();
+                unsubscribeCirurgiaSchedule = listener;
+            } else {
+                if (unsubscribePediatriaSchedule) unsubscribePediatriaSchedule();
+                unsubscribePediatriaSchedule = listener;
             }
         }
         
         async function initializeAuth() {
             onAuthStateChanged(auth, (user) => {
                 if (user) {
-                    // --- DEBUGGING LOG ---
-                    console.log("ID do usuário atual:", user.uid);
-                    console.log("ID do Admin para corresponder:", ADMIN_USER_ID);
-                    // --- END DEBUGGING LOG ---
-        
-                    const wasAdmin = isAdmin;
-                    isAdmin = user.uid === ADMIN_USER_ID;
-        
-                    if (isAdmin) {
-                        console.log("SUCESSO: Usuário administrador reconhecido. Controles de edição ativados.");
-                    } else if (wasAdmin) {
-                        console.log("Status de administrador removido.");
-                    }
-        
+                    isAdmin = user.uid === ADMIN_ID;
                     const activeUserId = localStorage.getItem('loadedUserId') || user.uid;
                     if (!userId || userId !== activeUserId) {
                         setupUserListener(activeUserId);
                     }
-                    setupSharedOnCallListener();
-        
-                    // If admin status changed, force a re-render to show/hide controls
-                    if (wasAdmin !== isAdmin) {
-                        renderSchedule();
-                    }
-                } else {
-                    // User signed out, clean up listeners and UI
-                    isAdmin = false;
-                    if (unsubscribeShared) unsubscribeShared();
-                    if (unsubscribeUser) unsubscribeUser();
-                    renderSchedule(); // Re-render to hide admin controls
+                    renderSchedule(); // Re-render to show/hide admin buttons
                 }
             });
-        
+
             try {
                 if (!auth.currentUser) {
                     await signInAnonymously(auth);
@@ -546,7 +539,6 @@
             if (!userId) return;
             const userDocRef = doc(db, 'users', userId);
             try {
-                // Only save user-specific data here
                 await setDoc(userDocRef, {
                     checklistData,
                     currentStudent,
@@ -563,6 +555,7 @@
 
         function setupUserListener(uid) {
             userId = uid;
+            isAdmin = userId === ADMIN_ID;
             userIdDisplayMobile.value = uid;
             userIdDisplayModal.value = uid;
             const userDocRef = doc(db, 'users', userId);
@@ -575,7 +568,6 @@
 
                 if (docSnap.exists()) {
                     const data = docSnap.data();
-                    // Only update user-specific state from this listener
                     if (JSON.stringify(checklistData) !== JSON.stringify(data.checklistData || {})) {
                         checklistData = data.checklistData || {};
                         stateChanged = true;
@@ -619,13 +611,6 @@
                 weekSelectorMain.value = currentWeekOrRodizio;
                 
                 updateView();
-
-                // DESIGN IMPROVEMENT: Scroll to today on first load
-                if (!document.body.dataset.scrolledToToday) {
-                    scrollToToday();
-                    document.body.dataset.scrolledToToday = true;
-                }
-
             }, (error) => {
                 console.error("Error in user snapshot listener:", error);
             });
@@ -639,7 +624,6 @@
                 const newData = docSnap.exists() ? docSnap.data().claims || {} : {};
                 if (JSON.stringify(onCallClaimData) !== JSON.stringify(newData)) {
                     onCallClaimData = newData;
-                    // Only re-render if the data actually changed to prevent loops
                     renderSchedule();
                 }
             }, (error) => {
@@ -650,6 +634,7 @@
         // --- Core Application Logic ---
         
         function initializeUI() {
+            if (!allData[currentSpecialty]) return;
             updateUILayout();
             populateSelectors();
             updateView();
@@ -660,7 +645,6 @@
             currentSpecialty = 'cirurgia';
             currentStudent = 'all';
             hideStudyTime = false;
-            // Do not reset onCallClaimData as it's shared
             const data = allData[currentSpecialty];
             currentWeekOrRodizio = (data?.weeks?.[0]?.id) || '1';
         }
@@ -677,11 +661,12 @@
             if (newSpecialty === currentSpecialty) return;
             currentSpecialty = newSpecialty;
             const data = allData[currentSpecialty];
-            currentWeekOrRodizio = (data?.weeks?.[0]?.id) || '1';
+            if (!data) return; // Don't switch if data isn't loaded yet
             
-            // Reset student based on new specialty to avoid invalid state
+            currentWeekOrRodizio = (data.weeks?.[0]?.id) || '1';
+            
             if (newSpecialty === 'pediatria') {
-                currentStudent = data?.students?.[0]?.id || 'p1';
+                currentStudent = data.students?.[0]?.id || 'p1';
             } else {
                 currentStudent = 'all';
             }
@@ -728,11 +713,8 @@
         
         function updateUILayout() {
             const isCirurgia = currentSpecialty === 'cirurgia';
-            
-            // BUG FIX: The student selector should always be visible
             studentContainerDesktop.style.display = 'block';
             studentContainerMobile.style.display = 'block';
-            
             const weekLabel = isCirurgia ? 'Selecione a Semana' : 'Selecione o Rodízio';
             document.getElementById('week-label-desktop').textContent = weekLabel;
             weekLabelMain.textContent = weekLabel;
@@ -747,7 +729,7 @@
             scheduleSubtitleDesktop.textContent = subtitleText;
             scheduleSubtitleMain.textContent = subtitleText;
             
-            const selectedStudent = data.students.find(s => s.id == currentStudent);
+            const selectedStudent = data.students.find(s => String(s.id) === String(currentStudent));
             if (selectedStudent) {
                 studentImageMobile.src = selectedStudent.imageUrl || 'https://i.imgur.com/5AW2oEL.png';
                 studentImageDesktop.src = selectedStudent.imageUrl || 'https://i.imgur.com/5AW2oEL.png';
@@ -760,7 +742,11 @@
 
         function renderSchedule() {
             const data = allData[currentSpecialty];
-            if (!data) return;
+            if (!data || !data.schedule) {
+                scheduleGrid.innerHTML = '<p class="text-center col-span-full">Carregando cronograma...</p>';
+                return;
+            }
+
             let weekData = data.schedule.filter(item => item.week == currentWeekOrRodizio);
 
             if (currentSpecialty === 'cirurgia') {
@@ -810,23 +796,15 @@
 
                 dayColumn.appendChild(dayHeader);
 
-                activitiesForDay.forEach((item) => {
+                activitiesForDay.forEach((item, index) => {
+                    // Use index to create a more stable ID within the filtered array
+                    const activityIdentifier = `${currentSpecialty}-${item.week}-${item.day}-${index}`;
                     const activityId = `${currentSpecialty}-week${currentWeekOrRodizio}-day${day}-time${item.time.replace(/[\s:-]/g, '')}-${item.activity.replace(/[^a-zA-Z0-9]/g, '').substring(0, 10)}`;
                     const isChecked = checklistData[activityId] || false;
                     
                     const card = document.createElement('div');
-                    card.className = `activity-card rounded-lg p-4 border-l-4 shadow-md bg-[#2D2D2D]`;
+                    card.className = `activity-card rounded-lg p-4 border-l-4 shadow-md bg-[#2D2D2D] border-[#2899F5]`;
                      if (isChecked) card.classList.add('checked');
-                    
-                    // Add border colors based on activity type
-                    const activityUpper = item.activity.toUpperCase();
-                    if (activityUpper.includes('PLANTÃO') || activityUpper.includes('PA PEDIATRIA')) {
-                        card.classList.add('border-red-500');
-                    } else if (activityUpper.includes('HORÁRIO ESTUDO')) {
-                        card.classList.add('border-amber-500');
-                    } else {
-                        card.classList.add('border-blue-500');
-                    }
 
                     const now = new Date();
                     const currentTime = now.getHours() * 100 + now.getMinutes();
@@ -841,21 +819,21 @@
                         card.classList.add('current-activity');
                     }
                     
-                    // NEW: Admin edit button
-                    const adminEditButton = isAdmin ? `
-                        <button class="edit-activity-btn p-1 text-gray-400 hover:text-white" data-unique-id="${item.uniqueId}">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.536L16.732 3.732z"></path></svg>
-                        </button>
-                    ` : '';
+                    let adminButtonHtml = '';
+                    if (isAdmin) {
+                        adminButtonHtml = `<button data-identifier="${activityIdentifier}" class="edit-btn absolute top-2 right-10 p-1 bg-gray-600 hover:bg-gray-500 rounded-full text-white">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L16.732 3.732z"></path></svg>
+                        </button>`;
+                    }
 
-
+                    const activityUpper = item.activity.toUpperCase();
                     if (activityUpper.includes('PLANTÃO') || activityUpper.includes('PA PEDIATRIA')) {
                         const onCallId = activityId;
                         const totalSlots = item.slots || 2;
                         
                         const slots = onCallClaimData[onCallId] || new Array(totalSlots).fill(null);
                         
-                        const currentStudentData = allData[currentSpecialty].students.find(s => s.id == currentStudent);
+                        const currentStudentData = allData[currentSpecialty].students.find(s => String(s.id) === String(currentStudent));
                         const currentUserSlot = slots.find(slot => slot && currentStudentData && slot.id == currentStudentData.id);
                         const hasEmptySlot = slots.some(slot => slot === null);
 
@@ -879,15 +857,13 @@
                         }
                         
                         card.innerHTML = `
-                            <div class="flex items-start justify-between">
+                            <div class="flex items-start justify-between relative">
                                 <div class="flex-1">
                                     <p class="font-bold text-md activity-title">${item.activity}</p>
                                     <p class="text-sm text-gray-400 font-medium mt-1">${item.time}</p>
                                 </div>
-                                <div class="flex items-center gap-2 ml-4 mt-1">
-                                    ${adminEditButton}
-                                    <input type="checkbox" id="${activityId}" class="h-5 w-5 rounded bg-gray-700 border-gray-600 text-blue-500 focus:ring-blue-600" ${isChecked ? 'checked' : ''}>
-                                </div>
+                                ${adminButtonHtml}
+                                <input type="checkbox" id="${activityId}" class="ml-4 mt-1 h-5 w-5 rounded bg-gray-700 border-gray-600 text-blue-500 focus:ring-blue-600 self-start" ${isChecked ? 'checked' : ''}>
                             </div>
                             ${slotsHtml}
                             ${buttonHtml}
@@ -899,7 +875,7 @@
                         }
                         card.querySelector(`#${activityId}`).addEventListener('change', handleChecklistChange);
 
-                    } else { // Regular activity card
+                    } else { 
                         let studentHtml = '';
                         if (currentSpecialty === 'cirurgia' && item.studentId) {
                             const involvedStudents = allData.cirurgia.students
@@ -912,15 +888,13 @@
                         const locationUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.location + ', Curitiba, Brazil')}`;
 
                         card.innerHTML = `
-                            <div class="flex items-start justify-between">
+                            <div class="flex items-start justify-between relative">
                                 <div class="flex-1">
                                     <p class="font-bold text-md activity-title">${item.activity}</p>
                                     <p class="text-sm text-gray-400 font-medium mt-1">${item.time}</p>
                                 </div>
-                                <div class="flex items-center gap-2 ml-4 mt-1">
-                                    ${adminEditButton}
-                                    <input type="checkbox" id="${activityId}" class="h-5 w-5 rounded bg-gray-700 border-gray-600 text-blue-500 focus:ring-blue-600" ${isChecked ? 'checked' : ''}>
-                                </div>
+                                ${adminButtonHtml}
+                                <input type="checkbox" id="${activityId}" class="ml-4 mt-1 h-5 w-5 rounded bg-gray-700 border-gray-600 text-blue-500 focus:ring-blue-600 self-start" ${isChecked ? 'checked' : ''}>
                             </div>
                             <div class="mt-3 border-t border-gray-700 pt-3 text-sm">
                                 <p><strong>Professor:</strong> ${item.professor}</p>
@@ -970,6 +944,76 @@
             hideStudyTime = e.target.checked;
             renderSchedule();
         }
+        
+        function handleEditClick(button) {
+            const identifier = button.dataset.identifier;
+            const [specialty, week, day, itemIndex] = identifier.split('-');
+            const activityData = allData[specialty].schedule.filter(item => item.week == week && item.day == day)[itemIndex];
+
+            if (!activityData) {
+                showToast("Erro: Atividade não encontrada.");
+                return;
+            }
+            
+            editActivityIdentifier.value = identifier;
+            editActivityInput.value = activityData.activity || '';
+            editTimeInput.value = activityData.time || '';
+            editProfessorInput.value = activityData.professor || '';
+            editLocationInput.value = activityData.location || '';
+            editStudentIdInput.value = (activityData.studentId || []).join(',');
+
+            toggleEditModal();
+        }
+
+        async function handleSaveActivity() {
+            const identifier = editActivityIdentifier.value;
+            if (!identifier) return;
+
+            const [specialty, week, day, itemIndex] = identifier.split('-');
+            const originalData = allData[specialty];
+            
+            // Find the actual index in the original, unfiltered schedule array
+            let originalIndex = -1;
+            let count = -1;
+            originalData.schedule.forEach((item, index) => {
+                if (item.week == week && item.day == day) {
+                    count++;
+                    if (count == itemIndex) {
+                        originalIndex = index;
+                    }
+                }
+            });
+
+            if (originalIndex === -1) {
+                showToast("Erro ao salvar: Não foi possível encontrar a atividade original.");
+                return;
+            }
+
+            // Update the data in the local copy
+            const updatedActivity = {
+                ...originalData.schedule[originalIndex],
+                activity: editActivityInput.value,
+                time: editTimeInput.value,
+                professor: editProfessorInput.value,
+                location: editLocationInput.value,
+                studentId: editStudentIdInput.value.split(',').map(id => parseInt(id.trim())).filter(Number.isFinite)
+            };
+            
+            originalData.schedule[originalIndex] = updatedActivity;
+            
+            // Save the entire schedule object for that specialty back to Firestore
+            const scheduleDocRef = doc(db, 'schedules', specialty);
+            try {
+                await setDoc(scheduleDocRef, originalData);
+                showToast("Atividade atualizada com sucesso!");
+                toggleEditModal();
+                // UI will update automatically via the onSnapshot listener
+            } catch (error) {
+                console.error("Error saving activity:", error);
+                showToast("Erro ao salvar a atividade.");
+            }
+        }
+
 
         async function handleOnCallAction(onCallId, action, totalSlots) {
             if (currentSpecialty === 'cirurgia' && currentStudent === 'all') {
@@ -977,13 +1021,12 @@
                 return;
             }
 
-            // Create a deep copy to avoid modifying the global state directly before saving
             const updatedOnCallData = JSON.parse(JSON.stringify(onCallClaimData));
             if (!updatedOnCallData[onCallId]) {
                 updatedOnCallData[onCallId] = new Array(totalSlots).fill(null);
             }
             const slots = updatedOnCallData[onCallId];
-            const currentStudentData = allData[currentSpecialty].students.find(s => s.id == currentStudent);
+            const currentStudentData = allData[currentSpecialty].students.find(s => String(s.id) === String(currentStudent));
             
             if (!currentStudentData) {
                 showToast("Aluno não encontrado. Tente novamente.");
@@ -1005,11 +1048,9 @@
                 }
             }
             
-            // Save the entire updated object to Firestore
             const onCallDocRef = doc(db, 'schedules', 'onCallClaims');
             try {
                 await setDoc(onCallDocRef, { claims: updatedOnCallData });
-                // The listener will automatically update the UI
             } catch (error) {
                 console.error("Error updating on-call data:", error);
                 showToast("Erro ao atualizar vaga.");
@@ -1064,87 +1105,6 @@
              if(target) target.value = source.value;
         }
 
-        function scrollToToday(smooth = false) {
-            const now = new Date();
-            const todayStr = now.toISOString().split('T')[0];
-            const data = allData[currentSpecialty];
-            const currentWeekInfo = data.weeks.find(w => todayStr >= w.start && todayStr <= w.end);
-
-            if (currentWeekInfo) {
-                // If we are not on the correct week, switch to it
-                if(currentWeekOrRodizio !== currentWeekInfo.id) {
-                    currentWeekOrRodizio = currentWeekInfo.id;
-                    weekSelectorDesktop.value = currentWeekInfo.id;
-                    weekSelectorMain.value = currentWeekInfo.id;
-                    updateView();
-                }
-                
-                // Use a timeout to ensure the DOM has been updated after a potential view change
-                setTimeout(() => {
-                    const todayDay = now.toLocaleDateString('pt-BR', { weekday: 'long' }).toUpperCase();
-                    const dayCol = document.getElementById(`day-col-${todayDay}`);
-                    if (dayCol) {
-                       dayCol.scrollIntoView({ behavior: smooth ? 'smooth' : 'auto', block: 'start' });
-                    }
-                }, 100);
-            } else {
-                if(smooth) { // Only show toast if the action was user-initiated
-                    showToast('Nenhuma atividade programada para hoje.');
-                }
-            }
-        }
-        
-        // --- NEW: Edit Modal Functions ---
-        
-        function openEditModal(uniqueId) {
-            const activity = allData[currentSpecialty].schedule.find(item => item.uniqueId === uniqueId);
-            if (!activity) {
-                console.error("Activity not found for editing:", uniqueId);
-                return;
-            }
-            
-            // Store ID on the modal for saving later
-            editModal.dataset.uniqueId = uniqueId;
-            
-            // Populate form
-            document.getElementById('edit-activity').value = activity.activity || '';
-            document.getElementById('edit-time').value = activity.time || '';
-            document.getElementById('edit-professor').value = activity.professor || '';
-            document.getElementById('edit-location').value = activity.location || '';
-            
-            // Show modal
-            editModalOverlay.classList.add('is-open');
-        }
-
-        function closeEditModal() {
-            editModalOverlay.classList.remove('is-open');
-            editModal.dataset.uniqueId = '';
-            editForm.reset();
-        }
-
-        function saveEditedActivity() {
-            const uniqueId = editModal.dataset.uniqueId;
-            const activity = allData[currentSpecialty].schedule.find(item => item.uniqueId === uniqueId);
-            if (!activity) {
-                console.error("Could not save, activity not found:", uniqueId);
-                showToast("Erro ao salvar. Atividade não encontrada.");
-                return;
-            }
-            
-            // Update data in the allData object
-            activity.activity = document.getElementById('edit-activity').value;
-            activity.time = document.getElementById('edit-time').value;
-            activity.professor = document.getElementById('edit-professor').value;
-            activity.location = document.getElementById('edit-location').value;
-            
-            // NOTE: For persistent changes, you would save the updated `allData[currentSpecialty]`
-            // object to Firestore here.
-            
-            closeEditModal();
-            renderSchedule(); // Re-render the UI with the updated data
-            showToast("Atividade atualizada!");
-        }
-
         // --- Event Listener Setup ---
 
         sidebarToggle.addEventListener('click', toggleSidebar);
@@ -1179,7 +1139,31 @@
             if(e.target === syncModalOverlay) toggleSyncModal();
         });
 
-        todayBtn.addEventListener('click', () => scrollToToday(true));
+        todayBtn.addEventListener('click', () => {
+            const now = new Date();
+            const todayStr = now.toISOString().split('T')[0];
+            const todayDay = now.toLocaleDateString('pt-BR', { weekday: 'long' }).toUpperCase();
+            
+            const data = allData[currentSpecialty];
+            if (!data) return;
+            const currentWeekInfo = data.weeks.find(w => todayStr >= w.start && todayStr <= w.end);
+
+            if (currentWeekInfo) {
+                currentWeekOrRodizio = currentWeekInfo.id;
+                weekSelectorDesktop.value = currentWeekInfo.id;
+                weekSelectorMain.value = currentWeekInfo.id;
+                updateView();
+                
+                setTimeout(() => {
+                    const dayCol = document.getElementById(`day-col-${todayDay}`);
+                    if (dayCol) {
+                       dayCol.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                }, 100);
+            } else {
+                showToast('Nenhuma atividade programada para hoje.');
+            }
+        });
         
         copyUserIdBtnMobile.addEventListener('click', () => handleCopyId(userIdDisplayMobile));
         copyUserIdModal.addEventListener('click', () => handleCopyId(userIdDisplayModal));
@@ -1187,20 +1171,16 @@
         loadUserIdBtnMobile.addEventListener('click', () => handleLoadId(userIdInputMobile));
         loadUserIdModal.addEventListener('click', () => handleLoadId(userIdInputModal));
         
-        // NEW: Edit Modal listeners
         scheduleGrid.addEventListener('click', (e) => {
-            const editButton = e.target.closest('.edit-activity-btn');
-            if (editButton && isAdmin) {
-                openEditModal(editButton.dataset.uniqueId);
+            const editButton = e.target.closest('.edit-btn');
+            if(editButton) {
+                handleEditClick(editButton);
             }
         });
-        
-        editBtnSave.addEventListener('click', saveEditedActivity);
-        editBtnCancel.addEventListener('click', closeEditModal);
-        editModalOverlay.addEventListener('click', (e) => {
-            if (e.target === editModalOverlay) closeEditModal();
-        });
 
+        editBtnCancel.addEventListener('click', toggleEditModal);
+        editBtnSave.addEventListener('click', handleSaveActivity);
+        
         // --- Initialization ---
 
         setInterval(() => {
@@ -1225,9 +1205,12 @@
         hideStudyMobile.addEventListener('change', debouncedSave);
         hideStudyDesktop.addEventListener('change', debouncedSave);
 
-        fetchData();
+        // --- Start the App ---
+        initializeAuth();
+        initializeScheduleListener('cirurgia');
+        initializeScheduleListener('pediatria');
+        setupSharedOnCallListener();
+
     </script>
 </body>
 </html>
-
-
