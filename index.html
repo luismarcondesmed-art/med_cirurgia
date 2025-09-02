@@ -2,7 +2,7 @@
 <html lang="pt-BR" class="dark">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale-1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cronograma Interativo de Estágios</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📖</text></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -63,21 +63,21 @@
             border-radius: 10px;
             border: 2px solid #2B2B2B;
         }
-        #sidebar-overlay, #confirm-modal-overlay, #sync-modal-overlay {
+        #sidebar-overlay, #confirm-modal-overlay, #sync-modal-overlay, #edit-modal-overlay {
             transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
             visibility: hidden;
             opacity: 0;
         }
-        #sidebar-overlay.is-open, #confirm-modal-overlay.is-open, #sync-modal-overlay.is-open {
+        #sidebar-overlay.is-open, #confirm-modal-overlay.is-open, #sync-modal-overlay.is-open, #edit-modal-overlay.is-open {
             visibility: visible;
             opacity: 1;
         }
-        #sidebar-mobile, #confirm-modal, #sync-modal {
+        #sidebar-mobile, #confirm-modal, #sync-modal, #edit-modal {
             transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
             transform: scale(0.95);
             opacity: 0;
         }
-        #sidebar-overlay.is-open #sidebar-mobile, #confirm-modal-overlay.is-open #confirm-modal, #sync-modal-overlay.is-open #sync-modal {
+        #sidebar-overlay.is-open #sidebar-mobile, #confirm-modal-overlay.is-open #confirm-modal, #sync-modal-overlay.is-open #sync-modal, #edit-modal-overlay.is-open #edit-modal {
             transform: scale(1);
             opacity: 1;
         }
@@ -251,6 +251,36 @@
             </div>
         </div>
     </div>
+    
+    <!-- NEW: Edit Activity Modal -->
+    <div id="edit-modal-overlay" class="fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center p-4">
+        <div id="edit-modal" class="relative w-full max-w-md bg-[#2B2B2B] rounded-2xl shadow-2xl p-6">
+            <h3 class="text-lg font-semibold mb-4 text-center">Editar Atividade</h3>
+            <form id="edit-form" class="space-y-4">
+                <div>
+                    <label for="edit-activity" class="block text-sm font-medium text-gray-300">Atividade</label>
+                    <input type="text" id="edit-activity" class="mt-1 w-full p-2 bg-[#1B1B1B] border border-gray-600 rounded-md shadow-sm">
+                </div>
+                <div>
+                    <label for="edit-time" class="block text-sm font-medium text-gray-300">Horário (ex: 08:00 - 12:00)</label>
+                    <input type="text" id="edit-time" class="mt-1 w-full p-2 bg-[#1B1B1B] border border-gray-600 rounded-md shadow-sm">
+                </div>
+                <div>
+                    <label for="edit-professor" class="block text-sm font-medium text-gray-300">Professor</label>
+                    <input type="text" id="edit-professor" class="mt-1 w-full p-2 bg-[#1B1B1B] border border-gray-600 rounded-md shadow-sm">
+                </div>
+                <div>
+                    <label for="edit-location" class="block text-sm font-medium text-gray-300">Local</label>
+                    <input type="text" id="edit-location" class="mt-1 w-full p-2 bg-[#1B1B1B] border border-gray-600 rounded-md shadow-sm">
+                </div>
+            </form>
+            <div class="flex justify-center gap-4 mt-6">
+                <button id="edit-btn-save" class="px-6 py-2 bg-green-600 hover:bg-green-700 rounded-md font-semibold transition-colors">Salvar</button>
+                <button id="edit-btn-cancel" class="px-6 py-2 bg-gray-600 hover:bg-gray-700 rounded-md font-semibold transition-colors">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
 
     <!-- Firebase SDKs -->
     <script type="module">
@@ -277,7 +307,9 @@
         const db = getFirestore(app);
         
         // --- Global State Variables ---
+        const ADMIN_USER_ID = "r5NLb0GqtcRuTmeVt3g3gRoGirl2"; // IMPORTANT: Replace with the admin's actual Firebase Auth User ID.
         let userId = null;
+        let isAdmin = false;
         let unsubscribeUser; // Listener for user-specific data
         let unsubscribeShared; // Listener for shared data
         let allData = {}; // To store schedule data from JSON files
@@ -348,6 +380,13 @@
         const confirmMessage = document.getElementById('confirm-message');
         const confirmBtnYes = document.getElementById('confirm-btn-yes');
         const confirmBtnNo = document.getElementById('confirm-btn-no');
+        
+        // NEW: Edit Modal Elements
+        const editModalOverlay = document.getElementById('edit-modal-overlay');
+        const editModal = document.getElementById('edit-modal');
+        const editForm = document.getElementById('edit-form');
+        const editBtnSave = document.getElementById('edit-btn-save');
+        const editBtnCancel = document.getElementById('edit-btn-cancel');
 
         // --- UI Functions ---
 
@@ -434,11 +473,20 @@
                 allData.cirurgia = results[0].status === 'fulfilled' ? results[0].value : mockSchedule.cirurgia;
                 allData.pediatria = results[1].status === 'fulfilled' ? results[1].value : mockSchedule.pediatria;
                 
+                // Add unique IDs to each schedule item for stable editing
+                Object.values(allData).forEach(specialty => {
+                    if (specialty.schedule) {
+                        specialty.schedule.forEach(item => {
+                            if (!item.uniqueId) { // Avoid adding if it already exists
+                                item.uniqueId = `activity-${Math.random().toString(36).substr(2, 9)}`;
+                            }
+                        });
+                    }
+                });
+                
                 initializeUI();
                 initializeAuth();
-                // FIX: setupSharedOnCallListener is now called inside onAuthStateChanged
-                // setupSharedOnCallListener(); 
-
+                
             } catch (error) {
                 console.error("Error during initial data fetch:", error);
                 allData.cirurgia = mockSchedule.cirurgia;
@@ -451,19 +499,39 @@
         async function initializeAuth() {
             onAuthStateChanged(auth, (user) => {
                 if (user) {
+                    // --- DEBUGGING LOG ---
+                    console.log("ID do usuário atual:", user.uid);
+                    console.log("ID do Admin para corresponder:", ADMIN_USER_ID);
+                    // --- END DEBUGGING LOG ---
+        
+                    const wasAdmin = isAdmin;
+                    isAdmin = user.uid === ADMIN_USER_ID;
+        
+                    if (isAdmin) {
+                        console.log("SUCESSO: Usuário administrador reconhecido. Controles de edição ativados.");
+                    } else if (wasAdmin) {
+                        console.log("Status de administrador removido.");
+                    }
+        
                     const activeUserId = localStorage.getItem('loadedUserId') || user.uid;
                     if (!userId || userId !== activeUserId) {
                         setupUserListener(activeUserId);
                     }
-                    // FIX: This is the correct place to initialize listeners that require auth
                     setupSharedOnCallListener();
+        
+                    // If admin status changed, force a re-render to show/hide controls
+                    if (wasAdmin !== isAdmin) {
+                        renderSchedule();
+                    }
                 } else {
-                    // User signed out, clean up listeners if they exist
-                    if(unsubscribeShared) unsubscribeShared();
-                    if(unsubscribeUser) unsubscribeUser();
+                    // User signed out, clean up listeners and UI
+                    isAdmin = false;
+                    if (unsubscribeShared) unsubscribeShared();
+                    if (unsubscribeUser) unsubscribeUser();
+                    renderSchedule(); // Re-render to hide admin controls
                 }
             });
-
+        
             try {
                 if (!auth.currentUser) {
                     await signInAnonymously(auth);
@@ -750,7 +818,7 @@
                     card.className = `activity-card rounded-lg p-4 border-l-4 shadow-md bg-[#2D2D2D]`;
                      if (isChecked) card.classList.add('checked');
                     
-                    // DESIGN IMPROVEMENT: Add border colors based on activity type
+                    // Add border colors based on activity type
                     const activityUpper = item.activity.toUpperCase();
                     if (activityUpper.includes('PLANTÃO') || activityUpper.includes('PA PEDIATRIA')) {
                         card.classList.add('border-red-500');
@@ -759,7 +827,6 @@
                     } else {
                         card.classList.add('border-blue-500');
                     }
-
 
                     const now = new Date();
                     const currentTime = now.getHours() * 100 + now.getMinutes();
@@ -773,13 +840,19 @@
                     if (isTodayInWeek && day === today && currentTime >= startTime && currentTime <= endTime) {
                         card.classList.add('current-activity');
                     }
+                    
+                    // NEW: Admin edit button
+                    const adminEditButton = isAdmin ? `
+                        <button class="edit-activity-btn p-1 text-gray-400 hover:text-white" data-unique-id="${item.uniqueId}">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.536L16.732 3.732z"></path></svg>
+                        </button>
+                    ` : '';
 
-                    // Broaden the check for on-call activities
+
                     if (activityUpper.includes('PLANTÃO') || activityUpper.includes('PA PEDIATRIA')) {
                         const onCallId = activityId;
                         const totalSlots = item.slots || 2;
                         
-                        // Use the shared state
                         const slots = onCallClaimData[onCallId] || new Array(totalSlots).fill(null);
                         
                         const currentStudentData = allData[currentSpecialty].students.find(s => s.id == currentStudent);
@@ -811,7 +884,10 @@
                                     <p class="font-bold text-md activity-title">${item.activity}</p>
                                     <p class="text-sm text-gray-400 font-medium mt-1">${item.time}</p>
                                 </div>
-                                <input type="checkbox" id="${activityId}" class="ml-4 mt-1 h-5 w-5 rounded bg-gray-700 border-gray-600 text-blue-500 focus:ring-blue-600" ${isChecked ? 'checked' : ''}>
+                                <div class="flex items-center gap-2 ml-4 mt-1">
+                                    ${adminEditButton}
+                                    <input type="checkbox" id="${activityId}" class="h-5 w-5 rounded bg-gray-700 border-gray-600 text-blue-500 focus:ring-blue-600" ${isChecked ? 'checked' : ''}>
+                                </div>
                             </div>
                             ${slotsHtml}
                             ${buttonHtml}
@@ -841,7 +917,10 @@
                                     <p class="font-bold text-md activity-title">${item.activity}</p>
                                     <p class="text-sm text-gray-400 font-medium mt-1">${item.time}</p>
                                 </div>
-                                <input type="checkbox" id="${activityId}" class="ml-4 mt-1 h-5 w-5 rounded bg-gray-700 border-gray-600 text-blue-500 focus:ring-blue-600" ${isChecked ? 'checked' : ''}>
+                                <div class="flex items-center gap-2 ml-4 mt-1">
+                                    ${adminEditButton}
+                                    <input type="checkbox" id="${activityId}" class="h-5 w-5 rounded bg-gray-700 border-gray-600 text-blue-500 focus:ring-blue-600" ${isChecked ? 'checked' : ''}>
+                                </div>
                             </div>
                             <div class="mt-3 border-t border-gray-700 pt-3 text-sm">
                                 <p><strong>Professor:</strong> ${item.professor}</p>
@@ -1014,6 +1093,57 @@
                 }
             }
         }
+        
+        // --- NEW: Edit Modal Functions ---
+        
+        function openEditModal(uniqueId) {
+            const activity = allData[currentSpecialty].schedule.find(item => item.uniqueId === uniqueId);
+            if (!activity) {
+                console.error("Activity not found for editing:", uniqueId);
+                return;
+            }
+            
+            // Store ID on the modal for saving later
+            editModal.dataset.uniqueId = uniqueId;
+            
+            // Populate form
+            document.getElementById('edit-activity').value = activity.activity || '';
+            document.getElementById('edit-time').value = activity.time || '';
+            document.getElementById('edit-professor').value = activity.professor || '';
+            document.getElementById('edit-location').value = activity.location || '';
+            
+            // Show modal
+            editModalOverlay.classList.add('is-open');
+        }
+
+        function closeEditModal() {
+            editModalOverlay.classList.remove('is-open');
+            editModal.dataset.uniqueId = '';
+            editForm.reset();
+        }
+
+        function saveEditedActivity() {
+            const uniqueId = editModal.dataset.uniqueId;
+            const activity = allData[currentSpecialty].schedule.find(item => item.uniqueId === uniqueId);
+            if (!activity) {
+                console.error("Could not save, activity not found:", uniqueId);
+                showToast("Erro ao salvar. Atividade não encontrada.");
+                return;
+            }
+            
+            // Update data in the allData object
+            activity.activity = document.getElementById('edit-activity').value;
+            activity.time = document.getElementById('edit-time').value;
+            activity.professor = document.getElementById('edit-professor').value;
+            activity.location = document.getElementById('edit-location').value;
+            
+            // NOTE: For persistent changes, you would save the updated `allData[currentSpecialty]`
+            // object to Firestore here.
+            
+            closeEditModal();
+            renderSchedule(); // Re-render the UI with the updated data
+            showToast("Atividade atualizada!");
+        }
 
         // --- Event Listener Setup ---
 
@@ -1057,6 +1187,20 @@
         loadUserIdBtnMobile.addEventListener('click', () => handleLoadId(userIdInputMobile));
         loadUserIdModal.addEventListener('click', () => handleLoadId(userIdInputModal));
         
+        // NEW: Edit Modal listeners
+        scheduleGrid.addEventListener('click', (e) => {
+            const editButton = e.target.closest('.edit-activity-btn');
+            if (editButton && isAdmin) {
+                openEditModal(editButton.dataset.uniqueId);
+            }
+        });
+        
+        editBtnSave.addEventListener('click', saveEditedActivity);
+        editBtnCancel.addEventListener('click', closeEditModal);
+        editModalOverlay.addEventListener('click', (e) => {
+            if (e.target === editModalOverlay) closeEditModal();
+        });
+
         // --- Initialization ---
 
         setInterval(() => {
