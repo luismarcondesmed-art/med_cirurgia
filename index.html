@@ -1,1057 +1,783 @@
 <!DOCTYPE html>
-<html lang="pt-BR" class="dark">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cronograma Interativo de Estágios</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📖</text></svg>">
+    <title>Guia de Prescrições PWA</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#18181b">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="HelpClin">
+    <link rel="apple-touch-icon" href="https://placehold.co/192x192/18181b/ffffff?text=Rx">
+    <link rel="manifest" href="manifest.json">
+
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Carrega o banco de dados local para a migração inicial -->
+    <script src="database.js"></script>
+
+    <script type="module">
+        // =================================================================================
+        // INICIALIZAÇÃO E CONFIGURAÇÃO DO FIREBASE
+        // =================================================================================
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, collection, addDoc, serverTimestamp, writeBatch, query, where, getDocs, orderBy } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        
+        let db, auth;
+
+        // Função para inicializar o Firebase. As variáveis __firebase_config e __initial_auth_token 
+        // são fornecidas automaticamente pelo ambiente de desenvolvimento.
+        function initializeFirebase() {
+             return new Promise((resolve, reject) => {
+                try {
+                    if (typeof __firebase_config !== 'undefined') {
+                        const firebaseConfig = JSON.parse(__firebase_config);
+                        const app = initializeApp(firebaseConfig);
+                        db = getFirestore(app);
+                        auth = getAuth(app);
+                        
+                        onAuthStateChanged(auth, async (user) => {
+                            if (!user) {
+                                try {
+                                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                                        await signInWithCustomToken(auth, __initial_auth_token);
+                                    } else {
+                                        await signInAnonymously(auth);
+                                    }
+                                    console.log("Firebase Autenticado.");
+                                    resolve();
+                                } catch (error) {
+                                    console.error("Erro na Autenticação Firebase:", error);
+                                    reject(error);
+                                }
+                            } else {
+                                console.log("Usuário já conectado:", user.uid);
+                                resolve();
+                            }
+                        });
+
+                    } else {
+                        console.warn("Configuração do Firebase não encontrada. As funcionalidades da nuvem serão desativadas.");
+                        reject("Configuração do Firebase não encontrada.");
+                    }
+                } catch (error) {
+                    console.error("Não foi possível inicializar o Firebase:", error);
+                    reject(error);
+                }
+            });
+        }
+        
+        // =================================================================================
+        // LÓGICA PRINCIPAL DO APLICATIVO
+        // =================================================================================
+        
+        // Função que inicia o app após o carregamento da página e do Firebase
+        window.onload = async () => {
+            try {
+                await initializeFirebase();
+                await mainApp();
+            } catch (error) {
+                console.error("Falha ao iniciar o app:", error);
+                document.body.innerHTML = `<div class="text-center p-8 text-red-400">Falha ao inicializar o aplicativo. Verifique a configuração do Firebase e o console para mais detalhes.</div>`;
+            }
+        };
+
+        // Função principal que contém toda a lógica da aplicação
+        async function mainApp() {
+            // --- Elementos do DOM (Interface) ---
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('main-content');
+            const menuToggle = document.getElementById('menu-toggle');
+            const searchBar = document.getElementById('search-bar');
+            const specialtiesNav = document.getElementById('specialties-nav');
+            const contentDisplay = document.getElementById('content-display');
+            const fichaVerdeBtn = document.getElementById('ficha-verde-btn');
+            const fichaVermelhaBtn = document.getElementById('ficha-vermelha-btn');
+            const pageTitle = document.getElementById('page-title'); // Assumindo que você tem um h1 ou similar para o título
+            const geminiModal = document.getElementById('gemini-modal');
+            const geminiModalClose = document.getElementById('gemini-modal-close');
+            const geminiModalTitle = document.getElementById('gemini-modal-title');
+            const geminiLoading = document.getElementById('gemini-loading');
+            const geminiResult = document.getElementById('gemini-result');
+            const addModuleBtn = document.getElementById('add-module-btn');
+            const addModuleModal = document.getElementById('add-module-modal');
+            const closeModuleModalBtn = document.getElementById('close-module-modal');
+            const saveModuleBtn = document.getElementById('save-module-btn');
+            const migrationStatus = document.getElementById('migration-status');
+
+            // --- Estado da Aplicação ---
+            let currentFicha = 'verde';
+            let currentSpecialty = null;
+            let currentCondition = null; // Armazena o objeto da condição {id, ...data}
+            let isSidebarOpen = false;
+            const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+            const textModel = 'gemini-2.5-flash-preview-05-20';
+
+            // --- Migração da Base de Dados para o Firestore ---
+            async function migrateDatabaseToFirestore() {
+                if (localStorage.getItem('db_migrated_v2')) {
+                    console.log("Migração da base de dados já foi concluída.");
+                    return;
+                }
+                
+                migrationStatus.classList.remove('hidden');
+                migrationStatus.innerText = 'Inicializando banco de dados na nuvem... Isso pode levar um minuto.';
+                console.log("Iniciando migração da base de dados para o Firestore...");
+
+                try {
+                    const batch = writeBatch(db);
+                    const prescriptionsCol = collection(db, `artifacts/${appId}/public/data/prescriptions`);
+
+                    // Itera sobre a base de dados local (do arquivo database.js)
+                    for (const ficha in prescrevendoData) {
+                        for (const specialty in prescrevendoData[ficha]) {
+                            for (const condition in prescrevendoData[ficha][specialty]) {
+                                const data = prescrevendoData[ficha][specialty][condition];
+                                const docRef = doc(collection(db, `artifacts/${appId}/public/data/prescriptions`)); // ID automático
+                                batch.set(docRef, {
+                                    ficha,
+                                    specialty,
+                                    condition,
+                                    content: data.content,
+                                    prescriptions: data.prescricoes || [],
+                                    isCustom: false,
+                                    createdAt: serverTimestamp()
+                                });
+                            }
+                        }
+                    }
+
+                    await batch.commit(); // Envia todos os dados de uma vez para o Firestore
+                    localStorage.setItem('db_migrated_v2', 'true'); // Marca a migração como concluída
+                    console.log("Migração da base de dados concluída com sucesso!");
+                    migrationStatus.innerText = 'Banco de dados inicializado com sucesso!';
+                    setTimeout(() => migrationStatus.classList.add('hidden'), 3000);
+                } catch (error) {
+                    console.error("Falha na migração da base de dados:", error);
+                    migrationStatus.innerText = 'Falha ao inicializar o banco de dados. Tente recarregar a página.';
+                }
+            }
+            
+            // --- Funções de Leitura/Escrita no Firestore ---
+            async function getSpecialties(ficha) {
+                if (!db) return [];
+                const prescriptionsCol = collection(db, `artifacts/${appId}/public/data/prescriptions`);
+                const q = query(prescriptionsCol, where("ficha", "==", ficha), where("isCustom", "==", false));
+                const snapshot = await getDocs(q);
+                const specialties = new Set();
+                snapshot.forEach(doc => specialties.add(doc.data().specialty));
+                return Array.from(specialties).sort();
+            }
+
+            async function getConditions(ficha, specialty) {
+                 if (!db) return [];
+                 const prescriptionsCol = collection(db, `artifacts/${appId}/public/data/prescriptions`);
+                 const q = query(prescriptionsCol, where("ficha", "==", ficha), where("specialty", "==", specialty), where("isCustom", "==", false), orderBy("condition"));
+                 const snapshot = await getDocs(q);
+                 return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            }
+            
+            async function getCustomSpecialties() {
+                if (!db) return [];
+                const prescriptionsCol = collection(db, `artifacts/${appId}/public/data/prescriptions`);
+                const q = query(prescriptionsCol, where("isCustom", "==", true));
+                const snapshot = await getDocs(q);
+                const specialties = new Set();
+                snapshot.forEach(doc => specialties.add(doc.data().specialty));
+                return Array.from(specialties).sort();
+            }
+
+            async function getCustomConditions(specialty) {
+                if (!db) return [];
+                const prescriptionsCol = collection(db, `artifacts/${appId}/public/data/prescriptions`);
+                const q = query(prescriptionsCol, where("isCustom", "==", true), where("specialty", "==", specialty), orderBy("condition"));
+                const snapshot = await getDocs(q);
+                return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            }
+
+            async function getConditionByDocId(docId) {
+                if (!db) return null;
+                const docRef = doc(db, `artifacts/${appId}/public/data/prescriptions`, docId);
+                const docSnap = await getDoc(docRef);
+                return docSnap.exists() ? { id: docSnap.id, ...docSnap.data() } : null;
+            }
+
+            // --- Funções da API Gemini e Cache na Nuvem ---
+            function showGeminiModal(title) {
+                geminiModalTitle.innerHTML = `<span class="mr-2 text-xl">✨</span> ${title}`;
+                geminiResult.innerHTML = '';
+                geminiLoading.classList.remove('hidden');
+                geminiModal.classList.remove('hidden');
+            }
+
+            function hideGeminiModal() {
+                geminiModal.classList.add('hidden');
+            }
+            
+            async function getCacheKey(type) {
+                if (!currentCondition) return null;
+                // Usa o ID do documento do Firestore, que é único e estável
+                return `geminiCache/${currentCondition.id}/${type}`;
+            }
+
+            async function getFromCache(key) {
+                 if (!db || !auth.currentUser) return null;
+                try {
+                    const docRef = doc(db, `artifacts/${appId}/public/data/geminiCache`, key.replace(/\//g, '_'));
+                    const docSnap = await getDoc(docRef);
+                    return docSnap.exists() ? docSnap.data().content : null;
+                } catch (error) {
+                    console.error("Erro ao buscar do cache do Firestore:", error);
+                    return null;
+                }
+            }
+
+            async function saveToCache(key, data) {
+                 if (!db || !auth.currentUser) return;
+                 try {
+                    const docRef = doc(db, `artifacts/${appId}/public/data/geminiCache`, key.replace(/\//g, '_'));
+                    await setDoc(docRef, { content: data, timestamp: serverTimestamp() });
+                } catch (error) {
+                    console.error("Erro ao salvar no cache do Firestore:", error);
+                }
+            }
+
+            function markdownToHtml(text) {
+                let html = text
+                    .replace(/^### (.*$)/gim, '<h3 class="text-xl font-semibold text-gray-100 mt-6 mb-2 pb-2 border-b border-gray-700">$1</h3>')
+                    .replace(/^## (.*$)/gim, '<h2 class="text-2xl font-bold text-white mt-8 mb-3 pb-2 border-b-2 border-emerald-500">$1</h2>')
+                    .replace(/^# (.*$)/gim, '<h1 class="text-3xl font-bold text-white mt-10 mb-4">$1</h1>')
+                    .replace(/\*\*(.*?)\*\*/g, '<strong class="text-white">$1</strong>')
+                    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                    .replace(/^- (.*$)/gim, '<li class="ml-2">$1</li>')
+                    .replace(/^\* (.*$)/gim, '<li class="ml-2">$1</li>');
+            
+                html = html.replace(/^(<li>(.|\n)*?<\/li>)/gm, (match) => {
+                    return `<ul class="list-disc pl-5 space-y-2 my-4">${match.replace(/<\/li>\n<li>/g, '</li><li>')}</ul>`;
+                });
+
+                return html.split('\n').map(line => {
+                    const trimmedLine = line.trim();
+                    if (trimmedLine === '' || trimmedLine.startsWith('<h') || trimmedLine.startsWith('<ul') || trimmedLine.startsWith('<li>')) return line;
+                    return `<p class="leading-relaxed mb-4">${line}</p>`;
+                }).join('');
+            }
+
+            async function callProxyAPI(bodyPayload) {
+                 const proxyUrl = '/api/gemini-proxy'; 
+                 try { 
+                    const response = await fetch(proxyUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(bodyPayload) }); 
+                    if (!response.ok) { 
+                        const errorData = await response.json().catch(() => ({})); 
+                        throw new Error(errorData.error || `Erro ${response.status}: ${response.statusText}`); 
+                    } 
+                    return await response.json(); 
+                 } catch (error) { 
+                    console.error("Falha na chamada do Proxy:", error); 
+                    throw new Error("Erro de comunicação com o servidor. Verifique o console."); 
+                 }
+            }
+           
+            async function callGeminiAPI(prompt, systemInstruction, useGrounding = false, cacheKey) {
+                const body = { prompt, systemInstruction, useGrounding, model: textModel }; 
+                try { 
+                    const result = await callProxyAPI(body); 
+                    const candidate = result.candidates?.[0]; 
+                    if (candidate?.content?.parts?.[0]?.text) { 
+                        let sourcesHTML = ''; 
+                        if (useGrounding && candidate.groundingMetadata?.groundingAttributions) { 
+                            const sources = candidate.groundingMetadata.groundingAttributions.map(attr => attr.web).filter(web => web?.uri && web?.title); 
+                            if (sources.length > 0) { 
+                                sourcesHTML = '<h4 class="text-md font-semibold mt-8 mb-2 text-gray-400">Fontes:</h4><ul class="list-disc pl-5 text-sm space-y-1">'; 
+                                sources.forEach(source => { sourcesHTML += `<li><a href="${source.uri}" target="_blank" rel="noopener noreferrer" class="text-emerald-400 hover:underline">${source.title}</a></li>`; }); 
+                                sourcesHTML += '</ul>'; 
+                            } 
+                        } 
+                        const rawText = candidate.content.parts[0].text; 
+                        const htmlContent = markdownToHtml(rawText); 
+                        const finalHtml = { content: htmlContent, sources: sourcesHTML }; 
+                        geminiResult.innerHTML = finalHtml.content + finalHtml.sources; 
+                        if (cacheKey) saveToCache(cacheKey, finalHtml); 
+                    } else { 
+                        throw new Error(candidate?.finishReason || "Resposta inválida da API."); 
+                    } 
+                } catch (error) { 
+                    geminiResult.innerHTML = `<p class="text-red-400"><b>Ocorreu um erro:</b> ${error.message}</p>`; 
+                } finally { 
+                    geminiLoading.classList.add('hidden'); 
+                }
+            }
+
+
+            // --- Funções de Renderização da Interface ---
+            async function renderConditionDetails(conditionDoc) {
+                currentSpecialty = conditionDoc.specialty;
+                currentCondition = conditionDoc;
+                localStorage.setItem('lastView', JSON.stringify({ docId: conditionDoc.id, ficha: currentFicha }));
+                
+                const allPrescriptions = conditionDoc.prescriptions || [];
+                const isCustom = conditionDoc.isCustom;
+                
+                const geminiFeaturesHTML = isCustom ? '' : `
+                    <div class="mt-8">
+                        <h3 class="text-xl font-semibold mb-4 text-emerald-400 flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/></svg>
+                            Assistente Gemini
+                        </h3>
+                        <div class="flex flex-col md:flex-row gap-3">
+                            <button id="gemini-summarize-btn" class="gemini-btn w-full">Resumo da Condição</button>
+                            ${allPrescriptions.length > 0 ? `<button id="gemini-patient-instructions-btn" class="gemini-btn w-full">Instruções para Paciente</button>` : ''}
+                        </div>
+                    </div>`;
+
+                const contentHTML = `
+                    <div class="flex-grow overflow-y-auto pr-4">
+                         <button id="back-btn" class="mb-6 text-emerald-400 hover:text-emerald-300 transition-colors">&larr; Voltar para ${conditionDoc.specialty}</button>
+                        <h2 class="text-4xl font-bold mb-1 text-white">${conditionDoc.condition}</h2>
+                        <p class="text-md text-gray-400 mb-6">Especialidade: ${conditionDoc.specialty}</p>
+                        <div class="prose prose-invert max-w-none text-gray-300">
+                            ${conditionDoc.content}
+                        </div>
+                        ${allPrescriptions.map(p => `
+                            <div class="mt-6 p-4 rounded-lg bg-zinc-800 border border-zinc-700">
+                                <h4 class="${currentFicha === 'verde' ? 'text-green-400' : 'text-red-400'} font-bold mb-2">${p.title}</h4>
+                                <ul class="list-disc pl-5 text-gray-300 space-y-1">${p.items.map(i => `<li>${i}</li>`).join('')}</ul>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+
+                const referencesHTML = isCustom ? '' : `
+                     <div class="w-full md:w-1/3 lg:w-1/4 md:pl-6 pt-8 md:pt-0 border-t md:border-t-0 md:border-l border-zinc-700">
+                        <h3 class="text-xl font-semibold mb-4 text-gray-200">Referências</h3>
+                        <ul class="space-y-3">
+                            <li><a href="https://www.uptodate.com/contents/search?search=${encodeURIComponent(conditionDoc.condition)}" target="_blank" rel="noopener noreferrer" class="text-emerald-400 hover:underline">Buscar no UpToDate</a></li>
+                        </ul>
+                         ${geminiFeaturesHTML}
+                    </div>
+                `;
+
+                contentDisplay.innerHTML = `
+                    <div class="flex flex-col md:flex-row">
+                        ${contentHTML}
+                        ${referencesHTML}
+                    </div>
+                `;
+                
+                if (!isCustom) {
+                    const fetchAndDisplaySummary = async (forceRefresh = false) => {
+                        const cacheKey = await getCacheKey('summary');
+                        if (!forceRefresh) {
+                            const cachedData = await getFromCache(cacheKey);
+                            if (cachedData) {
+                                showGeminiModal(`Resumo sobre ${conditionDoc.condition} (Salvo)`);
+                                geminiResult.innerHTML = cachedData.content + cachedData.sources;
+                                const refreshButton = document.createElement('button');
+                                refreshButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2 h-5 w-5"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>Gerar Novamente`;
+                                refreshButton.className = 'gemini-btn w-full mt-6 bg-emerald-600 hover:bg-emerald-700 text-white';
+                                refreshButton.onclick = () => fetchAndDisplaySummary(true);
+                                geminiResult.appendChild(refreshButton);
+                                geminiLoading.classList.add('hidden');
+                                return;
+                            }
+                        }
+                        showGeminiModal(`Resumo sobre ${conditionDoc.condition}`);
+                        const systemPrompt = "Você é um assistente médico. Formate sua resposta usando Markdown. Forneça um resumo conciso e informativo para profissionais de saúde, baseado nas informações mais recentes da web.";
+                        const userPrompt = `Forneça um resumo sobre a condição médica "${conditionDoc.condition}", cobrindo os seguintes tópicos com seus respectivos títulos: ### Etiologia, ### Apresentação Clínica Principal, ### Diagnóstico, e ### Opções de Tratamento. Use fontes confiáveis.`;
+                        await callGeminiAPI(userPrompt, systemPrompt, true, cacheKey);
+                    };
+
+                    const fetchAndDisplayPatientInstructions = async (forceRefresh = false) => {
+                        const cacheKey = await getCacheKey('patientInstructions');
+                        if (!forceRefresh) {
+                           const cachedData = await getFromCache(cacheKey);
+                            if (cachedData) {
+                                showGeminiModal(`Instruções para Paciente: ${conditionDoc.condition} (Salvo)`);
+                                geminiResult.innerHTML = cachedData.content + cachedData.sources;
+                                const refreshButton = document.createElement('button');
+                                 refreshButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2 h-5 w-5"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>Gerar Novamente`;
+                                refreshButton.className = 'gemini-btn w-full mt-6 bg-emerald-600 hover:bg-emerald-700 text-white';
+                                refreshButton.onclick = () => fetchAndDisplayPatientInstructions(true);
+                                geminiResult.appendChild(refreshButton);
+                                geminiLoading.classList.add('hidden');
+                                return;
+                            }
+                        }
+                        showGeminiModal(`Instruções para Paciente: ${conditionDoc.condition}`);
+                        const prescriptionText = allPrescriptions.map(p => `- Prescrição: ${p.title}\n${p.items.join('\n')}`).join('\n\n').replace(/<[^>]*>?/gm, ' ');
+                        const systemPrompt = "Você é um assistente de comunicação em saúde. Sua tarefa é traduzir prescrições médicas complexas em instruções claras, simples e amigáveis para pacientes leigos. Use Markdown para formatação. Evite jargão a todo custo e foque na ação que o paciente precisa tomar.";
+                        const userPrompt = `Com base nas seguintes prescrições para "${conditionDoc.condition}", gere um texto único com instruções para o paciente. Organize por medicamento usando títulos (### Nome do Medicamento). Explique para que serve, como e quando tomar, e por quanto tempo. Finalize com um título '### Avisos Importantes'.\n\n${prescriptionText}`;
+                        await callGeminiAPI(userPrompt, systemPrompt, false, cacheKey);
+                    };
+                    
+                    document.getElementById('gemini-summarize-btn').addEventListener('click', () => fetchAndDisplaySummary(false));
+                    if (allPrescriptions.length > 0) {
+                        document.getElementById('gemini-patient-instructions-btn').addEventListener('click', () => fetchAndDisplayPatientInstructions(false));
+                    }
+                }
+
+                document.getElementById('back-btn').addEventListener('click', () => renderConditions(conditionDoc.specialty, isCustom));
+                window.scrollTo(0, 0);
+            }
+
+            async function renderConditions(specialtyKey, isCustom = false) {
+                 currentSpecialty = specialtyKey;
+                 currentCondition = null;
+                 contentDisplay.innerHTML = `<div class="text-center p-8"><svg class="animate-spin h-8 w-8 text-emerald-400 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg></div>`;
+
+                 const conditions = isCustom ? await getCustomConditions(specialtyKey) : await getConditions(currentFicha, specialtyKey);
+                
+                 let html = `
+                    <h2 class="text-3xl font-bold mb-6 text-white">${specialtyKey}</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                `;
+                conditions.forEach(conditionDoc => {
+                    html += `
+                        <button class="condition-btn text-left p-4 bg-zinc-700 rounded-lg hover:bg-zinc-600 hover:shadow-xl transition-all duration-200" data-doc-id="${conditionDoc.id}">
+                            <h3 class="font-semibold text-lg text-gray-200">${conditionDoc.condition}</h3>
+                        </button>
+                    `;
+                });
+                html += `</div>`;
+                contentDisplay.innerHTML = html;
+
+                document.querySelectorAll('.condition-btn').forEach(btn => {
+                    btn.addEventListener('click', async (e) => {
+                        const docId = e.currentTarget.dataset.docId;
+                        const conditionData = await getConditionByDocId(docId);
+                        if(conditionData) {
+                            renderConditionDetails(conditionData);
+                        }
+                    });
+                });
+            }
+            
+            async function renderSpecialties(ficha) {
+                 specialtiesNav.innerHTML = `<div class="text-center p-4 text-gray-400">Carregando especialidades...</div>`;
+                 const specialties = await getSpecialties(ficha);
+                 const customSpecialties = await getCustomSpecialties();
+                
+                 specialtiesNav.innerHTML = '';
+                 const ul = document.createElement('ul');
+                 ul.className = 'space-y-1';
+
+                 specialties.forEach(key => {
+                    const li = document.createElement('li');
+                    const a = document.createElement('a');
+                    a.href = '#';
+                    a.textContent = key;
+                    a.className = 'block p-3 rounded-lg text-gray-300 hover:bg-zinc-700 hover:text-white transition-colors duration-200';
+                    a.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        renderConditions(key, false);
+                        if (window.innerWidth < 768) toggleSidebar();
+                    });
+                    li.appendChild(a);
+                    ul.appendChild(li);
+                 });
+
+                 if (customSpecialties.length > 0) {
+                     const divider = document.createElement('hr');
+                     divider.className = 'border-gray-600 my-4';
+                     ul.appendChild(divider);
+                     const customHeader = document.createElement('h3');
+                     customHeader.textContent = "Meus Módulos";
+                     customHeader.className = "px-3 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider";
+                     ul.appendChild(customHeader);
+
+                     customSpecialties.forEach(specialtyKey => {
+                         const li = document.createElement('li');
+                         const a = document.createElement('a');
+                         a.href = '#';
+                         a.textContent = specialtyKey;
+                         a.className = 'block p-3 rounded-lg text-gray-300 hover:bg-zinc-700 hover:text-white transition-colors duration-200';
+                         a.addEventListener('click', (e) => {
+                             e.preventDefault();
+                             renderConditions(specialtyKey, true);
+                             if (window.innerWidth < 768) toggleSidebar();
+                         });
+                         li.appendChild(a);
+                         ul.appendChild(li);
+                     });
+                 }
+                
+                specialtiesNav.appendChild(ul);
+            }
+            
+            async function filterAndRenderSearch(query) {
+                if (!query) {
+                    await loadLastView();
+                    return;
+                }
+
+                let html = `<h2 class="text-3xl font-bold mb-6 text-white">Resultados da busca por "${query}"</h2><div class="space-y-4">`;
+                let found = false;
+                const queryLower = query.toLowerCase();
+
+                const prescriptionsCol = collection(db, `artifacts/${appId}/public/data/prescriptions`);
+                const snapshot = await getDocs(prescriptionsCol);
+                
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    if (data.condition.toLowerCase().includes(queryLower)) {
+                        found = true;
+                        const fichaLabel = data.isCustom ? 'Módulo Pessoal' : (data.ficha === 'verde' ? 'Verde' : 'Amarela/Vermelha');
+                        const fichaColor = data.isCustom ? 'text-blue-400' : (data.ficha === 'verde' ? 'text-green-400' : 'text-red-400');
+
+                        html += `
+                            <button class="condition-btn text-left p-4 bg-zinc-700 rounded-lg hover:bg-zinc-600 transition-all duration-200 w-full" data-doc-id="${doc.id}" data-ficha="${data.ficha}">
+                                <h3 class="font-semibold text-lg text-gray-200">${data.condition}</h3>
+                                <p class="text-sm text-gray-400">Ficha: <span class="${fichaColor} font-medium">${fichaLabel}</span> | Especialidade: ${data.specialty}</p>
+                            </button>
+                        `;
+                    }
+                });
+
+                if (!found) {
+                    html += '<p class="text-gray-400">Nenhuma condição encontrada.</p>';
+                }
+                html += `</div>`;
+                contentDisplay.innerHTML = html;
+
+                document.querySelectorAll('.condition-btn').forEach(btn => {
+                    btn.addEventListener('click', async (e) => {
+                        const docId = e.currentTarget.dataset.docId;
+                        const ficha = e.currentTarget.dataset.ficha;
+                        
+                        if(ficha !== 'custom' && currentFicha !== ficha) {
+                            await switchFicha(ficha, false);
+                        }
+                        const conditionData = await getConditionByDocId(docId);
+                        if (conditionData) {
+                            renderConditionDetails(conditionData);
+                        }
+                    });
+                });
+            }
+
+            async function switchFicha(newFicha, resetContent = true) {
+                currentFicha = newFicha;
+                await renderSpecialties(newFicha);
+                 if(resetContent) {
+                     currentSpecialty = null;
+                     currentCondition = null;
+                     localStorage.removeItem('lastView');
+                     contentDisplay.innerHTML = `<div class="text-center text-gray-400 p-8 flex flex-col items-center justify-center h-full"><svg xmlns="http://www.w3.org/2000/svg" class="mx-auto h-16 w-16 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg><p class="text-xl mt-4 text-gray-300">Selecione uma especialidade para começar</p><p class="text-gray-500">Ou use a busca para encontrar uma condição.</p></div>`;
+                     searchBar.value = '';
+                 }
+                
+                if (newFicha === 'verde') {
+                    fichaVerdeBtn.classList.add('active-ficha');
+                    fichaVermelhaBtn.classList.remove('active-ficha');
+                } else {
+                    fichaVermelhaBtn.classList.add('active-ficha');
+                    fichaVerdeBtn.classList.remove('active-ficha');
+                }
+            }
+            
+            function toggleSidebar() {
+                isSidebarOpen = !isSidebarOpen;
+                if (isSidebarOpen) {
+                    sidebar.classList.remove('-translate-x-full');
+                } else {
+                    sidebar.classList.add('-translate-x-full');
+                }
+            }
+            
+            async function loadLastView() {
+                const lastView = JSON.parse(localStorage.getItem('lastView'));
+                if (lastView && lastView.docId) {
+                    if(lastView.ficha !== currentFicha && lastView.ficha !== 'custom') {
+                        await switchFicha(lastView.ficha, false);
+                    }
+                    const conditionDoc = await getConditionByDocId(lastView.docId);
+                    if(conditionDoc){
+                        renderConditionDetails(conditionDoc);
+                    } else {
+                        await switchFicha(currentFicha);
+                    }
+                } else {
+                    await switchFicha(currentFicha);
+                }
+            }
+
+            function setupCustomModules() {
+                addModuleBtn.addEventListener('click', () => {
+                    document.getElementById('module-form').reset();
+                    addModuleModal.classList.remove('hidden');
+                });
+                closeModuleModalBtn.addEventListener('click', () => addModuleModal.classList.add('hidden'));
+                
+                saveModuleBtn.addEventListener('click', async () => {
+                    const specialty = document.getElementById('module-specialty').value.trim();
+                    const condition = document.getElementById('module-condition').value.trim();
+                    const content = document.getElementById('module-content').value.trim();
+
+                    if (!specialty || !condition || !content) {
+                        alert('Por favor, preencha todos os campos.');
+                        return;
+                    }
+
+                    saveModuleBtn.disabled = true;
+                    saveModuleBtn.innerText = "Salvando...";
+                    
+                    try {
+                        const prescriptionsCol = collection(db, `artifacts/${appId}/public/data/prescriptions`);
+                        const newDocRef = await addDoc(prescriptionsCol, {
+                            ficha: 'custom',
+                            specialty,
+                            condition,
+                            content: content.replace(/\n/g, '<br>'),
+                            prescriptions: [],
+                            isCustom: true,
+                            createdAt: serverTimestamp()
+                        });
+
+                        addModuleModal.classList.add('hidden');
+                        await renderSpecialties(currentFicha); // Atualiza a lista de especialidades
+                        const newDoc = await getConditionByDocId(newDocRef.id);
+                        renderConditionDetails(newDoc);
+
+                    } catch(error) {
+                        console.error("Erro ao salvar módulo customizado:", error);
+                        alert("Erro ao salvar o módulo. Tente novamente.");
+                    } finally {
+                        saveModuleBtn.disabled = false;
+                        saveModuleBtn.innerText = "Salvar Módulo";
+                    }
+                });
+            }
+
+            // --- Event Listeners ---
+            fichaVerdeBtn.addEventListener('click', () => switchFicha('verde'));
+            fichaVermelhaBtn.addEventListener('click', () => switchFicha('vermelha'));
+            menuToggle.addEventListener('click', toggleSidebar);
+            searchBar.addEventListener('input', (e) => filterAndRenderSearch(e.target.value));
+            geminiModalClose.addEventListener('click', hideGeminiModal);
+            
+            // --- Carregamento Inicial ---
+            await migrateDatabaseToFirestore();
+            await loadLastView(); 
+            setupCustomModules();
+        }
+
+    </script>
     <style>
-        html {
-            color-scheme: dark;
-            scroll-behavior: smooth;
+        body { font-family: 'Inter', sans-serif; }
+        .sidebar { transition: transform 0.3s ease-in-out; }
+        .main-content { transition: margin-left 0.3s ease-in-out; }
+        .ficha-verde-bg { background-color: #16a34a; }
+        .ficha-vermelha-bg { background-color: #dc2626; }
+        .ficha-verde-text { color: #4ade80; }
+        .ficha-vermelha-text { color: #f87171; }
+        .active-ficha {
+            background-color: #3f3f46; /* zinc-700 */
         }
-        body {
-            font-family: 'Inter', sans-serif;
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #18181b; } /* zinc-900 */
+        ::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 4px; } /* zinc-700 */
+        ::-webkit-scrollbar-thumb:hover { background: #52525b; } /* zinc-600 */
+        .gemini-btn {
+            background-color: #3f3f46; color: #d4d4d8; padding: 0.6rem 1.2rem;
+            border-radius: 0.5rem; font-weight: 500; transition: all 0.2s;
+            display: flex; align-items: center; justify-content: center;
+            border: 1px solid #52525b;
         }
-        .activity-card {
-            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out, opacity 0.3s, background-color 0.3s, border-color 0.3s;
-        }
-        .activity-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-        }
-        .activity-card.checked {
-            opacity: 0.6;
-            background-color: #3a3a3a;
-        }
-        .activity-card.checked .activity-title {
-            text-decoration: line-through;
-            color: #888;
-        }
-        .activity-card.current-activity {
-            border-color: #34D399; /* Green-400 */
-            box-shadow: 0 0 15px rgba(52, 211, 153, 0.3);
-        }
-        .activity-title {
-            word-wrap: break-word;
-            overflow-wrap: break-word;
-        }
-        select {
-            -webkit-appearance: none;
-            -moz-appearance: none;
-            appearance: none;
-            background-repeat: no-repeat;
-            background-position: right 1rem center;
-            background-size: .65em auto;
-            background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23F3F3F3%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E');
-        }
-        #schedule-grid {
-            display: grid;
-            gap: 1rem;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-        }
-        aside::-webkit-scrollbar, main::-webkit-scrollbar {
-            width: 8px;
-        }
-        aside::-webkit-scrollbar-track, main::-webkit-scrollbar-track {
-            background: #2B2B2B;
-        }
-        aside::-webkit-scrollbar-thumb, main::-webkit-scrollbar-thumb {
-            background-color: #4A4A4A;
-            border-radius: 10px;
-            border: 2px solid #2B2B2B;
-        }
-        #sidebar-overlay, #confirm-modal-overlay, #sync-modal-overlay {
-            transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
-            visibility: hidden;
-            opacity: 0;
-        }
-        #sidebar-overlay.is-open, #confirm-modal-overlay.is-open, #sync-modal-overlay.is-open {
-            visibility: visible;
-            opacity: 1;
-        }
-        #sidebar-mobile, #confirm-modal, #sync-modal {
-            transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
-            transform: scale(0.95);
-            opacity: 0;
-        }
-        #sidebar-overlay.is-open #sidebar-mobile, #confirm-modal-overlay.is-open #confirm-modal, #sync-modal-overlay.is-open #sync-modal {
-            transform: scale(1);
-            opacity: 1;
-        }
-        .specialty-btn {
-            transition: background-color 0.2s, color 0.2s;
-        }
-        .specialty-btn.active {
-            background-color: #2899F5;
-            color: white;
-        }
-        #toast-notification {
-            transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
-            transform: translateY(100%);
-            opacity: 0;
-        }
-        #toast-notification.show {
-            transform: translateY(0);
-            opacity: 1;
-        }
+        .gemini-btn:hover { background-color: #52525b; }
     </style>
 </head>
-<body class="bg-[#1B1B1B] text-[#F3F3F3]">
+<body class="bg-zinc-900 text-gray-300">
 
-    <!-- Retractable Specialty Sidebar -->
-    <aside class="fixed top-0 left-0 h-screen z-30 bg-[#2B2B2B] border-r border-gray-700 w-20 hover:w-56 transition-all duration-300 ease-in-out group hidden lg:flex flex-col">
-        <div class="flex items-center justify-center h-20 border-b border-gray-700">
-            <svg class="h-8 w-8 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
-            </svg>
+    <div id="migration-status" class="hidden fixed top-0 left-0 right-0 bg-emerald-500 text-white text-center p-2 z-50"></div>
+
+    <!-- Sidebar / Navigation -->
+    <aside id="sidebar" class="sidebar bg-zinc-800 w-72 fixed top-0 left-0 h-full shadow-lg p-4 z-20 transform -translate-x-full md:translate-x-0 border-r border-zinc-700 flex flex-col">
+        <div class="flex items-center mb-6 pl-2">
+             <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-emerald-400 mr-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"></path><path d="M12 8v4l2 1"></path><path d="m15.5 17.5-3-1.5-3 1.5"></path></svg>
+            <h1 class="text-2xl font-bold text-white">HelpClin</h1>
         </div>
-        <nav class="flex-grow flex flex-col justify-center space-y-2">
-            <a href="#" id="btn-cirurgia" class="specialty-btn flex items-center py-3 px-6 justify-center group-hover:justify-start text-gray-300 hover:bg-gray-700 hover:text-white rounded-r-lg">
-                <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M9.53 16.122a3 3 0 00-5.78 1.128 2.25 2.25 0 01-2.4 2.245 4.5 4.5 0 008.4-2.245c0-.399-.078-.78-.22-1.128zm0 0a15.998 15.998 0 003.388-1.62m-5.043-.025a15.998 15.998 0 011.622-3.385m5.043.025a15.998 15.998 0 001.622-3.385m3.388 1.62a15.998 15.998 0 00-1.62-3.385m-1.622 3.385a15.998 15.998 0 01-3.388 1.62m5.043-.025a15.998 15.998 0 01-1.622 3.385m-5.043.025a15.998 15.998 0 00-1.622 3.385m-1.62-3.385a15.998 15.998 0 00-3.388-1.62m11.622 5.043a15.998 15.998 0 003.388-1.62" />
-                </svg>
-                <span class="font-semibold whitespace-nowrap opacity-0 w-0 group-hover:ml-4 group-hover:opacity-100 group-hover:w-auto transition-all duration-300 ease-in-out">Cirurgia</span>
-            </a>
-            <a href="#" id="btn-pediatria" class="specialty-btn flex items-center py-3 px-6 justify-center group-hover:justify-start text-gray-300 hover:bg-gray-700 hover:text-white rounded-r-lg">
-                <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
-                </svg>
-                <span class="font-semibold whitespace-nowrap opacity-0 w-0 group-hover:ml-4 group-hover:opacity-100 group-hover:w-auto transition-all duration-300 ease-in-out">Pediatria</span>
-            </a>
+        <input type="text" id="search-bar" placeholder="Pesquisar..." class="w-full p-2 bg-zinc-700 border border-zinc-600 rounded-lg mb-4 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+        <nav id="specialties-nav" class="overflow-y-auto flex-grow">
+            <!-- As especialidades serão inseridas aqui dinamicamente -->
         </nav>
-        <div class="mt-auto mb-4">
-            <button id="sync-modal-open-btn" class="flex items-center py-3 px-6 justify-center group-hover:justify-start text-gray-300 hover:bg-gray-700 hover:text-white rounded-r-lg w-full">
-                <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 16.5V9.75m0 0l3 3m-3-3l-3 3M6.75 19.5a4.5 4.5 0 01-1.41-8.775 5.25 5.25 0 0110.233-2.33 3 3 0 013.758 3.848A3.752 3.752 0 0118 19.5H6.75z" />
-                </svg>
-                <span class="font-semibold whitespace-nowrap opacity-0 w-0 group-hover:ml-4 group-hover:opacity-100 group-hover:w-auto transition-all duration-300 ease-in-out">Sincronizar</span>
+        <div class="mt-4">
+            <button id="add-module-btn" class="w-full flex items-center justify-center p-3 rounded-lg text-gray-300 bg-zinc-700 hover:bg-emerald-600 hover:text-white transition-colors duration-200">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
+                Adicionar Módulo
             </button>
         </div>
     </aside>
 
-    <div class="lg:pl-20"> <!-- Main content offset for the sidebar -->
-        <header class="lg:hidden text-center p-4 relative border-b border-gray-700 bg-[#2B2B2B] flex-shrink-0 flex items-center justify-center">
-            <button id="sidebar-toggle" class="absolute left-4 top-1/2 -translate-y-1/2 p-2 rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500">
+    <!-- Conteúdo Principal -->
+    <main id="main-content" class="main-content md:ml-72 p-4 md:p-8">
+        <!-- Cabeçalho -->
+        <header class="flex justify-between items-center mb-8">
+             <button id="menu-toggle" class="md:hidden p-2 rounded-md bg-zinc-700 text-gray-300">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
             </button>
-            <h1 class="text-lg font-bold">Cronograma</h1>
+            <div class="flex-grow flex justify-center">
+                 <div class="flex justify-center gap-2 md:gap-4 rounded-xl p-1 bg-zinc-800 border border-zinc-700">
+                    <button id="ficha-verde-btn" class="ficha-selector text-white font-semibold py-2 px-4 md:px-6 rounded-lg transition-all duration-300" data-ficha="verde">
+                        Ficha Verde
+                    </button>
+                    <button id="ficha-vermelha-btn" class="ficha-selector text-white font-semibold py-2 px-4 md:px-6 rounded-lg transition-all duration-300" data-ficha="vermelha">
+                        Ficha Amarela/Vermelha
+                    </button>
+                </div>
+            </div>
+            <div class="w-8"></div> <!-- Espaçador -->
         </header>
 
-        <div id="content-wrapper" class="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-8 p-4 md:p-8 overflow-hidden h-screen">
-            <!-- Sidebar for desktop -->
-            <aside id="sidebar-desktop" class="hidden lg:flex lg:col-span-3 flex-col gap-8 overflow-y-auto">
-                <div id="week-selector-container-desktop" class="p-6 bg-[#2B2B2B] rounded-lg shadow-lg flex-col gap-2">
-                    <label id="week-label-desktop" for="week-selector-desktop" class="block text-sm font-medium text-center mb-2">Selecione a Semana</label>
-                    <select id="week-selector-desktop" class="w-full p-3 bg-[#2D2D2D] border border-gray-600 rounded-md shadow-sm focus:ring-[#2899F5] focus:border-[#2899F5]"></select>
-                    <p id="schedule-subtitle-desktop" class="text-sm text-gray-400 mt-2 text-center"></p>
-                </div>
-                <div id="student-selector-container-desktop" class="bg-[#2B2B2B] p-6 rounded-lg shadow-lg text-center">
-                    <h3 class="text-lg font-semibold mb-4">Selecione o Aluno</h3>
-                    <img id="student-image-desktop" src="https://i.imgur.com/5AW2oEL.png" alt="Foto do Grupo" class="w-full h-auto mx-auto rounded-lg object-cover border-4 border-gray-600 mb-4">
-                    <select id="student-selector-desktop" class="w-full p-3 bg-[#2D2D2D] border border-gray-600 rounded-md shadow-sm focus:ring-[#2899F5] focus:border-[#2899F5]"></select>
-                </div>
-                 <div class="bg-[#2B2B2B] p-6 rounded-lg shadow-lg text-center">
-                    <h3 class="text-lg font-semibold mb-4">Opções</h3>
-                    <div class="flex items-center justify-center gap-2 text-sm">
-                        <input type="checkbox" id="hide-study-desktop" class="h-4 w-4 rounded bg-gray-700 border-gray-600 text-blue-500 focus:ring-blue-600">
-                        <label for="hide-study-desktop">Ocultar horários de estudo</label>
-                    </div>
-                    <button id="clearWeekButton-desktop" class="w-full mt-4 p-2 bg-red-600 hover:bg-red-700 rounded-md font-semibold transition-colors text-white text-sm">Limpar marcações</button>
-                </div>
-            </aside>
-
-            <main id="main-content" class="col-span-12 lg:col-span-9 overflow-y-auto">
-                <div id="week-selector-container-main" class="p-4 bg-[#2B2B2B] border border-gray-700 rounded-lg mb-6 lg:hidden">
-                    <label id="week-label-main" for="week-selector-main" class="block text-sm font-medium text-center mb-2">Selecione</label>
-                    <select id="week-selector-main" class="w-full p-3 bg-[#2D2D2D] border border-gray-600 rounded-md shadow-sm focus:ring-[#2899F5] focus:border-[#2899F5]"></select>
-                    <p id="schedule-subtitle-main" class="text-sm text-gray-400 mt-2 text-center"></p>
-                </div>
-                <div id="schedule-grid" class="gap-4"></div>
-            </main>
+        <!-- Área de Exibição de Conteúdo -->
+        <div id="content-display" class="bg-zinc-800 p-6 md:p-8 rounded-xl shadow-lg border border-zinc-700 min-h-[75vh]">
+             <!-- O conteúdo inicial ou selecionado aparecerá aqui -->
         </div>
-    </div>
-
-    <!-- Mobile Floating Menu -->
-    <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-70 z-40 flex items-center justify-center p-4">
-        <aside id="sidebar-mobile" class="relative w-full max-w-sm bg-[#2B2B2B] rounded-2xl shadow-2xl flex flex-col gap-8 p-6 overflow-y-auto max-h-[90vh]">
-            <button id="sidebar-close" class="absolute top-4 right-4 p-2 rounded-full hover:bg-gray-700">
-                <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-            </button>
-            <div id="specialty-selector-container-mobile" class="flex items-center gap-2 bg-[#1B1B1B] p-1 rounded-lg">
-                <button id="btn-cirurgia-mobile" class="specialty-btn flex-1 px-4 py-2 text-sm font-semibold rounded-md">Cirurgia</button>
-                <button id="btn-pediatria-mobile" class="specialty-btn flex-1 px-4 py-2 text-sm font-semibold rounded-md">Pediatria</button>
-            </div>
-            <div id="student-selector-container-mobile" class="bg-[#2B2B2B] rounded-lg text-center">
-                <h3 class="text-lg font-semibold mb-4">Selecione o Aluno</h3>
-                <img id="student-image-mobile" src="https://i.imgur.com/5AW2oEL.png" alt="Foto do Grupo" class="w-full h-auto mx-auto rounded-lg object-cover border-4 border-gray-600 mb-4">
-                <select id="student-selector-mobile" class="w-full p-3 bg-[#2D2D2D] border border-gray-600 rounded-md shadow-sm focus:ring-[#2899F5] focus:border-[#2899F5]"></select>
-            </div>
-             <div class="bg-[#2B2B2B] p-6 rounded-lg shadow-lg text-center">
-                <h3 class="text-lg font-semibold mb-4">Sincronização</h3>
-                <button id="sync-button-mobile" class="w-full p-2 bg-blue-600 hover:bg-blue-700 rounded-md font-semibold transition-colors text-white text-sm mb-4">Sincronizar Dados Pessoais</button>
-                <p class="text-xs text-gray-400 mb-2">Seu ID de Usuário:</p>
-                <input id="userIdDisplay-mobile" type="text" readonly class="w-full p-2 bg-[#1B1B1B] text-center text-xs rounded-md mb-2 truncate">
-                <button id="copyUserId-mobile" class="w-full p-2 bg-gray-600 hover:bg-gray-700 rounded-md font-semibold transition-colors text-white text-sm mb-4">Copiar ID</button>
-                <input id="userIdInput-mobile" type="text" placeholder="Cole um ID para carregar" class="w-full p-2 bg-[#1B1B1B] text-center text-xs rounded-md mb-2">
-                <button id="loadUserId-mobile" class="w-full p-2 bg-green-600 hover:bg-green-700 rounded-md font-semibold transition-colors text-white text-sm">Carregar ID</button>
-            </div>
-             <div class="bg-[#2B2B2B] rounded-lg text-center">
-                <h3 class="text-lg font-semibold mb-4">Opções</h3>
-                <div class="flex items-center justify-center gap-2 text-sm">
-                    <input type="checkbox" id="hide-study-mobile" class="h-4 w-4 rounded bg-gray-700 border-gray-600 text-blue-500 focus:ring-blue-600">
-                    <label for="hide-study-mobile">Ocultar horários de estudo</label>
-                </div>
-                <button id="clearWeekButton-mobile" class="w-full mt-4 p-2 bg-red-600 hover:bg-red-700 rounded-md font-semibold transition-colors text-white text-sm">Limpar marcações</button>
-            </div>
-        </aside>
-    </div>
+    </main>
     
-    <!-- Sync Modal -->
-    <div id="sync-modal-overlay" class="fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center p-4">
-        <div id="sync-modal" class="relative w-full max-w-sm bg-[#2B2B2B] rounded-2xl shadow-2xl p-6">
-            <button id="sync-modal-close-btn" class="absolute top-4 right-4 p-2 rounded-full hover:bg-gray-700">
-                <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-            </button>
-            <div class="bg-[#2B2B2B] p-6 rounded-lg shadow-lg text-center">
-                <h3 class="text-lg font-semibold mb-4">Sincronização</h3>
-                <button id="sync-button-modal" class="w-full p-2 bg-blue-600 hover:bg-blue-700 rounded-md font-semibold transition-colors text-white text-sm mb-4">Sincronizar Dados Pessoais</button>
-                <p class="text-xs text-gray-400 mb-2">Seu ID de Usuário:</p>
-                <input id="userIdDisplay-modal" type="text" readonly class="w-full p-2 bg-[#1B1B1B] text-center text-xs rounded-md mb-2 truncate">
-                <button id="copyUserId-modal" class="w-full p-2 bg-gray-600 hover:bg-gray-700 rounded-md font-semibold transition-colors text-white text-sm mb-4">Copiar ID</button>
-                <input id="userIdInput-modal" type="text" placeholder="Cole um ID para carregar" class="w-full p-2 bg-[#1B1B1B] text-center text-xs rounded-md mb-2">
-                <button id="loadUserId-modal" class="w-full p-2 bg-green-600 hover:bg-green-700 rounded-md font-semibold transition-colors text-white text-sm">Carregar ID</button>
+    <!-- Modal do Gemini -->
+    <div id="gemini-modal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50 hidden">
+        <div class="bg-zinc-800 rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col border border-zinc-700">
+            <div class="flex justify-between items-center p-4 border-b border-zinc-700">
+                <h3 id="gemini-modal-title" class="text-xl font-bold text-white flex items-center"></h3>
+                <button id="gemini-modal-close" class="text-gray-400 hover:text-white text-3xl leading-none">&times;</button>
+            </div>
+            <div id="gemini-modal-content" class="p-6 overflow-y-auto">
+                <div id="gemini-loading" class="text-center hidden">
+                    <svg class="animate-spin h-8 w-8 text-emerald-400 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <p class="mt-2 text-gray-400">Gerando resposta...</p>
+                </div>
+                <div id="gemini-result" class="prose prose-invert max-w-none text-gray-300"></div>
             </div>
         </div>
     </div>
 
-    <!-- "Today" Button -->
-    <button id="today-btn" class="fixed bottom-6 right-6 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-3 rounded-full shadow-lg z-30">
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-    </button>
-
-    <!-- Toast Notification -->
-    <div id="toast-notification" class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg">
-        <p id="toast-message">ID copiado!</p>
-    </div>
-
-    <!-- Confirm Modal -->
-    <div id="confirm-modal-overlay" class="fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center p-4">
-        <div id="confirm-modal" class="relative w-full max-w-sm bg-[#2B2B2B] rounded-2xl shadow-2xl p-6">
-            <p id="confirm-message" class="text-center mb-6">Você tem certeza?</p>
-            <div class="flex justify-center gap-4">
-                <button id="confirm-btn-yes" class="px-6 py-2 bg-green-600 hover:bg-green-700 rounded-md font-semibold transition-colors">Sim</button>
-                <button id="confirm-btn-no" class="px-6 py-2 bg-gray-600 hover:bg-gray-700 rounded-md font-semibold transition-colors">Não</button>
+    <!-- Modal para Adicionar Módulo -->
+     <div id="add-module-modal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50 hidden">
+        <div class="bg-zinc-800 rounded-xl shadow-2xl w-full max-w-xl border border-zinc-700">
+            <div class="flex justify-between items-center p-4 border-b border-zinc-700">
+                <h3 class="text-xl font-bold text-white">Adicionar Novo Módulo</h3>
+                <button id="close-module-modal" class="text-gray-400 hover:text-white text-3xl">&times;</button>
+            </div>
+            <div class="p-6">
+                <form id="module-form" class="space-y-4">
+                    <input type="text" id="module-specialty" placeholder="Nome da Especialidade (ex: Cardiologia)" class="w-full p-2 bg-zinc-700 border border-zinc-600 rounded-lg text-white" required>
+                    <input type="text" id="module-condition" placeholder="Nome da Condição (ex: Anafilaxia)" class="w-full p-2 bg-zinc-700 border border-zinc-600 rounded-lg text-white" required>
+                    <textarea id="module-content" placeholder="Conteúdo do módulo (use quebras de linha para parágrafos)" rows="8" class="w-full p-2 bg-zinc-700 border border-zinc-600 rounded-lg text-white"></textarea>
+                    <button type="button" id="save-module-btn" class="w-full gemini-btn bg-emerald-600 text-white hover:bg-emerald-700">Salvar Módulo</button>
+                </form>
             </div>
         </div>
     </div>
 
-    <!-- Firebase SDKs -->
-    <script type="module">
-        // Import necessary Firebase functions
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-        import { getFirestore, doc, onSnapshot, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-        // Your web app's Firebase configuration
-        const firebaseConfig = {
-          apiKey: "AIzaSyDyfgOvzTYd6si3g-mPQyInbfiFG1hoVAU",
-          authDomain: "cronograma-medufpr.firebaseapp.com",
-          projectId: "cronograma-medufpr",
-          storageBucket: "cronograma-medufpr.appspot.com",
-          messagingSenderId: "68632769127",
-          appId: "1:68632769127:web:1144e190a83a3581be1ac2",
-          measurementId: "G-6RNMK13MMK"
-        };
-
-
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        
-        // --- Global State Variables ---
-        let userId = null;
-        let unsubscribeUser; // Listener for user-specific data
-        let unsubscribeShared; // Listener for shared data
-        let allData = {}; // To store schedule data from JSON files
-        let currentSpecialty = 'cirurgia';
-        let currentWeekOrRodizio = '1';
-        let currentStudent = 'all';
-        let checklistData = {}; // To store the checked state of activities
-        let hideStudyTime = false;
-        let onCallClaimData = {}; // NEW: To store on-call claimed slots data
-
-        // --- DOM Element References ---
-        const scheduleGrid = document.getElementById('schedule-grid');
-        const mainContent = document.getElementById('main-content');
-        
-        const weekSelectorMain = document.getElementById('week-selector-main');
-        const scheduleSubtitleMain = document.getElementById('schedule-subtitle-main');
-        const weekLabelMain = document.getElementById('week-label-main');
-        const weekSelectorContainerMain = document.getElementById('week-selector-container-main');
-
-        const studentSelectorMobile = document.getElementById('student-selector-mobile');
-        const studentImageMobile = document.getElementById('student-image-mobile');
-        const clearWeekButtonMobile = document.getElementById('clearWeekButton-mobile');
-        const studentContainerMobile = document.getElementById('student-selector-container-mobile');
-
-        const weekSelectorContainerDesktop = document.getElementById('week-selector-container-desktop');
-        const weekSelectorDesktop = document.getElementById('week-selector-desktop');
-        const scheduleSubtitleDesktop = document.getElementById('schedule-subtitle-desktop');
-        const studentSelectorDesktop = document.getElementById('student-selector-desktop');
-        const studentImageDesktop = document.getElementById('student-image-desktop');
-        const clearWeekButtonDesktop = document.getElementById('clearWeekButton-desktop');
-        const studentContainerDesktop = document.getElementById('student-selector-container-desktop');
-        
-        const daysOfWeek = ['SEGUNDA', 'TERÇA', 'QUARTA', 'QUINTA', 'SEXTA', 'SÁBADO', 'DOMINGO'];
-        
-        const sidebarOverlay = document.getElementById('sidebar-overlay');
-        const sidebarToggle = document.getElementById('sidebar-toggle');
-        const sidebarClose = document.getElementById('sidebar-close');
-
-        const btnCirurgia = document.getElementById('btn-cirurgia');
-        const btnPediatria = document.getElementById('btn-pediatria');
-        const btnCirurgiaMobile = document.getElementById('btn-cirurgia-mobile');
-        const btnPediatriaMobile = document.getElementById('btn-pediatria-mobile');
-
-        const todayBtn = document.getElementById('today-btn');
-        
-        const hideStudyMobile = document.getElementById('hide-study-mobile');
-        const hideStudyDesktop = document.getElementById('hide-study-desktop');
-        
-        const userIdDisplayMobile = document.getElementById('userIdDisplay-mobile');
-        const copyUserIdBtnMobile = document.getElementById('copyUserId-mobile');
-        const userIdInputMobile = document.getElementById('userIdInput-mobile');
-        const loadUserIdBtnMobile = document.getElementById('loadUserId-mobile');
-
-        const syncModalOverlay = document.getElementById('sync-modal-overlay');
-        const syncModalOpenBtn = document.getElementById('sync-modal-open-btn');
-        const syncModalCloseBtn = document.getElementById('sync-modal-close-btn');
-        const syncButtonModal = document.getElementById('sync-button-modal');
-        const userIdDisplayModal = document.getElementById('userIdDisplay-modal');
-        const copyUserIdModal = document.getElementById('copyUserId-modal');
-        const userIdInputModal = document.getElementById('userIdInput-modal');
-        const loadUserIdModal = document.getElementById('loadUserId-modal');
-        
-        const syncButtonMobile = document.getElementById('sync-button-mobile');
-
-        const toast = document.getElementById('toast-notification');
-        const toastMessage = document.getElementById('toast-message');
-        const confirmModalOverlay = document.getElementById('confirm-modal-overlay');
-        const confirmMessage = document.getElementById('confirm-message');
-        const confirmBtnYes = document.getElementById('confirm-btn-yes');
-        const confirmBtnNo = document.getElementById('confirm-btn-no');
-
-        // --- UI Functions ---
-
-        function showToast(message) {
-            toastMessage.textContent = message;
-            toast.classList.add('show');
-            setTimeout(() => {
-                toast.classList.remove('show');
-            }, 3000);
-        }
-
-        function showConfirm(message, onConfirm) {
-            confirmMessage.textContent = message;
-            confirmModalOverlay.classList.add('is-open');
-
-            const handleYes = () => {
-                onConfirm();
-                cleanup();
-            };
-            const handleNo = () => cleanup();
-
-            function cleanup() {
-                confirmModalOverlay.classList.remove('is-open');
-                confirmBtnYes.removeEventListener('click', handleYes);
-                confirmBtnNo.removeEventListener('click', handleNo);
-            }
-
-            confirmBtnYes.addEventListener('click', handleYes);
-            confirmBtnNo.addEventListener('click', handleNo);
-        }
-
-        function toggleSidebar() {
-            sidebarOverlay.classList.toggle('is-open');
-        }
-        
-        function toggleSyncModal() {
-            syncModalOverlay.classList.toggle('is-open');
-        }
-
-
-        // --- Data Handling and Firebase ---
-
-        async function fetchData() {
-            const mockSchedule = {
-                cirurgia: {
-                    weeks: [
-                        { id: '1', title: 'Cirurgia Geral (Teste)', dates: '25/08 - 31/08', start: '2025-08-25', end: '2025-08-31' },
-                        { id: '2', title: 'Cirurgia Vascular (Teste)', dates: '01/09 - 07/09', start: '2025-09-01', end: '2025-09-07' }
-                    ],
-                    students: [
-                        { id: 'all', name: 'Todos os Alunos', imageUrl: 'https://i.imgur.com/5AW2oEL.png' },
-                        { id: 1, name: 'Aluno Teste 1', imageUrl: 'https://placehold.co/400x400/EBF4FF/76A9EA?text=A1' },
-                        { id: 2, name: 'Aluno Teste 2', imageUrl: 'https://placehold.co/400x400/EBF4FF/76A9EA?text=A2' }
-                    ],
-                    schedule: [
-                        { week: '1', day: 'SEGUNDA', time: '08:00 - 12:00', activity: 'Ambulatório Mock', professor: 'Dr. Exemplo', location: 'Hospital de Testes', studentId: [1] },
-                        { week: '1', day: 'TERÇA', time: '13:00 - 17:00', activity: 'Centro Cirúrgico Mock', professor: 'Dra. Simulada', location: 'Hospital de Testes', studentId: [2] },
-                        { week: '2', day: 'QUARTA', time: '09:00 - 11:00', activity: 'PA PLANTÃO', professor: 'Dr. Exemplo', location: 'Sala de Conferências', studentId: [1, 2], slots: 2 }
-                    ]
-                },
-                pediatria: {
-                    weeks: [
-                        { id: '1', title: 'Rodízio Pediatria 1 (Teste)', dates: '25/08 - 31/08', start: '2025-08-25', end: '2025-08-31' },
-                        { id: '2', title: 'Rodízio Pediatria 2 (Teste)', dates: '01/09 - 07/09', start: '2025-09-01', end: '2025-09-07' }
-                    ],
-                    students: [
-                        { id: 'p1', name: 'Ped Aluno 1', imageUrl: 'https://placehold.co/400x400/F4EBF4/A976A9?text=P1' },
-                        { id: 'p2', name: 'Ped Aluno 2', imageUrl: 'https://placehold.co/400x400/F4EBF4/A976A9?text=P2' },
-                        { id: 'p3', name: 'Ped Aluno 3', imageUrl: 'https://placehold.co/400x400/F4EBF4/A976A9?text=P3' }
-                    ],
-                    schedule: [
-                        { week: '1', day: 'QUINTA', time: '10:00 - 12:00', activity: 'PA Pediatria', professor: 'Dra. Criança', location: 'Hospital Infantil de Teste', slots: 2 },
-                        { week: '2', day: 'SEXTA', time: '14:00 - 16:00', activity: 'PA PLANTÃO', professor: 'Dr. Bebê', location: 'Hospital Infantil de Teste', slots: 3 }
-                    ]
-                }
-            };
-
-            try {
-                const results = await Promise.allSettled([
-                    fetch('cirurgia_schedule.json').then(res => res.ok ? res.json() : Promise.reject()),
-                    fetch('pediatria_schedule.json').then(res => res.ok ? res.json() : Promise.reject())
-                ]);
-
-                allData.cirurgia = results[0].status === 'fulfilled' ? results[0].value : mockSchedule.cirurgia;
-                allData.pediatria = results[1].status === 'fulfilled' ? results[1].value : mockSchedule.pediatria;
-                
-                initializeUI();
-                initializeAuth();
-                setupSharedOnCallListener(); // Set up the shared listener once
-
-            } catch (error) {
-                console.error("Error during initial data fetch:", error);
-                allData.cirurgia = mockSchedule.cirurgia;
-                allData.pediatria = mockSchedule.pediatria;
-                initializeUI();
-                initializeAuth();
-                setupSharedOnCallListener();
-            }
-        }
-        
-        async function initializeAuth() {
-            onAuthStateChanged(auth, (user) => {
-                if (user) {
-                    const activeUserId = localStorage.getItem('loadedUserId') || user.uid;
-                    if (!userId || userId !== activeUserId) {
-                        setupUserListener(activeUserId);
-                    }
-                }
-            });
-
-            try {
-                if (!auth.currentUser) {
-                    await signInAnonymously(auth);
-                }
-            } catch (error) {
-                console.error("Authentication failed:", error);
-                mainContent.innerHTML = `<p class="text-red-400 text-center">Falha na autenticação. A sincronização não funcionará.</p>`;
-            }
-        }
-
-        async function saveUserStateToFirebase() {
-            if (!userId) return;
-            const userDocRef = doc(db, 'users', userId);
-            try {
-                // Only save user-specific data here
-                await setDoc(userDocRef, {
-                    checklistData,
-                    currentStudent,
-                    currentSpecialty,
-                    hideStudyTime,
-                    currentWeekOrRodizio,
-                }, { merge: true });
-                showToast("Dados pessoais sincronizados!");
-            } catch (error) {
-                console.error("Error saving user state: ", error);
-                showToast("Erro ao sincronizar dados pessoais.");
-            }
-        }
-
-        function setupUserListener(uid) {
-            userId = uid;
-            userIdDisplayMobile.value = uid;
-            userIdDisplayModal.value = uid;
-            const userDocRef = doc(db, 'users', userId);
-
-            if (unsubscribeUser) unsubscribeUser();
-
-            unsubscribeUser = onSnapshot(userDocRef, (docSnap) => {
-                const oldSpecialty = currentSpecialty;
-                let stateChanged = false;
-
-                if (docSnap.exists()) {
-                    const data = docSnap.data();
-                    // Only update user-specific state from this listener
-                    if (JSON.stringify(checklistData) !== JSON.stringify(data.checklistData || {})) {
-                        checklistData = data.checklistData || {};
-                        stateChanged = true;
-                    }
-                    if (currentStudent !== (data.currentStudent || 'all')) {
-                         currentStudent = data.currentStudent || 'all';
-                         stateChanged = true;
-                    }
-                    if (currentSpecialty !== (data.currentSpecialty || 'cirurgia')) {
-                        currentSpecialty = data.currentSpecialty || 'cirurgia';
-                        stateChanged = true;
-                    }
-                     if (hideStudyTime !== (data.hideStudyTime || false)) {
-                        hideStudyTime = data.hideStudyTime || false;
-                        stateChanged = true;
-                    }
-                    if (currentWeekOrRodizio !== (data.currentWeekOrRodizio || '1')) {
-                        currentWeekOrRodizio = data.currentWeekOrRodizio || '1';
-                        stateChanged = true;
-                    }
-                } else {
-                    saveUserStateToFirebase(); 
-                    return; 
-                }
-                
-                if (!stateChanged && document.body.dataset.initialized) return;
-
-                document.body.dataset.initialized = true;
-
-                updateActiveSpecialtyButtons();
-
-                hideStudyDesktop.checked = hideStudyTime;
-                hideStudyMobile.checked = hideStudyTime;
-
-                if (oldSpecialty !== currentSpecialty) {
-                    updateUILayout();
-                    populateSelectors();
-                }
-
-                weekSelectorDesktop.value = currentWeekOrRodizio;
-                weekSelectorMain.value = currentWeekOrRodizio;
-                
-                updateView();
-            }, (error) => {
-                console.error("Error in user snapshot listener:", error);
-            });
-        }
-        
-        function setupSharedOnCallListener() {
-            const onCallDocRef = doc(db, 'schedules', 'onCallClaims');
-            if (unsubscribeShared) unsubscribeShared();
-            
-            unsubscribeShared = onSnapshot(onCallDocRef, (docSnap) => {
-                const newData = docSnap.exists() ? docSnap.data().claims || {} : {};
-                if (JSON.stringify(onCallClaimData) !== JSON.stringify(newData)) {
-                    onCallClaimData = newData;
-                    // Only re-render if the data actually changed to prevent loops
-                    renderSchedule();
-                }
-            }, (error) => {
-                console.error("Error in shared snapshot listener:", error);
-            });
-        }
-        
-        // --- Core Application Logic ---
-        
-        function initializeUI() {
-            updateUILayout();
-            populateSelectors();
-            updateView();
-        }
-        
-        function resetLocalState() {
-            checklistData = {};
-            currentSpecialty = 'cirurgia';
-            currentStudent = 'all';
-            hideStudyTime = false;
-            // Do not reset onCallClaimData as it's shared
-            const data = allData[currentSpecialty];
-            currentWeekOrRodizio = (data?.weeks?.[0]?.id) || '1';
-        }
-
-        function updateActiveSpecialtyButtons() {
-            const isCirurgia = currentSpecialty === 'cirurgia';
-            btnCirurgia.classList.toggle('active', isCirurgia);
-            btnPediatria.classList.toggle('active', !isCirurgia);
-            btnCirurgiaMobile.classList.toggle('active', isCirurgia);
-            btnPediatriaMobile.classList.toggle('active', !isCirurgia);
-        }
-
-        function switchSpecialty(newSpecialty) {
-            if (newSpecialty === currentSpecialty) return;
-            currentSpecialty = newSpecialty;
-            const data = allData[currentSpecialty];
-            currentWeekOrRodizio = (data?.weeks?.[0]?.id) || '1';
-            
-            // Reset student based on new specialty to avoid invalid state
-            if (newSpecialty === 'pediatria') {
-                currentStudent = data?.students?.[0]?.id || 'p1';
-            } else {
-                currentStudent = 'all';
-            }
-
-            updateActiveSpecialtyButtons();
-            updateUILayout();
-            populateSelectors();
-            updateView();
-            saveUserStateToFirebase();
-        }
-
-        function populateSelectors() {
-            const data = allData[currentSpecialty];
-            if (!data) return; 
-            const weeks = data.weeks;
-            const students = data.students;
-
-            const selector = weekSelectorDesktop;
-            const mobileSelector = weekSelectorMain;
-            
-            selector.innerHTML = '';
-            mobileSelector.innerHTML = '';
-            studentSelectorDesktop.innerHTML = '';
-            studentSelectorMobile.innerHTML = '';
-            
-            weeks.forEach(week => {
-                const option = document.createElement('option');
-                option.value = week.id;
-                option.textContent = `${currentSpecialty === 'pediatria' ? 'Rodízio' : 'Semana'} ${week.id}: ${week.title}`;
-                selector.appendChild(option.cloneNode(true));
-                mobileSelector.appendChild(option.cloneNode(true));
-            });
-
-            if (students) {
-                students.forEach(student => {
-                    const option = document.createElement('option');
-                    option.value = student.id;
-                    option.textContent = student.name;
-                    studentSelectorDesktop.appendChild(option.cloneNode(true));
-                    studentSelectorMobile.appendChild(option.cloneNode(true));
-                });
-            }
-        }
-        
-        function updateUILayout() {
-            const isCirurgia = currentSpecialty === 'cirurgia';
-            
-            // BUG FIX: The student selector should always be visible
-            studentContainerDesktop.style.display = 'block';
-            studentContainerMobile.style.display = 'block';
-            
-            const weekLabel = isCirurgia ? 'Selecione a Semana' : 'Selecione o Rodízio';
-            document.getElementById('week-label-desktop').textContent = weekLabel;
-            weekLabelMain.textContent = weekLabel;
-        }
-
-        function updateView() {
-            const data = allData[currentSpecialty];
-            if (!data) return;
-            const selectedWeekData = data.weeks.find(w => w.id == currentWeekOrRodizio);
-            const subtitleText = selectedWeekData ? `${selectedWeekData.title} (${selectedWeekData.dates})` : '';
-            
-            scheduleSubtitleDesktop.textContent = subtitleText;
-            scheduleSubtitleMain.textContent = subtitleText;
-            
-            const selectedStudent = data.students.find(s => s.id == currentStudent);
-            if (selectedStudent) {
-                studentImageMobile.src = selectedStudent.imageUrl || 'https://i.imgur.com/5AW2oEL.png';
-                studentImageDesktop.src = selectedStudent.imageUrl || 'https://i.imgur.com/5AW2oEL.png';
-                studentSelectorMobile.value = currentStudent;
-                studentSelectorDesktop.value = currentStudent;
-            }
-            
-            renderSchedule();
-        }
-
-        function renderSchedule() {
-            const data = allData[currentSpecialty];
-            if (!data) return;
-            let weekData = data.schedule.filter(item => item.week == currentWeekOrRodizio);
-
-            if (currentSpecialty === 'cirurgia') {
-                weekData = weekData.filter(item => currentStudent === 'all' || (item.studentId && item.studentId.includes(parseInt(currentStudent))));
-            }
-            
-            let filteredData = hideStudyTime ? weekData.filter(item => !item.activity.toLowerCase().includes('horário estudo')) : weekData;
-
-            const fragment = document.createDocumentFragment();
-
-            const groupedByDay = filteredData.reduce((acc, item) => {
-                if (!acc[item.day]) acc[item.day] = [];
-                acc[item.day].push(item);
-                return acc;
-            }, {});
-
-            const orderedDays = daysOfWeek.filter(day => groupedByDay[day]);
-
-            const weekInfo = data.weeks.find(w => w.id == currentWeekOrRodizio);
-
-            orderedDays.forEach(day => {
-                const activitiesForDay = groupedByDay[day].sort((a, b) => a.time.localeCompare(b.time));
-                const dayColumn = document.createElement('div');
-                dayColumn.className = 'flex flex-col gap-4';
-                dayColumn.id = `day-col-${day}`;
-
-                const dayHeader = document.createElement('h2');
-                dayHeader.className = 'text-xl font-bold text-center p-3 bg-[#2D2D2D] rounded-lg shadow-sm sticky top-0 z-10';
-                
-                if (weekInfo && weekInfo.start) {
-                    const startDate = new Date(weekInfo.start + 'T00:00:00');
-                    const dayIndex = daysOfWeek.indexOf(day);
-                    if (dayIndex !== -1) {
-                        const currentDate = new Date(startDate);
-                        currentDate.setDate(startDate.getDate() + dayIndex);
-                        const formattedDate = `${String(currentDate.getDate()).padStart(2, '0')}/${String(currentDate.getMonth() + 1).padStart(2, '0')}`;
-                        dayHeader.innerHTML = `
-                            ${day.charAt(0) + day.slice(1).toLowerCase()}
-                            <span class="block text-sm font-normal text-gray-400 mt-1">${formattedDate}</span>
-                        `;
-                    } else {
-                         dayHeader.textContent = day.charAt(0) + day.slice(1).toLowerCase();
-                    }
-                } else {
-                    dayHeader.textContent = day.charAt(0) + day.slice(1).toLowerCase();
-                }
-
-                dayColumn.appendChild(dayHeader);
-
-                activitiesForDay.forEach((item) => {
-                    const activityId = `${currentSpecialty}-week${currentWeekOrRodizio}-day${day}-time${item.time.replace(/[\s:-]/g, '')}-${item.activity.replace(/[^a-zA-Z0-9]/g, '').substring(0, 10)}`;
-                    const isChecked = checklistData[activityId] || false;
-                    
-                    const card = document.createElement('div');
-                    card.className = `activity-card rounded-lg p-4 border-l-4 shadow-md bg-[#2D2D2D] border-[#2899F5]`;
-                     if (isChecked) card.classList.add('checked');
-
-                    const now = new Date();
-                    const currentTime = now.getHours() * 100 + now.getMinutes();
-                    const [startTimeStr, endTimeStr] = item.time.split(' - ');
-                    const startTime = parseInt(startTimeStr.replace(':', ''), 10);
-                    const endTime = parseInt(endTimeStr.replace(':', ''), 10);
-                    
-                    const today = now.toLocaleDateString('pt-BR', { weekday: 'long' }).toUpperCase();
-                    const isTodayInWeek = weekInfo && new Date() >= new Date(weekInfo.start) && new Date() <= new Date(weekInfo.end + 'T23:59:59');
-
-                    if (isTodayInWeek && day === today && currentTime >= startTime && currentTime <= endTime) {
-                        card.classList.add('current-activity');
-                    }
-
-                    // BUG FIX: Broaden the check for on-call activities
-                    const activityUpper = item.activity.toUpperCase();
-                    if (activityUpper.includes('PLANTÃO') || activityUpper.includes('PA PEDIATRIA')) {
-                        const onCallId = activityId;
-                        const totalSlots = item.slots || 2;
-                        
-                        // Use the shared state
-                        const slots = onCallClaimData[onCallId] || new Array(totalSlots).fill(null);
-                        
-                        const currentStudentData = allData[currentSpecialty].students.find(s => s.id == currentStudent);
-                        const currentUserSlot = slots.find(slot => slot && currentStudentData && slot.id == currentStudentData.id);
-                        const hasEmptySlot = slots.some(slot => slot === null);
-
-                        let slotsHtml = '<ul class="mt-3 border-t border-gray-700 pt-3 text-sm space-y-1">';
-                        slots.forEach((slot, index) => {
-                            slotsHtml += `<li class="flex items-center gap-2 ${slot ? 'text-green-400' : 'text-gray-500'}">
-                                <span class="font-semibold">${index + 1}.</span>
-                                <span>${slot ? slot.name : 'Vaga disponível'}</span>
-                            </li>`;
-                        });
-                        slotsHtml += '</ul>';
-
-                        let buttonHtml = '';
-                        const isDisabled = currentSpecialty === 'cirurgia' && currentStudent === 'all';
-                        if (currentUserSlot) {
-                            buttonHtml = `<button data-action="leave" class="w-full mt-4 p-2 bg-yellow-600 hover:bg-yellow-700 rounded-md font-semibold transition-colors text-white text-sm">Sair do Plantão</button>`;
-                        } else if (hasEmptySlot) {
-                            buttonHtml = `<button data-action="claim" class="w-full mt-4 p-2 bg-blue-600 hover:bg-blue-700 rounded-md font-semibold transition-colors text-white text-sm ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}" ${isDisabled ? 'disabled' : ''}>Reivindicar Vaga</button>`;
-                        } else {
-                            buttonHtml = `<p class="text-center text-xs text-gray-400 mt-4">Todas as vagas preenchidas.</p>`;
-                        }
-                        
-                        card.innerHTML = `
-                            <div class="flex items-start justify-between">
-                                <div class="flex-1">
-                                    <p class="font-bold text-md activity-title">${item.activity}</p>
-                                    <p class="text-sm text-gray-400 font-medium mt-1">${item.time}</p>
-                                </div>
-                                <input type="checkbox" id="${activityId}" class="ml-4 mt-1 h-5 w-5 rounded bg-gray-700 border-gray-600 text-blue-500 focus:ring-blue-600" ${isChecked ? 'checked' : ''}>
-                            </div>
-                            ${slotsHtml}
-                            ${buttonHtml}
-                        `;
-                        
-                        const actionButton = card.querySelector('button[data-action]');
-                        if (actionButton) {
-                            actionButton.addEventListener('click', () => handleOnCallAction(onCallId, actionButton.dataset.action, totalSlots));
-                        }
-                        card.querySelector(`#${activityId}`).addEventListener('change', handleChecklistChange);
-
-                    } else { // Regular activity card
-                        let studentHtml = '';
-                        if (currentSpecialty === 'cirurgia' && item.studentId) {
-                            const involvedStudents = allData.cirurgia.students
-                                .filter(s => s.id !== 'all' && item.studentId.includes(s.id))
-                                .map(s => s.name.split(' ')[0])
-                                .join(', ');
-                                studentHtml = `<p class="mt-2 text-xs text-gray-500"><strong>Alunos:</strong> ${involvedStudents}</p>`;
-                        }
-                        
-                        const locationUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.location + ', Curitiba, Brazil')}`;
-
-                        card.innerHTML = `
-                            <div class="flex items-start justify-between">
-                                <div class="flex-1">
-                                    <p class="font-bold text-md activity-title">${item.activity}</p>
-                                    <p class="text-sm text-gray-400 font-medium mt-1">${item.time}</p>
-                                </div>
-                                <input type="checkbox" id="${activityId}" class="ml-4 mt-1 h-5 w-5 rounded bg-gray-700 border-gray-600 text-blue-500 focus:ring-blue-600" ${isChecked ? 'checked' : ''}>
-                            </div>
-                            <div class="mt-3 border-t border-gray-700 pt-3 text-sm">
-                                <p><strong>Professor:</strong> ${item.professor}</p>
-                                <p><strong>Local:</strong> <a href="${locationUrl}" target="_blank" class="text-blue-400 hover:underline">${item.location}</a></p>
-                                ${studentHtml}
-                            </div>
-                        `;
-                        card.querySelector(`#${activityId}`).addEventListener('change', handleChecklistChange);
-                    }
-                    
-                    dayColumn.appendChild(card);
-                });
-                fragment.appendChild(dayColumn);
-            });
-
-            scheduleGrid.innerHTML = '';
-            scheduleGrid.appendChild(fragment);
-        }
-        
-        // --- Event Handlers ---
-
-        function handleWeekChange(e) {
-            currentWeekOrRodizio = e.target.value;
-            syncSelectors(e.target, e.target.id.includes('desktop') ? weekSelectorMain : weekSelectorDesktop);
-            updateView();
-        }
-
-        function handleStudentChange(e) {
-            currentStudent = e.target.value;
-            syncSelectors(e.target, e.target.id.includes('mobile') ? studentSelectorDesktop : studentSelectorMobile);
-            updateView();
-            
-            if (e.target.id.includes('mobile')) {
-                setTimeout(() => toggleSidebar(), 300);
-            }
-        }
-
-        function handleChecklistChange(event) {
-            const checkbox = event.target;
-            const activityId = checkbox.id;
-            checklistData[activityId] = checkbox.checked;
-            
-            checkbox.closest('.activity-card').classList.toggle('checked', checkbox.checked);
-        }
-
-        function handleHideStudyChange(e) {
-            hideStudyTime = e.target.checked;
-            renderSchedule();
-        }
-
-        async function handleOnCallAction(onCallId, action, totalSlots) {
-            if (currentSpecialty === 'cirurgia' && currentStudent === 'all') {
-                showToast("Por favor, selecione um aluno para reivindicar uma vaga.");
-                return;
-            }
-
-            // Create a deep copy to avoid modifying the global state directly before saving
-            const updatedOnCallData = JSON.parse(JSON.stringify(onCallClaimData));
-            if (!updatedOnCallData[onCallId]) {
-                updatedOnCallData[onCallId] = new Array(totalSlots).fill(null);
-            }
-            const slots = updatedOnCallData[onCallId];
-            const currentStudentData = allData[currentSpecialty].students.find(s => s.id == currentStudent);
-            
-            if (!currentStudentData) {
-                showToast("Aluno não encontrado. Tente novamente.");
-                return;
-            }
-
-            if (action === 'claim') {
-                const emptySlotIndex = slots.findIndex(slot => slot === null);
-                if (emptySlotIndex !== -1) {
-                    slots[emptySlotIndex] = { id: currentStudentData.id, name: currentStudentData.name };
-                } else {
-                    showToast("Não há vagas disponíveis.");
-                    return;
-                }
-            } else if (action === 'leave') {
-                const userSlotIndex = slots.findIndex(slot => slot && slot.id == currentStudentData.id);
-                if (userSlotIndex !== -1) {
-                    slots[userSlotIndex] = null;
-                }
-            }
-            
-            // Save the entire updated object to Firestore
-            const onCallDocRef = doc(db, 'schedules', 'onCallClaims');
-            try {
-                await setDoc(onCallDocRef, { claims: updatedOnCallData });
-                // The listener will automatically update the UI
-            } catch (error) {
-                console.error("Error updating on-call data:", error);
-                showToast("Erro ao atualizar vaga.");
-            }
-        }
-
-        function clearWeekData() {
-            showConfirm("Tem certeza que deseja limpar todas as marcações desta semana?", () => {
-                const weekPrefix = `${currentSpecialty}-week${currentWeekOrRodizio}`;
-                const keysToDelete = Object.keys(checklistData).filter(key => key.startsWith(weekPrefix));
-
-                if (keysToDelete.length === 0) {
-                    showToast("Nenhuma marcação para limpar nesta semana.");
-                    return;
-                }
-                
-                const newChecklistData = {};
-                for (const key in checklistData) {
-                    if (!key.startsWith(weekPrefix)) {
-                        newChecklistData[key] = checklistData[key];
-                    }
-                }
-                
-                checklistData = newChecklistData;
-
-                saveUserStateToFirebase();
-                renderSchedule();
-                showToast("Marcações da semana limpas!");
-            });
-        }
-        
-        function handleCopyId(displayElement) {
-            displayElement.select();
-            document.execCommand('copy');
-            showToast('ID copiado para a área de transferência!');
-        }
-
-        function handleLoadId(inputElement) {
-            const newId = inputElement.value.trim();
-            if (newId && newId !== userId) {
-                showConfirm(`Carregar dados do ID ${newId}? Suas configurações atuais serão sobrescritas.`, () => {
-                    if (unsubscribeUser) unsubscribeUser();
-                    localStorage.setItem('loadedUserId', newId);
-                    resetLocalState();
-                    initializeUI(); 
-                    setupUserListener(newId);
-                });
-            }
-        }
-        
-        function syncSelectors(source, target) {
-             if(target) target.value = source.value;
-        }
-
-        // --- Event Listener Setup ---
-
-        sidebarToggle.addEventListener('click', toggleSidebar);
-        sidebarClose.addEventListener('click', toggleSidebar);
-        sidebarOverlay.addEventListener('click', (e) => {
-            if (e.target === sidebarOverlay) toggleSidebar();
-        });
-
-        btnCirurgia.addEventListener('click', (e) => { e.preventDefault(); switchSpecialty('cirurgia'); });
-        btnPediatria.addEventListener('click', (e) => { e.preventDefault(); switchSpecialty('pediatria'); });
-        btnCirurgiaMobile.addEventListener('click', () => switchSpecialty('cirurgia'));
-        btnPediatriaMobile.addEventListener('click', () => switchSpecialty('pediatria'));
-
-        weekSelectorMain.addEventListener('change', handleWeekChange);
-        weekSelectorDesktop.addEventListener('change', handleWeekChange);
-
-        studentSelectorMobile.addEventListener('change', handleStudentChange);
-        studentSelectorDesktop.addEventListener('change', handleStudentChange);
-
-        clearWeekButtonMobile.addEventListener('click', clearWeekData);
-        clearWeekButtonDesktop.addEventListener('click', clearWeekData);
-
-        hideStudyMobile.addEventListener('change', handleHideStudyChange);
-        hideStudyDesktop.addEventListener('change', handleHideStudyChange);
-        
-        syncButtonMobile.addEventListener('click', saveUserStateToFirebase);
-        syncButtonModal.addEventListener('click', saveUserStateToFirebase);
-        
-        syncModalOpenBtn.addEventListener('click', toggleSyncModal);
-        syncModalCloseBtn.addEventListener('click', toggleSyncModal);
-        syncModalOverlay.addEventListener('click', (e) => {
-            if(e.target === syncModalOverlay) toggleSyncModal();
-        });
-
-        todayBtn.addEventListener('click', () => {
-            const now = new Date();
-            const todayStr = now.toISOString().split('T')[0];
-            const todayDay = now.toLocaleDateString('pt-BR', { weekday: 'long' }).toUpperCase();
-            
-            const data = allData[currentSpecialty];
-            const currentWeekInfo = data.weeks.find(w => todayStr >= w.start && todayStr <= w.end);
-
-            if (currentWeekInfo) {
-                currentWeekOrRodizio = currentWeekInfo.id;
-                weekSelectorDesktop.value = currentWeekInfo.id;
-                weekSelectorMain.value = currentWeekInfo.id;
-                updateView();
-                
-                setTimeout(() => {
-                    const dayCol = document.getElementById(`day-col-${todayDay}`);
-                    if (dayCol) {
-                       dayCol.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    }
-                }, 100);
-            } else {
-                showToast('Nenhuma atividade programada para hoje.');
-            }
-        });
-        
-        copyUserIdBtnMobile.addEventListener('click', () => handleCopyId(userIdDisplayMobile));
-        copyUserIdModal.addEventListener('click', () => handleCopyId(userIdDisplayModal));
-
-        loadUserIdBtnMobile.addEventListener('click', () => handleLoadId(userIdInputMobile));
-        loadUserIdModal.addEventListener('click', () => handleLoadId(userIdInputModal));
-        
-        // --- Initialization ---
-
-        setInterval(() => {
-            renderSchedule();
-        }, 60000);
-
-        let saveTimeout;
-        window.addEventListener('beforeunload', () => {
-           if (userId) saveUserStateToFirebase();
-        });
-
-        function debouncedSave() {
-            clearTimeout(saveTimeout);
-            saveTimeout = setTimeout(saveUserStateToFirebase, 2000);
-        }
-
-        scheduleGrid.addEventListener('change', debouncedSave);
-        weekSelectorMain.addEventListener('change', debouncedSave);
-        weekSelectorDesktop.addEventListener('change', debouncedSave);
-        studentSelectorMobile.addEventListener('change', debouncedSave);
-        studentSelectorDesktop.addEventListener('change', debouncedSave);
-        hideStudyMobile.addEventListener('change', debouncedSave);
-        hideStudyDesktop.addEventListener('change', debouncedSave);
-
-        fetchData();
-    </script>
 </body>
 </html>
+
